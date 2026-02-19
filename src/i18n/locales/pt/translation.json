@@ -1,0 +1,23 @@
+{
+    "common": {
+        "loading": "A carregar...",
+        "save": "Guardar",
+        "cancel": "Cancelar",
+        "delete": "Apagar",
+        "edit": "Editar",
+        "search": "Pesquisar"
+    },
+    "nav": {
+        "dashboard": "Visão Geral",
+        "financial": "Financeiro",
+        "todo": "Tarefas",
+        "links": "Links",
+        "crypto": "Cripto",
+        "settings": "Definições"
+    },
+    "dashboard": {
+        "greeting_morning": "Bom dia, {{name}}.",
+        "greeting_afternoon": "Boa tarde, {{name}}.",
+        "greeting_night": "Boa noite, {{name}}."
+    }
+}

@@ -1,0 +1,23 @@
+{
+    "common": {
+        "loading": "Loading...",
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "edit": "Edit",
+        "search": "Search"
+    },
+    "nav": {
+        "dashboard": "Overview",
+        "financial": "Finance",
+        "todo": "Tasks",
+        "links": "Links",
+        "crypto": "Crypto",
+        "settings": "Settings"
+    },
+    "dashboard": {
+        "greeting_morning": "Good morning, {{name}}.",
+        "greeting_afternoon": "Good afternoon, {{name}}.",
+        "greeting_night": "Good evening, {{name}}."
+    }
+}

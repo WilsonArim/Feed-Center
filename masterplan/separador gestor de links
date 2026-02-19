@@ -1,0 +1,24 @@
+# Gestor de Links - Feed-Center App
+## Overview
+Módulo para salvar, organizar e buscar links, integrado como "favoritos inteligentes" para crypto/tools. Queixas: Folders não escalam, search ineficiente, links esquecidos/mortos, design antigo, falta de integração com notes. Usuários querem: AI auto-organize, search instantâneo como "personal Google", one-click save, offline access, conexão entre links/notes.
+## Boas Práticas (SOTA 2026)
+- AI para tags auto, boards smart, detecção de links mortos.
+- Full-text search, visual previews (favicons/thumbnails).
+- Evite silos: Links conectados a to-do (ex: "Task from link") ou financeiro.
+- Offline-first, browser extension para quick save.
+- Sharing e self-hosted options para privacidade.
+## Requisitos e Fluxos
+- **Features Chave**:
+- Categorias/tags auto, search bar global.
+- Notes anexadas a links, dead-link checker.
+- Integração: Links para crypto sites auto-track em ledger.
+- **Fluxo de Uso**:
+1. Save: One-click from browser ou input URL.
+2. Organize: AI sugere boards/tags.
+3. Busca: Instant results com previews.
+4. Update: Auto-archive old links, notify dead ones.
+## Integrações e Considerações
+- Backend: Supabase para storage, Algolia para search.
+- Frontend: React com drag-and-drop boards.
+- Segurança: Encripte links sensíveis (ex: wallets).
+- Escalabilidade: AI local para organização offline, sync cross-device.

@@ -1,0 +1,34 @@
+/* Marquee Animations */
+@keyframes marquee {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-100%);
+    }
+}
+
+@keyframes marquee-reverse {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(0);
+    }
+}
+
+.animate-marquee {
+    animation: marquee linear infinite;
+}
+
+.animate-marquee-reverse {
+    animation: marquee-reverse linear infinite;
+}
+
+/* Pause on hover for interaction */
+.group:hover .animate-marquee,
+.group:hover .animate-marquee-reverse {
+    animation-play-state: paused;
+}
