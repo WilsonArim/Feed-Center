@@ -2,7 +2,17 @@
  * News Service — consumes Feed-Center backend REST endpoints
  */
 
-const API_BASE = 'http://localhost:3001'
+const rawApiBase = import.meta.env.VITE_NEWS_API_BASE?.trim()
+const API_BASE = rawApiBase ? rawApiBase.replace(/\/$/, '') : null
+let missingApiBaseWarned = false
+
+function warnMissingApiBase() {
+    if (missingApiBaseWarned) return
+    missingApiBaseWarned = true
+    console.warn(
+        'News API base is not configured. Set VITE_NEWS_API_BASE to enable News endpoints in production.',
+    )
+}
 
 // ── Types ──
 export interface NewsItem {
@@ -35,6 +45,11 @@ export type NewsPriority = 'high' | 'medium' | 'low'
 // ── API calls ──
 
 export async function fetchTopStories(limit = 5): Promise<NewsItem[]> {
+    if (!API_BASE) {
+        warnMissingApiBase()
+        return []
+    }
+
     const res = await fetch(`${API_BASE}/news/top?limit=${limit}`)
     if (!res.ok) throw new Error('Failed to fetch top stories')
     const data = await res.json()
@@ -48,6 +63,18 @@ export async function fetchNewsList(params: {
     sort?: NewsSortMode
     q?: string
 }): Promise<NewsListResponse> {
+    if (!API_BASE) {
+        warnMissingApiBase()
+        return {
+            items: [],
+            page: params.page || 1,
+            pageSize: params.pageSize || 20,
+            totalPages: 1,
+            topic: params.topic || 'all',
+            count: 0,
+        }
+    }
+
     const sp = new URLSearchParams()
     if (params.topic) sp.set('topic', params.topic)
     if (params.page) sp.set('page', String(params.page))
@@ -71,6 +98,11 @@ export async function fetchNewsList(params: {
 }
 
 export async function fetchTopics(): Promise<Record<string, number>> {
+    if (!API_BASE) {
+        warnMissingApiBase()
+        return {}
+    }
+
     const res = await fetch(`${API_BASE}/news/topics`)
     if (!res.ok) return {}
     const data = await res.json()
