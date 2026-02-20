@@ -15,15 +15,15 @@ export function PocketsGrid() {
     const [menuOpenId, setMenuOpenId] = useState<string | null>(null)
 
     const handleDelete = async (id: string) => {
-        if (confirm('Tens a certeza que queres eliminar este envelope? O saldo será movido para o saldo geral.')) {
+        if (confirm('Tens a certeza que queres eliminar este envelope? O saldo sera movido para o saldo geral.')) {
             await deletePocket.mutateAsync(id)
         }
     }
 
     return (
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
                     Envelopes Digitais
                 </h2>
                 <StardustButton
@@ -38,14 +38,14 @@ export function PocketsGrid() {
             {pockets.isLoading ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {[1, 2, 3].map((i) => (
-                        <div key={i} className="h-32 rounded-[var(--radius-lg)] bg-white/5 animate-pulse" />
+                        <div key={i} className="h-32 rounded-2xl bg-[var(--color-bg-tertiary)] animate-pulse" />
                     ))}
                 </div>
             ) : pockets.data?.length === 0 ? (
-                <div className="modal-panel rounded-[var(--radius-lg)] p-8 text-center flex flex-col items-center gap-3">
-                    <Wallet size={32} className="opacity-40" />
-                    <p className="text-sm opacity-60">
-                        Organiza o teu dinheiro em envelopes digitais (ex: Época Festiva, Férias).
+                <div className="rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] p-8 text-center flex flex-col items-center gap-3">
+                    <Wallet size={32} className="text-[var(--color-text-muted)]" />
+                    <p className="text-sm text-[var(--color-text-muted)]">
+                        Organiza o teu dinheiro em envelopes digitais (ex: Epoca Festiva, Ferias).
                     </p>
                     <button
                         onClick={() => setIsModalOpen(true)}
@@ -81,11 +81,7 @@ export function PocketsGrid() {
 }
 
 function PocketCard({
-    pocket,
-    onEdit,
-    onDelete,
-    isMenuOpen,
-    onToggleMenu,
+    pocket, onEdit, onDelete, isMenuOpen, onToggleMenu,
 }: {
     pocket: FinancialPocket
     onEdit: (p: FinancialPocket) => void
@@ -103,7 +99,7 @@ function PocketCard({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="glass p-5 rounded-[var(--radius-lg)] relative group overflow-hidden"
+            className="p-5 rounded-2xl relative group overflow-hidden bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-[var(--color-accent)]/20 transition-colors"
             style={{ borderLeft: `4px solid ${pocket.color}` }}
         >
             <div className="flex justify-between items-start mb-2">
@@ -115,10 +111,10 @@ function PocketCard({
                         {pocket.icon}
                     </div>
                     <div>
-                        <h3 className="font-semibold text-sm" style={{ color: 'var(--color-text-primary)' }}>
+                        <h3 className="font-semibold text-sm text-[var(--color-text-primary)]">
                             {pocket.name}
                         </h3>
-                        <p className="text-xs opacity-60">
+                        <p className="text-xs text-[var(--color-text-muted)]">
                             {pocket.budget_limit ? `Meta: ${formatCurrency(pocket.budget_limit)}` : 'Sem limite'}
                         </p>
                     </div>
@@ -127,7 +123,7 @@ function PocketCard({
                 <div className="relative">
                     <button
                         onClick={(e) => { e.stopPropagation(); onToggleMenu() }}
-                        className="p-1 rounded hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="p-1 rounded-lg hover:bg-[var(--color-bg-tertiary)] opacity-0 group-hover:opacity-100 transition-all text-[var(--color-text-muted)]"
                     >
                         <MoreVertical size={16} />
                     </button>
@@ -138,18 +134,17 @@ function PocketCard({
                                 initial={{ opacity: 0, scale: 0.95, y: 5 }}
                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.95, y: 5 }}
-                                className="absolute right-0 top-full mt-1 w-32 glass z-10 rounded-[var(--radius-md)] overflow-hidden shadow-xl"
-                                style={{ border: '1px solid var(--color-border)' }}
+                                className="absolute right-0 top-full mt-1 w-32 z-10 rounded-xl overflow-hidden shadow-xl bg-[var(--color-surface)] border border-[var(--color-border)]"
                             >
                                 <button
                                     onClick={() => onEdit(pocket)}
-                                    className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 hover:bg-white/5"
+                                    className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)] transition-colors"
                                 >
                                     <Edit2 size={12} /> Editar
                                 </button>
                                 <button
                                     onClick={() => onDelete(pocket.id)}
-                                    className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 hover:bg-white/5 text-red-400"
+                                    className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 hover:bg-rose-500/10 text-rose-400 transition-colors"
                                 >
                                     <Trash2 size={12} /> Eliminar
                                 </button>
@@ -161,10 +156,10 @@ function PocketCard({
 
             <div className="mt-4">
                 <div className="flex justify-between text-xs mb-1.5">
-                    <span className="font-medium">{formatCurrency(pocket.current_balance)}</span>
-                    <span className="opacity-60">{percentage > 0 ? `${Math.round(percentage)}%` : ''}</span>
+                    <span className="font-medium text-[var(--color-text-primary)]">{formatCurrency(pocket.current_balance)}</span>
+                    <span className="text-[var(--color-text-muted)]">{percentage > 0 ? `${Math.round(percentage)}%` : ''}</span>
                 </div>
-                <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                <div className="h-1.5 w-full bg-[var(--color-bg-tertiary)] rounded-full overflow-hidden">
                     <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${percentage}%` }}

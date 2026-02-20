@@ -176,7 +176,7 @@ export function AddEntryModal({ isOpen, onClose, onSubmit, isLoading, editingEnt
                         exit={{ opacity: 0, scale: 0.95, y: 10 }}
                         transition={{ duration: 0.2 }}
                         onClick={(e) => e.stopPropagation()}
-                        className="modal-panel w-full max-w-lg rounded-[var(--radius-xl)] p-6 max-h-[90vh] overflow-y-auto"
+                        className="w-full max-w-lg rounded-2xl p-6 max-h-[90vh] overflow-y-auto bg-[var(--color-surface)]"
                         style={{ border: '1px solid var(--color-border)' }}
                     >
                         {/* Header */}
@@ -186,7 +186,7 @@ export function AddEntryModal({ isOpen, onClose, onSubmit, isLoading, editingEnt
                             </h2>
                             <button
                                 onClick={onClose}
-                                className="p-1.5 rounded-[var(--radius-sm)] hover:bg-white/5 cursor-pointer"
+                                className="p-1.5 rounded-lg hover:bg-[var(--color-bg-tertiary)] cursor-pointer"
                             >
                                 <X size={18} style={{ color: 'var(--color-text-muted)' }} />
                             </button>
@@ -204,11 +204,10 @@ export function AddEntryModal({ isOpen, onClose, onSubmit, isLoading, editingEnt
                                             key={t.value}
                                             type="button"
                                             onClick={() => setType(t.value)}
-                                            className={`flex-1 py-2 rounded-[var(--radius-md)] text-xs sm:text-sm font-medium transition-all cursor-pointer whitespace-nowrap px-1 ${type === t.value
-                                                ? 'bg-[var(--color-accent)] text-white'
-                                                : 'hover:bg-white/5'
+                                            className={`flex-1 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer whitespace-nowrap px-1 ${type === t.value
+                                                ? 'bg-[var(--color-accent)] text-[var(--color-bg-primary)]'
+                                                : 'hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] border border-[var(--color-border)]'
                                                 }`}
-                                            style={type !== t.value ? { color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)' } : {}}
                                         >
                                             {t.label}
                                         </button>
@@ -327,7 +326,7 @@ export function AddEntryModal({ isOpen, onClose, onSubmit, isLoading, editingEnt
                                         initial={{ opacity: 0, height: 0 }}
                                         animate={{ opacity: 1, height: 'auto' }}
                                         exit={{ opacity: 0, height: 0 }}
-                                        className="space-y-4 pt-2 border-t border-white/5"
+                                        className="space-y-4 pt-2 border-t border-[var(--color-border)]"
                                     >
                                         <div className="grid grid-cols-2 gap-3">
                                             {/* Periodicity */}
@@ -369,7 +368,7 @@ export function AddEntryModal({ isOpen, onClose, onSubmit, isLoading, editingEnt
                                         </div>
 
                                         {/* Buggy Alert Toggle */}
-                                        <div className="p-3 rounded-[var(--radius-md)] bg-white/5 border border-white/5">
+                                        <div className="p-3 rounded-xl bg-[var(--color-bg-tertiary)] border border-[var(--color-border)]">
                                             <label className="flex items-center gap-3 cursor-pointer select-none">
                                                 <input
                                                     type="checkbox"
@@ -378,7 +377,7 @@ export function AddEntryModal({ isOpen, onClose, onSubmit, isLoading, editingEnt
                                                     className="w-4 h-4 accent-[var(--color-accent)] cursor-pointer"
                                                 />
                                                 <div className="flex items-center gap-2">
-                                                    <BellRing size={14} className={buggyAlert ? 'text-[var(--color-accent)]' : 'text-white/40'} />
+                                                    <BellRing size={14} className={buggyAlert ? 'text-[var(--color-accent)]' : 'text-[var(--color-text-muted)]'} />
                                                     <span className="text-sm font-medium" style={{ color: buggyAlert ? 'var(--color-text-primary)' : 'var(--color-text-secondary)' }}>
                                                         Receber alerta do Buggy
                                                     </span>
@@ -427,7 +426,7 @@ export function AddEntryModal({ isOpen, onClose, onSubmit, isLoading, editingEnt
                             )}
 
                             {/* Actions */}
-                            <div className="flex justify-end gap-3 pt-4 border-t border-white/5 mt-2">
+                            <div className="flex justify-end gap-3 pt-4 border-t border-[var(--color-border)] mt-2">
                                 <StardustButton
                                     type="button"
                                     onClick={onClose}

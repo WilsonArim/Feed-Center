@@ -1,5 +1,5 @@
-
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, ChevronDown, ChevronRight, Inbox, Trash2 } from 'lucide-react'
 import type { TodoList } from '@/types'
 
@@ -19,80 +19,97 @@ export function TodoSidebar({ lists, activeListId, onSelect, onCreateList, onDel
     const simpleLists = lists.filter(l => l.type === 'list')
 
     return (
-        <div className="w-64 h-full flex flex-col border-r border-[var(--color-border)] bg-[var(--color-bg-secondary)]/50">
+        <div className="w-64 h-full flex flex-col border-r border-[var(--color-border)] bg-[var(--color-bg-secondary)]/80 backdrop-blur-md">
             {/* Inbox */}
             <div className="p-4 pb-2">
                 <button
                     onClick={() => onSelect(null)}
-                    className={`w - full flex items - center gap - 3 px - 3 py - 2 rounded - lg transition - colors text - sm font - medium ${activeListId === null
-                        ? 'bg-[var(--color-accent)]/10 text-[var(--color-accent)]'
-                        : 'text-[var(--color-text-secondary)] hover:bg-white/5 hover:text-white'
-                        } `}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-medium ${
+                        activeListId === null
+                            ? 'bg-[var(--color-accent)]/10 text-[var(--color-accent)] shadow-sm shadow-[var(--color-accent)]/5'
+                            : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text-primary)]'
+                    }`}
                 >
                     <Inbox size={18} />
                     Inbox
                 </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-4 py-2 space-y-6">
+            <div className="flex-1 overflow-y-auto px-4 py-2 flex flex-col gap-6">
                 {/* Projects Section */}
                 <div>
-                    <div
-                        className="flex items-center justify-between text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2 cursor-pointer hover:text-white transition-colors"
+                    <button
+                        className="w-full flex items-center justify-between text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-[0.1em] mb-2 px-1 hover:text-[var(--color-text-secondary)] transition-colors"
                         onClick={() => setProjectsExpanded(!projectsExpanded)}
                     >
                         <span>Projetos</span>
-                        {projectsExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                    </div>
+                        {projectsExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                    </button>
 
-                    {projectsExpanded && (
-                        <div className="space-y-0.5">
-                            {projects.map(list => (
-                                <ListItem
-                                    key={list.id}
-                                    list={list}
-                                    active={activeListId === list.id}
-                                    onSelect={() => onSelect(list.id)}
-                                    onDelete={() => onDeleteList(list.id)}
-                                />
-                            ))}
-                            {projects.length === 0 && (
-                                <div className="px-3 py-2 text-xs text-[var(--color-text-muted)] italic">
-                                    Sem projetos
-                                </div>
-                            )}
-                        </div>
-                    )}
+                    <AnimatePresence initial={false}>
+                        {projectsExpanded && (
+                            <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.2 }}
+                                className="overflow-hidden flex flex-col gap-0.5"
+                            >
+                                {projects.map(list => (
+                                    <ListItem
+                                        key={list.id}
+                                        list={list}
+                                        active={activeListId === list.id}
+                                        onSelect={() => onSelect(list.id)}
+                                        onDelete={() => onDeleteList(list.id)}
+                                    />
+                                ))}
+                                {projects.length === 0 && (
+                                    <div className="px-3 py-2 text-xs text-[var(--color-text-muted)] italic">
+                                        Sem projetos
+                                    </div>
+                                )}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
 
                 {/* Lists Section */}
                 <div>
-                    <div
-                        className="flex items-center justify-between text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2 cursor-pointer hover:text-white transition-colors"
+                    <button
+                        className="w-full flex items-center justify-between text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-[0.1em] mb-2 px-1 hover:text-[var(--color-text-secondary)] transition-colors"
                         onClick={() => setListsExpanded(!listsExpanded)}
                     >
                         <span>Listas</span>
-                        {listsExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                    </div>
+                        {listsExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                    </button>
 
-                    {listsExpanded && (
-                        <div className="space-y-0.5">
-                            {simpleLists.map(list => (
-                                <ListItem
-                                    key={list.id}
-                                    list={list}
-                                    active={activeListId === list.id}
-                                    onSelect={() => onSelect(list.id)}
-                                    onDelete={() => onDeleteList(list.id)}
-                                />
-                            ))}
-                            {simpleLists.length === 0 && (
-                                <div className="px-3 py-2 text-xs text-[var(--color-text-muted)] italic">
-                                    Sem listas
-                                </div>
-                            )}
-                        </div>
-                    )}
+                    <AnimatePresence initial={false}>
+                        {listsExpanded && (
+                            <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.2 }}
+                                className="overflow-hidden flex flex-col gap-0.5"
+                            >
+                                {simpleLists.map(list => (
+                                    <ListItem
+                                        key={list.id}
+                                        list={list}
+                                        active={activeListId === list.id}
+                                        onSelect={() => onSelect(list.id)}
+                                        onDelete={() => onDeleteList(list.id)}
+                                    />
+                                ))}
+                                {simpleLists.length === 0 && (
+                                    <div className="px-3 py-2 text-xs text-[var(--color-text-muted)] italic">
+                                        Sem listas
+                                    </div>
+                                )}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
             </div>
 
@@ -100,10 +117,10 @@ export function TodoSidebar({ lists, activeListId, onSelect, onCreateList, onDel
             <div className="p-4 border-t border-[var(--color-border)]">
                 <button
                     onClick={onCreateList}
-                    className="w-full flex items-center gap-2 justify-center px-4 py-2 bg-white/5 hover:bg-white/10 text-[var(--color-text-secondary)] hover:text-white rounded-xl transition-all text-sm font-medium border border-white/5"
+                    className="w-full flex items-center gap-2 justify-center px-4 py-2.5 bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-accent)]/10 text-[var(--color-text-secondary)] hover:text-[var(--color-accent)] rounded-xl transition-all text-sm font-medium border border-[var(--color-border)] hover:border-[var(--color-accent)]/30"
                 >
                     <Plus size={16} />
-                    Nova Coleção
+                    Nova Colecao
                 </button>
             </div>
         </div>
@@ -115,24 +132,25 @@ function ListItem({ list, active, onSelect, onDelete }: { list: TodoList, active
         <div className="group relative flex items-center">
             <button
                 onClick={onSelect}
-                className={`flex - 1 flex items - center gap - 3 px - 3 py - 2 rounded - lg transition - colors text - sm text - left ${active
-                    ? 'bg-white/10 text-white'
-                    : 'text-[var(--color-text-secondary)] hover:bg-white/5 hover:text-white'
-                    } `}
+                className={`flex-1 flex items-center gap-3 px-3 py-2 rounded-xl transition-all text-sm text-left ${
+                    active
+                        ? 'bg-[var(--color-accent)]/10 text-[var(--color-text-primary)]'
+                        : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text-primary)]'
+                }`}
             >
                 <div
-                    className="w-2 h-2 rounded-full"
+                    className="w-2 h-2 rounded-full shrink-0 ring-1 ring-inset ring-white/10"
                     style={{ backgroundColor: list.color || '#888' }}
                 />
                 <span className="truncate">{list.title}</span>
             </button>
 
-            {/* Delete Action (visible on hover) */}
             <button
                 onClick={(e) => { e.stopPropagation(); if (confirm('Apagar lista?')) onDelete() }}
-                className="absolute right-2 p-1.5 text-white/30 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity rounded-md hover:bg-white/5"
+                className="absolute right-2 p-1.5 text-[var(--color-text-muted)] hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-all rounded-lg hover:bg-rose-500/10"
+                aria-label="Apagar lista"
             >
-                <Trash2 size={14} />
+                <Trash2 size={13} />
             </button>
         </div>
     )

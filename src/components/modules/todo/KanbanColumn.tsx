@@ -1,5 +1,6 @@
 import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { motion } from 'framer-motion'
 import { TaskCard } from './TaskCard'
 import type { Todo, TodoStatus } from '@/types'
 
@@ -10,21 +11,40 @@ interface KanbanColumnProps {
     onEditTask: (todo: Todo) => void
 }
 
-const COLUMN_COLORS = {
-    todo: 'bg-zinc-500/10 border-zinc-500/20',
-    in_progress: 'bg-blue-500/10 border-blue-500/20',
-    done: 'bg-emerald-500/10 border-emerald-500/20',
+const COLUMN_STYLES: Record<TodoStatus, { dot: string; bg: string; border: string }> = {
+    todo: {
+        dot: 'bg-[var(--color-text-muted)]',
+        bg: 'bg-[var(--color-surface)]/60',
+        border: 'border-[var(--color-border)]',
+    },
+    in_progress: {
+        dot: 'bg-[var(--color-accent)]',
+        bg: 'bg-[var(--color-accent)]/[0.03]',
+        border: 'border-[var(--color-accent)]/20',
+    },
+    done: {
+        dot: 'bg-emerald-500',
+        bg: 'bg-emerald-500/[0.03]',
+        border: 'border-emerald-500/20',
+    },
 }
 
 export function KanbanColumn({ id, title, todos, onEditTask }: KanbanColumnProps) {
-    const { setNodeRef } = useDroppable({ id })
+    const { setNodeRef, isOver } = useDroppable({ id })
+    const style = COLUMN_STYLES[id]
 
     return (
-        <div className="flex flex-col h-full min-w-[300px] w-full max-w-[350px]">
-            {/* Header */}
-            <div className={`p-3 mb-3 rounded-xl border flex items-center justify-between ${COLUMN_COLORS[id]}`}>
-                <h3 className="font-semibold text-sm uppercase tracking-wider">{title}</h3>
-                <span className="text-xs font-mono px-2 py-0.5 bg-black/20 rounded-md">
+        <motion.div
+            layout
+            className="flex flex-col h-full min-w-[280px] w-full max-w-[340px]"
+        >
+            {/* Column Header */}
+            <div className={`flex items-center gap-3 px-4 py-3 mb-3 rounded-xl border ${style.bg} ${style.border} backdrop-blur-sm`}>
+                <span className={`w-2 h-2 rounded-full ${style.dot}`} />
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)]">
+                    {title}
+                </h3>
+                <span className="ml-auto text-[10px] font-mono font-bold text-[var(--color-text-muted)] bg-[var(--color-bg-tertiary)] px-2 py-0.5 rounded-md">
                     {todos.length}
                 </span>
             </div>
@@ -32,7 +52,9 @@ export function KanbanColumn({ id, title, todos, onEditTask }: KanbanColumnProps
             {/* Droppable Area */}
             <div
                 ref={setNodeRef}
-                className="flex-1 flex flex-col gap-3 p-1 overflow-y-auto"
+                className={`flex-1 flex flex-col gap-3 p-2 overflow-y-auto rounded-xl transition-colors duration-200 ${
+                    isOver ? 'bg-[var(--color-accent)]/[0.05] ring-1 ring-[var(--color-accent)]/20 ring-inset' : ''
+                }`}
             >
                 <SortableContext
                     id={id}
@@ -47,7 +69,13 @@ export function KanbanColumn({ id, title, todos, onEditTask }: KanbanColumnProps
                         />
                     ))}
                 </SortableContext>
+
+                {todos.length === 0 && (
+                    <div className="flex-1 flex items-center justify-center min-h-[120px] border border-dashed border-[var(--color-border)] rounded-xl">
+                        <p className="text-xs text-[var(--color-text-muted)]">Arrastar tarefas aqui</p>
+                    </div>
+                )}
             </div>
-        </div>
+        </motion.div>
     )
 }

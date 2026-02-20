@@ -1,4 +1,5 @@
 import { CheckCircle2, Clock, AlertTriangle, ListTodo } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { useTodos } from '@/hooks/useTodos'
 
 export function TodoStatsBar() {
@@ -15,27 +16,34 @@ export function TodoStatsBar() {
     const stats = [
         { label: 'Total', value: String(total), icon: <ListTodo size={13} />, color: 'var(--color-accent)' },
         { label: 'Pendentes', value: String(pending), icon: <Clock size={13} />, color: '#f59e0b' },
-        { label: 'Concluídas', value: `${done} (${completionPct}%)`, icon: <CheckCircle2 size={13} />, color: '#22c55e' },
-        { label: 'Alta Prioridade', value: String(high), icon: <AlertTriangle size={13} />, color: high > 0 ? '#ef4444' : '#64748b' },
+        { label: 'Concluidas', value: `${done} (${completionPct}%)`, icon: <CheckCircle2 size={13} />, color: '#22c55e' },
+        { label: 'Alta Prioridade', value: String(high), icon: <AlertTriangle size={13} />, color: high > 0 ? '#ef4444' : 'var(--color-text-muted)' },
     ]
 
     return (
-        <div className="flex items-center gap-4 flex-wrap">
+        <div className="flex items-center gap-5 flex-wrap">
             {stats.map(s => (
-                <div key={s.label} className="flex items-center gap-1.5">
+                <div key={s.label} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)]">
                     <span style={{ color: s.color }}>{s.icon}</span>
-                    <span className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--color-text-muted)' }}>
+                    <span className="text-[10px] uppercase tracking-wider font-medium text-[var(--color-text-muted)]">
                         {s.label}
                     </span>
                     <span className="text-xs font-bold" style={{ color: s.color }}>{s.value}</span>
                 </div>
             ))}
 
-            {/* Compact completion bar */}
-            <div className="flex-1 min-w-[60px] h-1 rounded-full overflow-hidden"
-                style={{ background: 'var(--color-bg-tertiary)' }}>
-                <div className="h-full rounded-full transition-all duration-500"
-                    style={{ width: `${completionPct}%`, background: '#22c55e' }} />
+            {/* Completion bar */}
+            <div className="flex-1 min-w-[80px] flex items-center gap-2">
+                <div className="flex-1 h-1.5 rounded-full overflow-hidden bg-[var(--color-bg-tertiary)]">
+                    <motion.div
+                        className="h-full rounded-full"
+                        style={{ background: '#22c55e' }}
+                        initial={{ width: 0 }}
+                        animate={{ width: `${completionPct}%` }}
+                        transition={{ duration: 0.8, ease: 'easeOut' }}
+                    />
+                </div>
+                <span className="text-[10px] font-mono font-bold text-emerald-400">{completionPct}%</span>
             </div>
         </div>
     )
