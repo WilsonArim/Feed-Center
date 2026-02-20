@@ -2,10 +2,13 @@
     "common": {
         "loading": "Loading...",
         "save": "Save",
+        "apply": "Apply",
+        "default": "Default",
         "cancel": "Cancel",
         "delete": "Delete",
         "edit": "Edit",
-        "search": "Search"
+        "search": "Search",
+        "close": "Close"
     },
     "nav": {
         "dashboard": "Overview",
@@ -19,5 +22,27 @@
         "greeting_morning": "Good morning, {{name}}.",
         "greeting_afternoon": "Good afternoon, {{name}}.",
         "greeting_night": "Good evening, {{name}}."
+    },
+    "settings": {
+        "title": "Settings",
+        "subtitle": "Adjust language, appearance, and account preferences.",
+        "profile": "Profile",
+        "appearance": "Appearance",
+        "language": "Language",
+        "session": "Session",
+        "theme": "Theme",
+        "theme_help": "Choose how the interface should be rendered.",
+        "theme_dark": "Dark",
+        "theme_light": "Light",
+        "theme_system": "System",
+        "sign_out": "Sign Out",
+        "actions_title": "Settings changes",
+        "actions_help": "Changes are only applied after you click Apply.",
+        "pending": "You have unapplied changes.",
+        "saved": "Settings saved.",
+        "next_title": "Continue configuring your operation",
+        "next_dashboard": "Review dashboard",
+        "next_tasks": "Update tasks",
+        "next_links": "Organize links"
     }
 }

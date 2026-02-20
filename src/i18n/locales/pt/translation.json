@@ -2,10 +2,13 @@
     "common": {
         "loading": "A carregar...",
         "save": "Guardar",
+        "apply": "Aplicar",
+        "default": "Default",
         "cancel": "Cancelar",
         "delete": "Apagar",
         "edit": "Editar",
-        "search": "Pesquisar"
+        "search": "Pesquisar",
+        "close": "Fechar"
     },
     "nav": {
         "dashboard": "Visão Geral",
@@ -19,5 +22,27 @@
         "greeting_morning": "Bom dia, {{name}}.",
         "greeting_afternoon": "Boa tarde, {{name}}.",
         "greeting_night": "Boa noite, {{name}}."
+    },
+    "settings": {
+        "title": "Definicoes",
+        "subtitle": "Ajusta idioma, aparencia e preferencias da tua conta.",
+        "profile": "Perfil",
+        "appearance": "Aparencia",
+        "language": "Idioma",
+        "session": "Sessao",
+        "theme": "Tema",
+        "theme_help": "Escolhe como o interface deve ser apresentado.",
+        "theme_dark": "Escuro",
+        "theme_light": "Claro",
+        "theme_system": "Sistema",
+        "sign_out": "Terminar Sessao",
+        "actions_title": "Alteracoes de definicoes",
+        "actions_help": "As alteracoes so sao aplicadas quando clicas em Aplicar.",
+        "pending": "Tens alteracoes por aplicar.",
+        "saved": "Definicoes guardadas.",
+        "next_title": "Continua a configuracao da tua operacao",
+        "next_dashboard": "Rever dashboard",
+        "next_tasks": "Atualizar tarefas",
+        "next_links": "Organizar links"
     }
 }
