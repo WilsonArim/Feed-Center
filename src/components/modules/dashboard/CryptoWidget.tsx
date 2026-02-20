@@ -3,15 +3,15 @@ import { formatCurrency } from '@/utils/format'
 import { TrendingUp, TrendingDown, Bitcoin } from 'lucide-react'
 import { BarChart, Bar, ResponsiveContainer, Cell } from 'recharts'
 
-const COLORS = ['#3b82f6', '#f59e0b', '#8b5cf6', '#10b981', '#ef4444', '#06b6d4']
+const COLORS = ['var(--color-accent)', 'var(--color-warning)', 'var(--color-secondary)', 'var(--color-success)', 'var(--color-danger)', '#06b6d4']
 
 export function CryptoWidget() {
     const { portfolio, isLoadingPortfolio } = useWeb3()
 
     if (isLoadingPortfolio) {
         return (
-            <div className="flex items-center justify-center h-full animate-pulse opacity-50">
-                <Bitcoin size={24} />
+            <div className="flex items-center justify-center h-full animate-pulse">
+                <Bitcoin size={24} className="text-[var(--color-text-muted)] opacity-40" />
             </div>
         )
     }
@@ -31,19 +31,22 @@ export function CryptoWidget() {
     return (
         <div className="flex flex-col h-full justify-between">
             <div>
-                <div className="text-xs font-medium text-white/50 uppercase tracking-wider mb-1">
+                <div className="text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider mb-1">
                     Portfolio
                 </div>
-                <div className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                <div className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)] flex items-center gap-2">
                     {formatCurrency(totalValue)}
-                    <span className={`text-xs px-1.5 py-0.5 rounded-full ${portfolioChange >= 0 ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'} flex items-center`}>
-                        {portfolioChange >= 0 ? <TrendingUp size={10} className="mr-1" /> : <TrendingDown size={10} className="mr-1" />}
+                    <span className={`text-xs px-2 py-0.5 rounded-lg font-medium flex items-center gap-1 ${
+                        portfolioChange >= 0
+                            ? 'bg-[var(--color-success)]/10 text-[var(--color-success)] border border-[var(--color-success)]/15'
+                            : 'bg-[var(--color-danger)]/10 text-[var(--color-danger)] border border-[var(--color-danger)]/15'
+                    }`}>
+                        {portfolioChange >= 0 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
                         {portfolioChange >= 0 ? '+' : ''}{portfolioChange.toFixed(2)}%
                     </span>
                 </div>
             </div>
 
-            {/* Asset allocation bars */}
             {barData.length > 0 && (
                 <div className="mt-3">
                     <div className="h-10 -mx-1">
@@ -57,10 +60,10 @@ export function CryptoWidget() {
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
-                    <div className="flex items-center gap-3 mt-1 flex-wrap">
+                    <div className="flex items-center gap-3 mt-1.5 flex-wrap">
                         {barData.map((d, i) => (
-                            <span key={d.name} className="flex items-center gap-1 text-[10px] text-white/50">
-                                <span className="w-2 h-2 rounded-full" style={{ background: COLORS[i % COLORS.length] }} />
+                            <span key={d.name} className="flex items-center gap-1.5 text-[10px] text-[var(--color-text-muted)]">
+                                <span className="w-2 h-2 rounded-sm" style={{ background: COLORS[i % COLORS.length] }} />
                                 {d.name} {d.pct.toFixed(0)}%
                             </span>
                         ))}

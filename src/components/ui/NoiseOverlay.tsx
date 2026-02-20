@@ -1,16 +1,9 @@
+/**
+ * NoiseOverlay
+ * CSS-only SVG noise filter overlay for texture.
+ * Uses the noise already applied via body::after in index.css.
+ * This component is kept for backward compatibility but defers to the CSS approach.
+ */
 export function NoiseOverlay() {
-    return (
-        <div className="fixed inset-0 pointer-events-none z-[9999] opacity-[0.03] mix-blend-overlay">
-            <svg className="w-full h-full">
-                <filter id="noiseFilter">
-                    <feTurbulence
-                        type="fractalNoise"
-                        baseFrequency="0.6"
-                        stitchTiles="stitch"
-                    />
-                </filter>
-                <rect width="100%" height="100%" filter="url(#noiseFilter)" />
-            </svg>
-        </div>
-    )
+  return null
 }

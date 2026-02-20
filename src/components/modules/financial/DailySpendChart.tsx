@@ -9,7 +9,6 @@ interface Props {
 export function DailySpendChart({ month }: Props) {
     const { data: entries = [] } = useEntries(month)
 
-    // Build daily spending
     const [year, mon] = month.split('-').map(Number)
     const daysInMonth = new Date(year!, mon!, 0).getDate()
     const today = new Date().getDate()
@@ -31,15 +30,14 @@ export function DailySpendChart({ month }: Props) {
     const avgDaily = data.reduce((a, d) => a + d.amount, 0) / Math.max(today, 1)
 
     return (
-        <div className="rounded-xl p-4"
-            style={{ background: 'var(--color-bg-glass)', border: '1px solid var(--color-border)' }}>
-            <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                    Gasto Diário
+        <div className="rounded-2xl p-5 bg-[var(--color-bg-secondary)] border border-[var(--color-border)]">
+            <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">
+                    Gasto Diario
                 </h3>
-                <span className="text-[10px] px-2 py-0.5 rounded-full"
-                    style={{ background: 'var(--color-bg-tertiary)', color: 'var(--color-text-muted)' }}>
-                    Média: {formatCurrency(avgDaily)}/dia
+                <span className="text-[10px] px-2.5 py-1 rounded-lg font-medium
+                    bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)] border border-[var(--color-border)]">
+                    Media: {formatCurrency(avgDaily)}/dia
                 </span>
             </div>
             <div className="h-32">
@@ -53,12 +51,18 @@ export function DailySpendChart({ month }: Props) {
                             interval={4}
                         />
                         <Tooltip
-                            contentStyle={{ background: 'var(--color-bg-primary)', border: '1px solid var(--color-border)', borderRadius: 8, fontSize: 12 }}
+                            contentStyle={{
+                                background: 'var(--color-bg-primary)',
+                                border: '1px solid var(--color-border)',
+                                borderRadius: 12,
+                                fontSize: 12,
+                                color: 'var(--color-text-primary)',
+                            }}
                             formatter={(value: number | undefined) => formatCurrency(value ?? 0)}
                             labelFormatter={(day) => `Dia ${day}`}
                         />
-                        <ReferenceLine y={avgDaily} stroke="#f59e0b" strokeDasharray="3 3" strokeOpacity={0.5} />
-                        <Bar dataKey="amount" radius={[2, 2, 0, 0]} fill="#ef4444" fillOpacity={0.6} />
+                        <ReferenceLine y={avgDaily} stroke="var(--color-warning)" strokeDasharray="3 3" strokeOpacity={0.5} />
+                        <Bar dataKey="amount" radius={[3, 3, 0, 0]} fill="var(--color-danger)" fillOpacity={0.6} />
                     </BarChart>
                 </ResponsiveContainer>
             </div>

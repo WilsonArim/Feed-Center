@@ -1,6 +1,8 @@
 import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { motion } from 'framer-motion'
 import { TaskCard } from './TaskCard'
+import { GripVertical } from 'lucide-react'
 import type { Todo, TodoStatus } from '@/types'
 
 interface KanbanColumnProps {
@@ -10,21 +12,31 @@ interface KanbanColumnProps {
     onEditTask: (todo: Todo) => void
 }
 
-const COLUMN_COLORS = {
-    todo: 'bg-zinc-500/10 border-zinc-500/20',
-    in_progress: 'bg-blue-500/10 border-blue-500/20',
-    done: 'bg-emerald-500/10 border-emerald-500/20',
+const COLUMN_STYLES: Record<TodoStatus, { dot: string; topBorder: string }> = {
+    todo: { dot: 'bg-[var(--text-secondary)]', topBorder: 'border-t-[rgba(255,255,255,0.20)]' },
+    in_progress: { dot: 'bg-blue-400', topBorder: 'border-t-blue-400' },
+    done: { dot: 'bg-green-400', topBorder: 'border-t-green-400' },
 }
 
 export function KanbanColumn({ id, title, todos, onEditTask }: KanbanColumnProps) {
-    const { setNodeRef } = useDroppable({ id })
+    const { setNodeRef, isOver } = useDroppable({ id })
+    const style = COLUMN_STYLES[id]
 
     return (
-        <div className="flex flex-col h-full min-w-[300px] w-full max-w-[350px]">
-            {/* Header */}
-            <div className={`p-3 mb-3 rounded-xl border flex items-center justify-between ${COLUMN_COLORS[id]}`}>
-                <h3 className="font-semibold text-sm uppercase tracking-wider">{title}</h3>
-                <span className="text-xs font-mono px-2 py-0.5 bg-black/20 rounded-md">
+        <motion.div
+            layout
+            className={`flex flex-col min-w-[280px] w-full max-w-[340px]
+                min-h-[calc(100vh-180px)] glass-card-static
+                border-t-4 ${style.topBorder} !rounded-t-none`}
+        >
+            {/* Column Header */}
+            <div className="flex items-center gap-3 px-4 py-3.5 border-b border-[var(--border-subtle)]">
+                <span className={`w-2 h-2 rounded-full ${style.dot}`} />
+                <h3 className="font-heading text-[13px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]">
+                    {title}
+                </h3>
+                <span className="ml-auto text-[10px] font-bold text-[var(--text-tertiary)]
+                    bg-[var(--bg-surface)] px-2 py-0.5 rounded-full tabular-nums">
                     {todos.length}
                 </span>
             </div>
@@ -32,22 +44,24 @@ export function KanbanColumn({ id, title, todos, onEditTask }: KanbanColumnProps
             {/* Droppable Area */}
             <div
                 ref={setNodeRef}
-                className="flex-1 flex flex-col gap-3 p-1 overflow-y-auto"
+                className={`flex-1 flex flex-col gap-3 p-3 overflow-y-auto transition-colors duration-200 ${
+                    isOver ? 'bg-[var(--accent-muted)] ring-1 ring-[var(--accent)]/20 ring-inset' : ''
+                }`}
             >
-                <SortableContext
-                    id={id}
-                    items={todos.map((t) => t.id)}
-                    strategy={verticalListSortingStrategy}
-                >
-                    {todos.map((todo) => (
-                        <TaskCard
-                            key={todo.id}
-                            todo={todo}
-                            onEdit={onEditTask}
-                        />
+                <SortableContext id={id} items={todos.map(t => t.id)} strategy={verticalListSortingStrategy}>
+                    {todos.map(todo => (
+                        <TaskCard key={todo.id} todo={todo} onEdit={onEditTask} />
                     ))}
                 </SortableContext>
+
+                {todos.length === 0 && (
+                    <div className="flex-1 flex flex-col items-center justify-center min-h-[120px]
+                        border border-dashed border-[var(--border-default)] rounded-xl gap-2">
+                        <GripVertical size={18} className="text-[var(--text-tertiary)] opacity-40" />
+                        <p className="text-xs text-[var(--text-tertiary)]">Arrastar tarefas aqui</p>
+                    </div>
+                )}
             </div>
-        </div>
+        </motion.div>
     )
 }

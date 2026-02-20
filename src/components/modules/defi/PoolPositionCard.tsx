@@ -150,7 +150,7 @@ export function PoolPositionCard({ position, onClose, onDelete, index }: Props) 
 
             {/* Delete confirmation alert */}
             {showDeleteAlert && (
-                <div className="absolute inset-0 bg-[var(--surface-critical)] rounded-[var(--card-radius)] flex flex-col items-center justify-center p-4 z-10">
+                <div className="absolute inset-0 bg-[var(--danger-soft)] rounded-2xl flex flex-col items-center justify-center p-4 z-10">
                     <AlertTriangle size={24} className="text-red-400 mb-2" />
                     <p className="text-sm font-bold text-[var(--color-text-primary)] mb-1">Eliminar posição?</p>
                     <p className="text-[11px] text-red-400/80 text-center mb-4">

@@ -57,57 +57,63 @@ export function CryptoDeFiPage() {
     }
 
     return (
-        <div className="p-6 pt-20 w-full space-y-6">
-            {/* Header */}
+        <div className="w-full flex flex-col gap-6 pb-12">
             <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
+                className="flex flex-col gap-6"
             >
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                {/* Header */}
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h1 className="text-h1 mb-1">Ledger DeFi</h1>
+                        <h1 className="text-h1 text-2xl md:text-3xl mb-1">
+                            Ledger DeFi
+                        </h1>
                         <p className="text-sm text-[var(--color-text-muted)]">
-                            Pools, Stake e Borrow/Lend — acompanhe todas as suas posições DeFi.
+                            Pools, Stake e Borrow/Lend -- acompanhe todas as suas posicoes DeFi.
                         </p>
                     </div>
-                    <button onClick={handleOpenModal} className="btn btn-primary">
+                    <button
+                        onClick={handleOpenModal}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-[var(--color-accent)] text-[var(--color-bg-primary)] hover:opacity-90 transition-opacity"
+                    >
                         <Plus size={16} /> Adicionar
                     </button>
                 </div>
 
                 {/* Tabs */}
-                <div className="flex gap-1 p-1 rounded-lg bg-white/5 mb-6">
+                <div className="flex gap-1 p-1 rounded-xl bg-[var(--color-bg-tertiary)] border border-[var(--color-border)]">
                     {TABS.map(t => (
                         <button
                             key={t.id}
                             onClick={() => setTab(t.id)}
-                            className={`flex items-center gap-2 flex-1 py-2.5 rounded-md text-sm font-medium transition-all cursor-pointer
-                                ${tab === t.id
-                                    ? 'bg-[var(--color-accent)] text-white shadow-md'
-                                    : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-white/5'
-                                }`}
+                            className={`flex items-center gap-2 flex-1 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer justify-center ${
+                                tab === t.id
+                                    ? 'bg-[var(--color-accent)] text-[var(--color-bg-primary)] shadow-md'
+                                    : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'
+                            }`}
                         >
-                            <t.icon size={14} className="mx-auto md:mx-0" />
+                            <t.icon size={14} />
                             <span className="hidden md:inline">{t.label}</span>
                         </button>
                     ))}
                 </div>
 
                 {/* Summary stats */}
-                <div className="grid grid-cols-3 gap-4 mb-6">
-                    <div className="card-info p-4 text-center">
-                        <p className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-wider mb-1">Posições Ativas</p>
+                <div className="grid grid-cols-3 gap-4">
+                    <div className="p-4 text-center rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)]">
+                        <p className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-wider mb-1">Posicoes Ativas</p>
                         <p className="text-xl font-bold text-[var(--color-text-primary)]">{active.length}</p>
                     </div>
-                    <div className="card-info p-4 text-center">
+                    <div className="p-4 text-center rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)]">
                         <p className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-wider mb-1">Valor Total (Entrada)</p>
                         <p className="text-xl font-bold font-mono text-[var(--color-text-primary)]">
                             ${totalValue.toFixed(2)}
                         </p>
                     </div>
-                    <div className="card-info p-4 text-center">
-                        <p className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-wider mb-1">Histórico</p>
+                    <div className="p-4 text-center rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)]">
+                        <p className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-wider mb-1">Historico</p>
                         <p className="text-xl font-bold text-[var(--color-text-primary)]">{closed.length}</p>
                     </div>
                 </div>
@@ -115,15 +121,15 @@ export function CryptoDeFiPage() {
                 {/* Loading */}
                 {positions.isLoading && (
                     <div className="flex justify-center py-12">
-                        <Loader2 size={24} className="animate-spin opacity-30" />
+                        <Loader2 size={24} className="animate-spin text-[var(--color-accent)]" />
                     </div>
                 )}
 
                 {/* Active positions */}
                 {!positions.isLoading && active.length > 0 && (
-                    <div className="space-y-3 mb-6">
-                        <h2 className="text-xs font-bold uppercase tracking-widest text-[var(--color-text-muted)]">
-                            Posições Ativas
+                    <div className="flex flex-col gap-3">
+                        <h2 className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)]">
+                            Posicoes Ativas
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {active.map((pos, i) => (
@@ -139,11 +145,11 @@ export function CryptoDeFiPage() {
                     </div>
                 )}
 
-                {/* Closed positions (history) */}
+                {/* Closed positions */}
                 {!positions.isLoading && closed.length > 0 && (
-                    <div className="space-y-3">
-                        <h2 className="text-xs font-bold uppercase tracking-widest text-[var(--color-text-muted)]">
-                            Histórico
+                    <div className="flex flex-col gap-3">
+                        <h2 className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)]">
+                            Historico
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {closed.map((pos, i) => (
@@ -162,18 +168,20 @@ export function CryptoDeFiPage() {
                 {/* Empty state */}
                 {!positions.isLoading && filtered.length === 0 && (
                     <div className="text-center py-16">
-                        <tabConfig.icon size={40} className="mx-auto opacity-10 mb-4" />
+                        <tabConfig.icon size={40} className="mx-auto text-[var(--color-text-muted)] opacity-20 mb-4" />
                         <p className="text-sm text-[var(--color-text-muted)] mb-4">
-                            Sem posições de {tabConfig.label.toLowerCase()} registadas.
+                            Sem posicoes de {tabConfig.label.toLowerCase()} registadas.
                         </p>
-                        <button onClick={handleOpenModal} className="btn btn-secondary">
-                            <Plus size={14} /> Adicionar primeira posição
+                        <button
+                            onClick={handleOpenModal}
+                            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-accent)]/30 transition-colors"
+                        >
+                            <Plus size={14} /> Adicionar primeira posicao
                         </button>
                     </div>
                 )}
             </motion.div>
 
-            {/* Modals */}
             <AddPoolModal
                 isOpen={showPoolModal}
                 onClose={() => setShowPoolModal(false)}

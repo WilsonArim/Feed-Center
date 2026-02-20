@@ -11,17 +11,14 @@ import { NewsStatsBar } from '@/components/modules/news/NewsStatsBar'
 const PAGE_SIZE = 20
 
 export function NewsPage() {
-    // Filters
     const [search, setSearch] = useState('')
     const [activeTopic, setActiveTopic] = useState<string | null>(null)
     const [sort, setSort] = useState<NewsSortMode>('score')
     const [page, setPage] = useState(1)
 
-    // Local state
     const [bookmarks, setBookmarks] = useState(() => getBookmarks())
     const [hiddenSources, setHiddenSources] = useState(() => getHiddenSources())
 
-    // Data
     const { data: topStories = [], isLoading: topLoading } = useTopStories(5)
     const { data: newsList, isLoading: listLoading } = useNewsList({
         topic: activeTopic || undefined,
@@ -32,13 +29,11 @@ export function NewsPage() {
     })
     const { data: topicCounts } = useNewsTopics()
 
-    // Filter out hidden sources
     const filteredItems = useMemo(() => {
         const items = newsList?.items || []
         return items.filter(item => !hiddenSources.has(item.source_name))
     }, [newsList, hiddenSources])
 
-    // Group by priority
     const grouped = useMemo(() => {
         const groups = { high: [] as typeof filteredItems, medium: [] as typeof filteredItems, low: [] as typeof filteredItems }
         for (const item of filteredItems) {
@@ -58,40 +53,35 @@ export function NewsPage() {
     const totalPages = newsList?.totalPages || 1
 
     return (
-        <div className="min-h-screen pt-24 px-4 md:px-6 pb-20">
+        <div className="pb-12">
             <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="w-full"
+                className="w-full flex flex-col gap-6"
             >
                 {/* Header */}
-                <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-                        style={{ background: 'var(--color-bg-glass)', border: '1px solid var(--color-border)' }}>
-                        <Newspaper size={18} style={{ color: 'var(--color-accent)' }} />
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[var(--color-surface)] border border-[var(--color-border)]">
+                        <Newspaper size={18} className="text-[var(--color-accent)]" />
                     </div>
                     <div>
-                        <h1 className="text-2xl md:text-3xl font-bold tracking-tight"
-                            style={{ color: 'var(--color-text-primary)' }}>
-                            Notícias
+                        <h1 className="text-h1 text-2xl md:text-3xl">
+                            Noticias
                         </h1>
-                        <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                            Curadoria automática por Buggy OpenClaw
+                        <p className="text-xs text-[var(--color-text-muted)]">
+                            Curadoria automatica por Buggy OpenClaw
                         </p>
                     </div>
                 </div>
 
-                {/* Stats Bar */}
                 <NewsStatsBar />
 
-                {/* Top Stories Carousel */}
                 <TopStoriesCarousel
                     items={topStories.filter(s => !hiddenSources.has(s.source_name))}
                     isLoading={topLoading}
                 />
 
-                {/* Filters */}
                 <FiltersBar
                     search={search}
                     onSearchChange={v => { setSearch(v); setPage(1) }}
@@ -109,39 +99,37 @@ export function NewsPage() {
                     </div>
                 ) : filteredItems.length === 0 ? (
                     <div className="text-center py-16">
-                        <Newspaper size={40} className="mx-auto mb-4 opacity-20" />
-                        <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-                            {search ? `Sem resultados para "${search}"` : 'Sem notícias de momento. O OpenClaw irá trazer novidades.'}
+                        <Newspaper size={40} className="mx-auto mb-4 text-[var(--color-text-muted)] opacity-20" />
+                        <p className="text-sm text-[var(--color-text-muted)]">
+                            {search ? `Sem resultados para "${search}"` : 'Sem noticias de momento. O OpenClaw ira trazer novidades.'}
                         </p>
                     </div>
                 ) : (
-                    <div className="space-y-8">
-                        {/* High priority */}
+                    <div className="flex flex-col gap-8">
                         {grouped.high.length > 0 && (
                             <PrioritySection
-                                label="🔴 Alta Prioridade"
+                                label="Alta Prioridade"
+                                dotColor="bg-rose-500"
                                 items={grouped.high}
                                 bookmarks={bookmarks}
                                 onBookmark={handleBookmark}
                                 onHide={handleHide}
                             />
                         )}
-
-                        {/* Medium priority */}
                         {grouped.medium.length > 0 && (
                             <PrioritySection
-                                label="🟡 Média"
+                                label="Media"
+                                dotColor="bg-amber-500"
                                 items={grouped.medium}
                                 bookmarks={bookmarks}
                                 onBookmark={handleBookmark}
                                 onHide={handleHide}
                             />
                         )}
-
-                        {/* Low priority */}
                         {grouped.low.length > 0 && (
                             <PrioritySection
-                                label="🔵 Baixa"
+                                label="Baixa"
+                                dotColor="bg-blue-500"
                                 items={grouped.low}
                                 bookmarks={bookmarks}
                                 onBookmark={handleBookmark}
@@ -154,25 +142,23 @@ export function NewsPage() {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                    <div className="flex items-center justify-center gap-3 mt-8 pt-6 border-t" style={{ borderColor: 'var(--color-border)' }}>
+                    <div className="flex items-center justify-center gap-3 mt-4 pt-6 border-t border-[var(--color-border)]">
                         <button
                             onClick={() => setPage(p => Math.max(1, p - 1))}
                             disabled={page <= 1}
-                            className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm transition-colors disabled:opacity-20 cursor-pointer hover:bg-white/5"
-                            style={{ color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)' }}
+                            className="flex items-center gap-1 px-3 py-2 rounded-xl text-sm transition-colors disabled:opacity-20 cursor-pointer hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] border border-[var(--color-border)]"
                         >
                             <ChevronLeft size={14} /> Anterior
                         </button>
-                        <span className="text-xs font-mono" style={{ color: 'var(--color-text-muted)' }}>
+                        <span className="text-xs font-mono text-[var(--color-text-muted)]">
                             {page} / {totalPages}
                         </span>
                         <button
                             onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                             disabled={page >= totalPages}
-                            className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm transition-colors disabled:opacity-20 cursor-pointer hover:bg-white/5"
-                            style={{ color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)' }}
+                            className="flex items-center gap-1 px-3 py-2 rounded-xl text-sm transition-colors disabled:opacity-20 cursor-pointer hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] border border-[var(--color-border)]"
                         >
-                            Próximo <ChevronRight size={14} />
+                            Proximo <ChevronRight size={14} />
                         </button>
                     </div>
                 )}
@@ -181,9 +167,9 @@ export function NewsPage() {
     )
 }
 
-// ── Priority Section ──
-function PrioritySection({ label, items, bookmarks, onBookmark, onHide, compact }: {
+function PrioritySection({ label, dotColor, items, bookmarks, onBookmark, onHide, compact }: {
     label: string
+    dotColor: string
     items: { id: string; source_name: string; score: number }[]
     bookmarks: Set<string>
     onBookmark: (id: string) => void
@@ -192,11 +178,10 @@ function PrioritySection({ label, items, bookmarks, onBookmark, onHide, compact 
 }) {
     return (
         <section>
-            <h3 className="text-sm font-bold mb-3 flex items-center gap-2"
-                style={{ color: 'var(--color-text-primary)' }}>
+            <h3 className="text-sm font-bold mb-3 flex items-center gap-2 text-[var(--color-text-primary)]">
+                <span className={`w-2 h-2 rounded-full ${dotColor}`} />
                 {label}
-                <span className="text-[10px] font-normal px-1.5 py-0.5 rounded-full"
-                    style={{ background: 'var(--color-bg-glass)', color: 'var(--color-text-muted)' }}>
+                <span className="text-[10px] font-normal px-1.5 py-0.5 rounded-full bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)]">
                     {items.length}
                 </span>
             </h3>

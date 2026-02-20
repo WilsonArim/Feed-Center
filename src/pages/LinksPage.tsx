@@ -51,7 +51,7 @@ export function LinksPage() {
     }
 
     return (
-        <div className="min-h-screen pt-24 px-6 pb-20">
+        <div className="pb-12">
             <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -61,13 +61,10 @@ export function LinksPage() {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <div>
-                        <h1
-                            className="text-4xl font-bold tracking-tight mb-1"
-                            style={{ color: 'var(--color-text-primary)' }}
-                        >
+                        <h1 className="text-h1 text-2xl md:text-3xl mb-1">
                             Gestor de Links
                         </h1>
-                        <p className="text-base" style={{ color: 'var(--color-text-secondary)' }}>
+                        <p className="text-sm text-[var(--color-text-muted)]">
                             {links.length} link{links.length !== 1 ? 's' : ''} guardado{links.length !== 1 ? 's' : ''}
                         </p>
                     </div>
@@ -84,22 +81,14 @@ export function LinksPage() {
                 <div className="relative mb-6">
                     <Search
                         size={18}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"
-                        style={{ color: 'var(--color-text-muted)' }}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--color-text-muted)]"
                     />
                     <input
                         type="text"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Pesquisar links por título, URL ou descrição..."
-                        className="w-full pl-11 pr-4 py-3 rounded-[var(--radius-lg)] text-sm
-                            outline-none transition-all duration-200
-                            focus:ring-2 focus:ring-[var(--color-accent)]/40"
-                        style={{
-                            background: 'var(--color-bg-glass)',
-                            color: 'var(--color-text-primary)',
-                            border: '1px solid var(--color-border)',
-                        }}
+                        placeholder="Pesquisar links por titulo, URL ou descricao..."
+                        className="w-full pl-11 pr-4 py-3 rounded-xl text-sm bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] outline-none transition-all duration-200 focus:ring-2 focus:ring-[var(--color-accent)]/30 focus:border-[var(--color-accent)]/50"
                     />
                 </div>
 
@@ -108,12 +97,11 @@ export function LinksPage() {
                     <div className="flex flex-wrap gap-2 mb-8">
                         <button
                             onClick={() => setActiveTag(null)}
-                            className="text-xs px-3 py-1.5 rounded-full transition-all duration-200"
-                            style={{
-                                background: !activeTag ? 'var(--color-accent)' : 'var(--color-bg-glass)',
-                                color: !activeTag ? '#fff' : 'var(--color-text-secondary)',
-                                border: '1px solid var(--color-border)',
-                            }}
+                            className={`text-xs px-3 py-1.5 rounded-full transition-all duration-200 border ${
+                                !activeTag
+                                    ? 'bg-[var(--color-accent)] text-[var(--color-bg-primary)] border-[var(--color-accent)]'
+                                    : 'bg-[var(--color-surface)] text-[var(--color-text-secondary)] border-[var(--color-border)] hover:border-[var(--color-accent)]/30'
+                            }`}
                         >
                             Todos
                         </button>
@@ -121,12 +109,11 @@ export function LinksPage() {
                             <button
                                 key={tag}
                                 onClick={() => setActiveTag(activeTag === tag ? null : tag)}
-                                className="text-xs px-3 py-1.5 rounded-full transition-all duration-200"
-                                style={{
-                                    background: activeTag === tag ? 'var(--color-accent)' : 'var(--color-bg-glass)',
-                                    color: activeTag === tag ? '#fff' : 'var(--color-text-secondary)',
-                                    border: '1px solid var(--color-border)',
-                                }}
+                                className={`text-xs px-3 py-1.5 rounded-full transition-all duration-200 border ${
+                                    activeTag === tag
+                                        ? 'bg-[var(--color-accent)] text-[var(--color-bg-primary)] border-[var(--color-accent)]'
+                                        : 'bg-[var(--color-surface)] text-[var(--color-text-secondary)] border-[var(--color-border)] hover:border-[var(--color-accent)]/30'
+                                }`}
                             >
                                 {tag}
                             </button>
@@ -137,34 +124,24 @@ export function LinksPage() {
                 {/* Links Grid */}
                 {isLoading ? (
                     <div className="flex items-center justify-center py-20">
-                        <Loader2 size={24} className="animate-spin" style={{ color: 'var(--color-accent)' }} />
+                        <Loader2 size={24} className="animate-spin text-[var(--color-accent)]" />
                     </div>
                 ) : links.length === 0 ? (
-                    /* Empty State */
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         className="flex flex-col items-center justify-center py-20 text-center"
                     >
-                        <div
-                            className="w-20 h-20 rounded-full flex items-center justify-center mb-6"
-                            style={{ background: 'var(--color-bg-glass)', border: '1px solid var(--color-border)' }}
-                        >
-                            <Link2 size={32} style={{ color: 'var(--color-text-muted)' }} />
+                        <div className="w-20 h-20 rounded-2xl flex items-center justify-center mb-6 bg-[var(--color-surface)] border border-[var(--color-border)]">
+                            <Link2 size={32} className="text-[var(--color-text-muted)]" />
                         </div>
-                        <h3
-                            className="text-lg font-semibold mb-2"
-                            style={{ color: 'var(--color-text-primary)' }}
-                        >
+                        <h3 className="text-lg font-semibold mb-2 text-[var(--color-text-primary)]">
                             {search ? 'Nenhum resultado' : 'Nenhum link guardado'}
                         </h3>
-                        <p
-                            className="text-sm mb-6 max-w-sm"
-                            style={{ color: 'var(--color-text-muted)' }}
-                        >
+                        <p className="text-sm mb-6 max-w-sm text-[var(--color-text-muted)]">
                             {search
-                                ? `Não encontrámos links para "${search}".`
-                                : 'Começa por adicionar o teu primeiro link. Podes organizar com tags e notas.'}
+                                ? `Nao encontramos links para "${search}".`
+                                : 'Comeca por adicionar o teu primeiro link. Podes organizar com tags e notas.'}
                         </p>
                         {!search && (
                             <StardustButton onClick={openNewModal} size="sm" icon={<Plus size={16} />}>
@@ -190,7 +167,6 @@ export function LinksPage() {
                 )}
             </motion.div>
 
-            {/* Add/Edit Modal */}
             <AddLinkModal
                 open={modalOpen}
                 onClose={() => { setModalOpen(false); setEditingLink(null) }}

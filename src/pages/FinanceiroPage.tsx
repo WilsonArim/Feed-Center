@@ -39,7 +39,6 @@ export function FinanceiroPage() {
     const [editingEntry, setEditingEntry] = useState<FinancialEntry | null>(null)
     const [categoryFilter, setCategoryFilter] = useState<string | undefined>()
 
-    // Todo Integration State
     const [todoModalOpen, setTodoModalOpen] = useState(false)
     const [todoInitialData, setTodoInitialData] = useState<{ title: string; description: string } | undefined>()
 
@@ -86,21 +85,20 @@ export function FinanceiroPage() {
         })
     }
 
-    // Handle the scanned receipt data
     const handleScanConfirm = async (data: { amount: number; merchant: string; date: string; category: string }) => {
         await createEntry.mutateAsync({
-            type: 'expense', // Receipts are usually expenses
+            type: 'expense',
             amount: data.amount,
             category: data.category,
-            description: data.merchant, // Use merchant as description
+            description: data.merchant,
             date: data.date,
         })
     }
 
     const handleAddToTodo = (data: { amount: number; merchant: string; date: string; category: string }) => {
         setTodoInitialData({
-            title: `${data.merchant} - ${data.amount}€`,
-            description: `Despesa pendente.\nData: ${data.date}\nCategoria: ${data.category}\nValor Original: ${data.amount}€`
+            title: `${data.merchant} - ${data.amount}`,
+            description: `Despesa pendente.\nData: ${data.date}\nCategoria: ${data.category}\nValor Original: ${data.amount}`
         })
         setTodoModalOpen(true)
     }
@@ -115,25 +113,30 @@ export function FinanceiroPage() {
     }
 
     return (
-        <div className="p-6 pt-20 w-full space-y-6">
+        <div className="w-full space-y-6 pb-12">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                    <h1
-                        className="text-2xl font-bold tracking-tight"
-                        style={{ color: 'var(--color-text-primary)' }}
+                    <motion.h1
+                        initial={{ opacity: 0, x: -12 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="text-h1 text-2xl md:text-3xl"
                     >
                         Controlo Financeiro
-                    </h1>
-                    <p className="text-sm mt-1" style={{ color: 'var(--color-text-muted)' }}>
-                        Controla os teus gastos e rendimentos com inteligência
-                    </p>
+                    </motion.h1>
+                    <motion.p
+                        initial={{ opacity: 0, x: -12 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.05 }}
+                        className="text-sm mt-1 text-[var(--text-secondary)]"
+                    >
+                        Controla os teus gastos e rendimentos com inteligencia
+                    </motion.p>
                 </div>
 
                 <div className="flex items-center gap-3">
                     <MonthPicker month={month} onChange={setMonth} />
 
-                    {/* Scan Button */}
                     <StardustButton
                         size="sm"
                         variant="ghost"
@@ -154,22 +157,17 @@ export function FinanceiroPage() {
             </div>
 
             {/* Smart Entry Input */}
-            <div className="mb-6">
-                <SmartEntryInput onSubmit={handleSmartEntry} isLoading={createEntry.isPending} />
-            </div>
+            <SmartEntryInput onSubmit={handleSmartEntry} isLoading={createEntry.isPending} />
 
-            {/* Summary Cards (Live Cards) */}
-            <div className="mb-6">
-                <SummaryCards
-                    summary={summary.data}
-                    affordability={affordability.data}
-                    isLoading={summary.isLoading}
-                />
-            </div>
+            {/* Summary Cards */}
+            <SummaryCards
+                summary={summary.data}
+                affordability={affordability.data}
+                isLoading={summary.isLoading}
+            />
 
             {/* Body: Chart + Entries */}
             <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6">
-                {/* Chart */}
                 <div>
                     <CategoryChart
                         breakdown={breakdown.data}
@@ -178,37 +176,34 @@ export function FinanceiroPage() {
                     />
                 </div>
 
-                {/* Entries */}
-                <div className="glass rounded-[var(--radius-lg)]">
+                <div className="glass-card-static overflow-hidden">
                     {/* List header */}
-                    <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--color-border)' }}>
+                    <div className="flex items-center justify-between px-5 py-3.5 border-b border-[var(--color-border)]">
                         <div className="flex items-center gap-2">
-                            <h3 className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                            <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">
                                 Movimentos
                             </h3>
                             {categoryFilter && (
                                 <button
                                     onClick={() => setCategoryFilter(undefined)}
-                                    className="text-xs px-2 py-0.5 rounded-full cursor-pointer"
-                                    style={{
-                                        background: 'var(--color-accent-soft)',
-                                        color: 'var(--color-accent)',
-                                    }}
+                                    className="text-xs px-2.5 py-0.5 rounded-lg cursor-pointer
+                                        bg-[var(--color-accent)]/10 text-[var(--color-accent)] border border-[var(--color-accent)]/15
+                                        hover:bg-[var(--color-accent)]/15 transition-colors"
                                 >
-                                    {categoryFilter} ✕
+                                    {categoryFilter} x
                                 </button>
                             )}
                         </div>
-                        <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                        <span className="text-xs text-[var(--color-text-muted)]">
                             {entries.data?.length ?? 0} registos
                         </span>
                     </div>
 
                     {/* List */}
                     {entries.isLoading ? (
-                        <div className="p-8 space-y-3">
+                        <div className="p-5 space-y-3">
                             {[...Array(4)].map((_, i) => (
-                                <div key={i} className="h-14 rounded-[var(--radius-md)] bg-white/5 animate-pulse" />
+                                <div key={i} className="h-14 rounded-xl bg-[var(--color-bg-tertiary)] animate-pulse" />
                             ))}
                         </div>
                     ) : entries.data && entries.data.length > 0 ? (
@@ -230,9 +225,11 @@ export function FinanceiroPage() {
                             animate={{ opacity: 1 }}
                             className="flex flex-col items-center justify-center py-16 gap-4"
                         >
-                            <Wallet size={40} style={{ color: 'var(--color-text-muted)' }} />
-                            <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-                                Sem movimentos este mês
+                            <div className="w-16 h-16 rounded-2xl bg-[var(--color-bg-tertiary)] flex items-center justify-center">
+                                <Wallet size={28} className="text-[var(--color-text-muted)]" />
+                            </div>
+                            <p className="text-sm text-[var(--color-text-muted)]">
+                                Sem movimentos este mes
                             </p>
                             <div className="flex gap-2">
                                 <StardustButton
@@ -257,17 +254,15 @@ export function FinanceiroPage() {
             </div>
 
             {/* Charts Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <MonthlyTrendChart currentMonth={month} />
                 <DailySpendChart month={month} />
             </div>
 
             {/* Pockets Grid */}
-            <div className="mt-8">
-                <PocketsGrid />
-            </div>
+            <PocketsGrid />
 
-            {/* Manual Entry Modal */}
+            {/* Modals */}
             <AddEntryModal
                 isOpen={modalOpen}
                 onClose={() => { setModalOpen(false); setEditingEntry(null) }}
@@ -276,7 +271,6 @@ export function FinanceiroPage() {
                 editingEntry={editingEntry}
             />
 
-            {/* Scan Receipt Modal */}
             <ScanReceiptModal
                 open={scanModalOpen}
                 onClose={() => setScanModalOpen(false)}
@@ -284,7 +278,6 @@ export function FinanceiroPage() {
                 onAddToTodo={handleAddToTodo}
             />
 
-            {/* Add Todo Modal (Integration) */}
             <AddTodoModal
                 isOpen={todoModalOpen}
                 onClose={() => setTodoModalOpen(false)}

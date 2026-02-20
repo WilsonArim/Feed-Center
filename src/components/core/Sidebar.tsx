@@ -1,140 +1,92 @@
 import { NavLink } from 'react-router'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-    LayoutDashboard,
-    Wallet,
-    CheckSquare,
-    Link2,
-    Bitcoin,
-    Newspaper,
-    Settings,
-    ChevronLeft,
-    ChevronDown,
-    LogOut,
-    Pin,
-    HelpCircle,
-    type LucideIcon,
+    LayoutDashboard, Wallet, CheckSquare, Link2, Bitcoin,
+    Newspaper, Settings, LogOut, ChevronDown, type LucideIcon,
 } from 'lucide-react'
 import { useState } from 'react'
-import { useUIStore } from '@/stores/uiStore'
 import { useAuth } from './AuthProvider'
+import { ThemeToggle } from '../ui/ThemeToggle'
 
 interface NavItem {
-    id: string
-    to: string
-    icon: LucideIcon
-    label: string
-    children?: { to: string; label: string }[]
+    id: string; to: string; icon: LucideIcon; label: string
+    section?: string; children?: { to: string; label: string }[]
 }
 
 const navItems: NavItem[] = [
-    { id: 'dashboard', to: '/', icon: LayoutDashboard, label: 'Dashboard' },
+    { id: 'dashboard', to: '/', icon: LayoutDashboard, label: 'Dashboard', section: 'MENU' },
     { id: 'financeiro', to: '/financeiro', icon: Wallet, label: 'Financeiro' },
     { id: 'todo', to: '/todo', icon: CheckSquare, label: 'To-Do' },
     { id: 'links', to: '/links', icon: Link2, label: 'Links' },
-    { id: 'news', to: '/news', icon: Newspaper, label: 'Notícias' },
-    {
-        id: 'crypto',
-        to: '/crypto',
-        icon: Bitcoin,
-        label: 'Crypto',
-        children: [
-            { to: '/crypto', label: 'Portfolio' },
-            { to: '/crypto/defi', label: 'DeFi' },
-        ],
-    },
+    { id: 'news', to: '/news', icon: Newspaper, label: 'Noticias' },
+    { id: 'crypto', to: '/crypto', icon: Bitcoin, label: 'Crypto',
+        children: [{ to: '/crypto', label: 'Portfolio' }, { to: '/crypto/defi', label: 'DeFi' }] },
 ]
 
-const bottomItems: NavItem[] = [
-    { id: 'settings', to: '/settings', icon: Settings, label: 'Definições' },
+const systemItems: NavItem[] = [
+    { id: 'settings', to: '/settings', icon: Settings, label: 'Definicoes', section: 'SISTEMA' },
 ]
 
-function SidebarItem({ item, isOpen }: { item: NavItem; isOpen: boolean }) {
-    const { pinnedItems, togglePin } = useUIStore()
+function SidebarLink({ item, expanded }: { item: NavItem; expanded: boolean }) {
     const [subOpen, setSubOpen] = useState(false)
-    const isPinned = pinnedItems.includes(item.id)
     const hasChildren = item.children && item.children.length > 0
 
     return (
-        <div className="group">
-            <div className="relative flex items-center">
-                <NavLink
-                    to={item.to}
-                    end={item.to === '/' || hasChildren}
-                    onClick={(e) => {
-                        if (hasChildren && isOpen) {
-                            e.preventDefault()
-                            setSubOpen(!subOpen)
-                        }
-                    }}
-                    className={({ isActive }) =>
-                        `relative flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-md)] transition-all duration-[var(--motion-normal)] flex-1 ${isActive
-                            ? 'border-l-2 border-[var(--color-accent)] bg-[var(--color-sidebar-active)] text-[var(--color-accent)] pl-[10px]'
-                            : 'border-l-2 border-transparent text-[var(--color-text-secondary)] hover:bg-[var(--color-accent-soft)] hover:text-[var(--color-text-primary)] pl-[10px]'
-                        }`
-                    }
-                >
-                    <item.icon size={20} className="shrink-0" />
-                    <AnimatePresence mode="wait">
-                        {isOpen && (
-                            <motion.span
-                                initial={{ opacity: 0, width: 0 }}
-                                animate={{ opacity: 1, width: 'auto' }}
-                                exit={{ opacity: 0, width: 0 }}
-                                className="text-sm font-medium whitespace-nowrap overflow-hidden flex-1"
-                            >
-                                {item.label}
-                            </motion.span>
+        <div>
+            <NavLink
+                to={item.to}
+                end={item.to === '/' || hasChildren}
+                onClick={(e) => { if (hasChildren && expanded) { e.preventDefault(); setSubOpen(!subOpen) } }}
+                className={({ isActive }) =>
+                    `relative flex items-center gap-3 h-10 rounded-xl transition-all duration-200 group/link ${
+                        expanded ? 'px-3' : 'justify-center px-0'
+                    } ${isActive
+                        ? 'bg-[var(--accent-muted)] text-[var(--accent)]'
+                        : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]'
+                    }`
+                }
+            >
+                {({ isActive }) => (
+                    <>
+                        {/* Active left border */}
+                        {isActive && (
+                            <motion.div
+                                layoutId="sidebar-indicator"
+                                className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-[var(--accent)]"
+                                transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                            />
                         )}
-                    </AnimatePresence>
-
-                    {/* Expand arrow for sub-menus */}
-                    {hasChildren && isOpen && (
-                        <motion.div animate={{ rotate: subOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                            <ChevronDown size={14} className="text-[var(--color-text-muted)]" />
-                        </motion.div>
-                    )}
-                </NavLink>
-
-                {/* Pin button (visible on hover when sidebar is open) */}
-                {isOpen && (
-                    <button
-                        onClick={() => togglePin(item.id)}
-                        className={`absolute right-1 p-1 rounded-[var(--radius-sm)] transition-all cursor-pointer
-                            ${isPinned
-                                ? 'opacity-100 text-[var(--color-accent)]'
-                                : 'opacity-0 group-hover:opacity-100 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]'
-                            }`}
-                        aria-label={isPinned ? 'Unpin' : 'Pin'}
-                    >
-                        <Pin size={12} className={isPinned ? 'fill-current' : ''} />
-                    </button>
+                        <item.icon size={20} className="shrink-0" />
+                        {expanded && (
+                            <span className="text-sm font-medium whitespace-nowrap flex-1">{item.label}</span>
+                        )}
+                        {hasChildren && expanded && (
+                            <motion.div animate={{ rotate: subOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                                <ChevronDown size={14} className="text-[var(--text-tertiary)]" />
+                            </motion.div>
+                        )}
+                    </>
                 )}
-            </div>
+            </NavLink>
 
-            {/* Sub-menu */}
             <AnimatePresence>
-                {hasChildren && subOpen && isOpen && (
+                {hasChildren && subOpen && expanded && (
                     <motion.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="overflow-hidden ml-8"
+                        className="overflow-hidden ml-8 mt-0.5"
                     >
-                        {item.children!.map((child) => (
-                            <NavLink
-                                key={child.to}
-                                to={child.to}
-                                end
+                        {item.children!.map(c => (
+                            <NavLink key={c.to} to={c.to} end
                                 className={({ isActive }) =>
-                                    `block px-3 py-1.5 text-sm rounded-[var(--radius-md)] transition-colors ${isActive
-                                        ? 'text-[var(--color-accent)]'
-                                        : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]'
+                                    `block px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                                        isActive ? 'text-[var(--accent)] bg-[var(--accent-muted)]' : 'text-[var(--text-tertiary)] hover:text-[var(--text-primary)]'
                                     }`
                                 }
                             >
-                                {child.label}
+                                {c.label}
                             </NavLink>
                         ))}
                     </motion.div>
@@ -145,138 +97,123 @@ function SidebarItem({ item, isOpen }: { item: NavItem; isOpen: boolean }) {
 }
 
 export function Sidebar() {
-    const { sidebarOpen, toggleSidebar, pinnedItems } = useUIStore()
     const { signOut, user } = useAuth()
-
-    const pinned = navItems.filter((i) => pinnedItems.includes(i.id))
-    const unpinned = navItems.filter((i) => !pinnedItems.includes(i.id))
+    const [hovered, setHovered] = useState(false)
+    const expanded = hovered
+    const initial = user?.email?.charAt(0).toUpperCase() ?? '?'
 
     return (
         <>
-            {/* Mobile backdrop */}
-            <AnimatePresence>
-                {sidebarOpen && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={() => toggleSidebar()}
-                        className="fixed inset-0 bg-black/40 z-[9] md:hidden"
-                    />
-                )}
-            </AnimatePresence>
-
+            {/* Desktop sidebar */}
             <motion.aside
-                initial={false}
-                animate={{ width: sidebarOpen ? 'var(--sidebar-width)' : 'var(--sidebar-collapsed)' }}
-                transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-                className="glass fixed left-0 top-0 bottom-0 flex flex-col z-[var(--z-sidebar)] overflow-hidden
-                    max-md:translate-x-[var(--mobile-sidebar-x,0)]"
-                style={{
-                    borderRight: '1px solid var(--color-border)',
-                    ['--mobile-sidebar-x' as string]: sidebarOpen ? '0' : '-100%',
-                }}
+                onMouseEnter={() => setHovered(true)}
+                onMouseLeave={() => setHovered(false)}
+                animate={{ width: expanded ? 260 : 72 }}
+                transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+                className="fixed left-0 top-0 bottom-0 flex flex-col z-40 overflow-hidden
+                    bg-[var(--sidebar-bg)] backdrop-blur-2xl border-r border-[var(--sidebar-border)]
+                    max-md:hidden transition-colors duration-300"
             >
-                {/* Header */}
-                <div className="flex items-center justify-between px-4 h-16 shrink-0">
-                    <AnimatePresence mode="wait">
-                        {sidebarOpen && (
-                            <motion.span
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: -10 }}
-                                className="text-lg font-bold tracking-tight"
-                                style={{ color: 'var(--color-text-primary)' }}
-                            >
-                                Feed-Center
-                            </motion.span>
-                        )}
-                    </AnimatePresence>
-                    <button
-                        onClick={toggleSidebar}
-                        className="p-2 rounded-[var(--radius-md)] transition-colors hover:bg-[var(--color-accent-soft)] cursor-pointer"
-                        aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
-                    >
-                        <motion.div animate={{ rotate: sidebarOpen ? 0 : 180 }} transition={{ duration: 0.25 }}>
-                            <ChevronLeft size={18} style={{ color: 'var(--color-text-secondary)' }} />
-                        </motion.div>
-                    </button>
+                {/* Logo */}
+                <div className={`flex items-center h-16 shrink-0 border-b border-[var(--border-subtle)] ${expanded ? 'px-4 gap-3' : 'justify-center'}`}>
+                    <div className="w-9 h-9 rounded-xl bg-[var(--accent)] flex items-center justify-center shrink-0
+                        shadow-[0_0_20px_var(--accent-glow)]">
+                        <span className="text-[var(--accent-text)] font-black text-xs font-[Orbitron,sans-serif] tracking-wider">FC</span>
+                    </div>
+                    {expanded && (
+                        <motion.span
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="font-bold text-sm text-[var(--text-primary)] tracking-tight whitespace-nowrap"
+                        >
+                            Feed-Center
+                        </motion.span>
+                    )}
                 </div>
 
-                {/* Pinned items */}
-                {pinned.length > 0 && (
-                    <nav className="px-3 py-1 flex flex-col gap-0.5">
-                        {sidebarOpen && (
-                            <span className="px-3 text-[10px] font-medium uppercase tracking-widest text-[var(--color-text-muted)] mb-1">
-                                Fixos
-                            </span>
-                        )}
-                        {pinned.map((item) => (
-                            <SidebarItem key={item.id} item={item} isOpen={sidebarOpen} />
-                        ))}
-                    </nav>
+                {/* Section label */}
+                {expanded && (
+                    <div className="px-5 pt-5 pb-1">
+                        <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[var(--text-tertiary)]">
+                            Menu
+                        </span>
+                    </div>
                 )}
 
-                {/* Separator if pinned exists */}
-                {pinned.length > 0 && (
-                    <div className="mx-4 border-t border-[var(--color-border)] my-1" />
-                )}
-
-                {/* Nav */}
-                <nav className="flex-1 px-3 py-2 flex flex-col gap-0.5 overflow-y-auto">
-                    {unpinned.map((item) => (
-                        <SidebarItem key={item.id} item={item} isOpen={sidebarOpen} />
+                {/* Navigation */}
+                <nav className={`flex-1 py-2 flex flex-col gap-0.5 overflow-y-auto ${expanded ? 'px-3' : 'px-2'}`}>
+                    {navItems.map(item => (
+                        <SidebarLink key={item.id} item={item} expanded={expanded} />
                     ))}
                 </nav>
 
-                {/* Bottom */}
-                <div className="px-3 py-3 flex flex-col gap-1 border-t border-[var(--color-border)]">
-                    {bottomItems.map((item) => (
-                        <SidebarItem key={item.id} item={item} isOpen={sidebarOpen} />
-                    ))}
+                {/* Divider */}
+                <div className="mx-4 border-t border-[var(--border-subtle)]" />
 
-                    {/* User + Logout */}
+                {/* System section */}
+                {expanded && (
+                    <div className="px-5 pt-3 pb-1">
+                        <span className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[var(--text-tertiary)]">
+                            Sistema
+                        </span>
+                    </div>
+                )}
+
+                <div className={`py-2 flex flex-col gap-0.5 ${expanded ? 'px-3' : 'px-2'}`}>
+                    <div className={expanded ? 'px-3 py-1.5' : 'flex justify-center py-1.5'}>
+                        <ThemeToggle compact={!expanded} />
+                    </div>
+
+                    {systemItems.map(item => (
+                        <SidebarLink key={item.id} item={item} expanded={expanded} />
+                    ))}
+                </div>
+
+                {/* User section */}
+                <div className={`py-3 border-t border-[var(--border-subtle)] ${expanded ? 'px-3' : 'px-2'}`}>
                     <button
                         onClick={signOut}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-md)] transition-all duration-[var(--duration-fast)] text-[var(--color-text-secondary)] hover:bg-[var(--color-danger)]/10 hover:text-[var(--color-danger)] w-full cursor-pointer"
+                        className={`flex items-center gap-3 h-10 w-full rounded-xl transition-all duration-200
+                            text-[var(--text-secondary)] hover:bg-[var(--danger-soft)] hover:text-[var(--danger)] cursor-pointer
+                            ${expanded ? 'px-3' : 'justify-center px-0'}`}
                     >
-                        <LogOut size={20} className="shrink-0" />
-                        <AnimatePresence mode="wait">
-                            {sidebarOpen && (
-                                <motion.span
-                                    initial={{ opacity: 0, width: 0 }}
-                                    animate={{ opacity: 1, width: 'auto' }}
-                                    exit={{ opacity: 0, width: 0 }}
-                                    className="text-sm font-medium whitespace-nowrap overflow-hidden"
-                                >
-                                    {user?.email?.split('@')[0] ?? 'Sair'}
-                                </motion.span>
-                            )}
-                        </AnimatePresence>
-                    </button>
-
-                    {/* Footer */}
-                    <AnimatePresence mode="wait">
-                        {sidebarOpen && (
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                className="flex items-center justify-between px-3 pt-2 text-[10px] text-[var(--color-text-muted)]"
-                            >
-                                <span className="opacity-50 hover:opacity-100 transition-opacity">v1.1 (SOTA)</span>
-                                <a
-                                    href="#"
-                                    className="flex items-center gap-1 hover:text-[var(--color-text-secondary)] transition-colors"
-                                >
-                                    <HelpCircle size={10} />
-                                    Ajuda
-                                </a>
-                            </motion.div>
+                        {expanded ? (
+                            <>
+                                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[var(--accent)] to-[var(--info)] flex items-center justify-center text-white text-[10px] font-bold shrink-0">
+                                    {initial}
+                                </div>
+                                <span className="text-sm font-medium truncate flex-1 text-left">
+                                    {user?.email?.split('@')[0] ?? 'Utilizador'}
+                                </span>
+                                <LogOut size={16} className="shrink-0" />
+                            </>
+                        ) : (
+                            <LogOut size={20} />
                         )}
-                    </AnimatePresence>
+                    </button>
                 </div>
             </motion.aside>
+
+            {/* Mobile bottom tab bar */}
+            <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden
+                bg-[var(--sidebar-bg)] backdrop-blur-2xl border-t border-[var(--sidebar-border)]
+                flex items-center justify-around h-16 px-2 safe-area-pb">
+                {[...navItems.slice(0, 5), systemItems[0]].map(item => (
+                    <NavLink
+                        key={item.id}
+                        to={item.to}
+                        end={item.to === '/'}
+                        className={({ isActive }) =>
+                            `flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl min-w-[44px] transition-colors ${
+                                isActive ? 'text-[var(--accent)]' : 'text-[var(--text-tertiary)]'
+                            }`
+                        }
+                    >
+                        <item.icon size={20} />
+                        <span className="text-[9px] font-medium">{item.label}</span>
+                    </NavLink>
+                ))}
+            </nav>
         </>
     )
 }

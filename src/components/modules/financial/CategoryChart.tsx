@@ -19,17 +19,17 @@ interface Props {
 export function CategoryChart({ breakdown, isLoading, onCategoryClick }: Props) {
     if (isLoading) {
         return (
-            <div className="modal-panel rounded-[var(--radius-lg)] p-6 flex items-center justify-center h-[320px]">
-                <div className="w-40 h-40 rounded-full bg-white/5 animate-pulse" />
+            <div className="bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-2xl p-6 flex items-center justify-center h-[320px]">
+                <div className="w-40 h-40 rounded-full bg-[var(--color-bg-tertiary)] animate-pulse" />
             </div>
         )
     }
 
     if (!breakdown || breakdown.length === 0) {
         return (
-            <div className="modal-panel rounded-[var(--radius-lg)] p-6 flex items-center justify-center h-[320px]">
-                <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-                    Sem despesas este mês
+            <div className="bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-2xl p-6 flex items-center justify-center h-[320px]">
+                <p className="text-sm text-[var(--color-text-muted)]">
+                    Sem despesas este mes
                 </p>
             </div>
         )
@@ -43,7 +43,7 @@ export function CategoryChart({ breakdown, isLoading, onCategoryClick }: Props) 
                 backgroundColor: breakdown.map((_, i) => PALETTE[i % PALETTE.length]),
                 borderWidth: 0,
                 hoverBorderWidth: 2,
-                hoverBorderColor: '#fff',
+                hoverBorderColor: 'var(--color-text-primary)',
             },
         ],
     }
@@ -55,13 +55,13 @@ export function CategoryChart({ breakdown, isLoading, onCategoryClick }: Props) 
         plugins: {
             legend: { display: false },
             tooltip: {
-                backgroundColor: 'rgba(10, 15, 30, 0.9)',
+                backgroundColor: 'rgba(10, 15, 30, 0.95)',
                 titleColor: '#e2e8f0',
                 bodyColor: '#94a3b8',
                 borderColor: 'rgba(255,255,255,0.1)',
                 borderWidth: 1,
-                padding: 10,
-                cornerRadius: 8,
+                padding: 12,
+                cornerRadius: 12,
                 callbacks: {
                     label: (ctx: { parsed: number }) => ` ${formatCurrency(ctx.parsed)}`,
                 },
@@ -77,8 +77,8 @@ export function CategoryChart({ breakdown, isLoading, onCategoryClick }: Props) 
     }
 
     return (
-        <div className="modal-panel rounded-[var(--radius-lg)] p-6">
-            <h3 className="text-sm font-semibold mb-4" style={{ color: 'var(--color-text-primary)' }}>
+        <div className="bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-2xl p-6">
+            <h3 className="text-sm font-semibold mb-4 text-[var(--color-text-primary)]">
                 Despesas por Categoria
             </h3>
 
@@ -86,17 +86,15 @@ export function CategoryChart({ breakdown, isLoading, onCategoryClick }: Props) 
                 <Doughnut data={data} options={options} />
             </div>
 
-            {/* Legend */}
             <div className="flex flex-wrap gap-x-4 gap-y-2">
                 {breakdown.map((b, i) => (
                     <button
                         key={b.category}
                         onClick={() => onCategoryClick?.(b.category)}
-                        className="flex items-center gap-1.5 text-xs transition-opacity hover:opacity-80 cursor-pointer"
-                        style={{ color: 'var(--color-text-secondary)' }}
+                        className="flex items-center gap-1.5 text-xs transition-opacity hover:opacity-80 cursor-pointer text-[var(--color-text-secondary)]"
                     >
                         <span
-                            className="w-2.5 h-2.5 rounded-full shrink-0"
+                            className="w-2.5 h-2.5 rounded-sm shrink-0"
                             style={{ background: PALETTE[i % PALETTE.length] }}
                         />
                         {b.category} ({b.percentage}%)

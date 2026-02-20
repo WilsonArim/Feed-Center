@@ -16,10 +16,10 @@ const fmtPct = (v: number) => `${v > 0 ? '+' : ''}${v.toFixed(2)}%`
 const fmtDate = (d: string) => new Date(d).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' })
 
 const TX_TYPE_LABELS: Record<string, { label: string; color: string }> = {
-    buy: { label: 'Compra', color: 'text-green-400' },
-    sell: { label: 'Venda', color: 'text-red-400' },
+    buy: { label: 'Compra', color: 'text-emerald-400' },
+    sell: { label: 'Venda', color: 'text-rose-400' },
     swap: { label: 'Swap', color: 'text-blue-400' },
-    airdrop: { label: 'Airdrop', color: 'text-yellow-400' },
+    airdrop: { label: 'Airdrop', color: 'text-amber-400' },
     transfer_in: { label: 'Transfer', color: 'text-cyan-400' },
 }
 
@@ -39,20 +39,20 @@ export function CryptoPage() {
     const hasWallets = (wallets.data?.length ?? 0) > 0
 
     return (
-        <div className="p-6 pt-20 w-full space-y-8">
+        <div className="w-full flex flex-col gap-8 pb-12">
 
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                    <h1 className="text-h1 text-2xl md:text-3xl mb-2">
                         Ledger Cripto
                     </h1>
-                    <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                    <div className="flex items-center gap-2 text-sm text-[var(--color-text-muted)]">
                         <span>{wallets.data?.length ?? 0} Carteira{(wallets.data?.length ?? 0) !== 1 ? 's' : ''}</span>
-                        <span>•</span>
+                        <span className="text-[var(--color-border)]">|</span>
                         <span>{portfolio.length} Ativo{portfolio.length !== 1 ? 's' : ''}</span>
-                        <span>•</span>
-                        <span>Preços CoinGecko (60s)</span>
+                        <span className="text-[var(--color-border)]">|</span>
+                        <span>Precos CoinGecko (60s)</span>
                     </div>
                 </div>
 
@@ -61,91 +61,88 @@ export function CryptoPage() {
                         + Carteira
                     </StardustButton>
                     <StardustButton size="sm" icon={<Plus size={16} />} onClick={() => setAddTxOpen(true)} disabled={!hasWallets}>
-                        Nova Transação
+                        Nova Transacao
                     </StardustButton>
                 </div>
             </div>
 
             {/* Stats Row */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Portfolio Total */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                    className="glass p-6 rounded-[var(--radius-xl)] relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-blue-500/10 to-emerald-500/10 rounded-full blur-3xl -translate-y-8 translate-x-8" />
-                    <p className="text-xs font-bold uppercase tracking-widest mb-1 opacity-60">Portfolio</p>
-                    <h2 className="text-4xl font-bold tracking-tighter">{formatCurrency(totalBalance)}</h2>
+                    className="p-6 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-[var(--color-accent)]/5 rounded-full blur-3xl -translate-y-8 translate-x-8" />
+                    <p className="text-[10px] font-bold uppercase tracking-widest mb-1 text-[var(--color-text-muted)]">Portfolio</p>
+                    <h2 className="text-4xl font-bold tracking-tighter text-[var(--color-text-primary)]">{formatCurrency(totalBalance)}</h2>
                 </motion.div>
 
-                {/* Unrealized PnL */}
-                <div className="glass p-6 rounded-[var(--radius-xl)]">
-                    <p className="text-xs font-bold uppercase tracking-widest mb-1 opacity-60">PnL Não Realizado</p>
-                    <div className={`text-2xl font-bold tracking-tight flex items-center gap-2 ${totalUnrealized >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                <div className="p-6 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)]">
+                    <p className="text-[10px] font-bold uppercase tracking-widest mb-1 text-[var(--color-text-muted)]">PnL Nao Realizado</p>
+                    <div className={`text-2xl font-bold tracking-tight flex items-center gap-2 ${totalUnrealized >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                         {totalUnrealized >= 0 ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
                         {formatCurrency(totalUnrealized)}
                     </div>
-                    <p className="text-[10px] opacity-40 mt-1">Baseado no preço atual vs preço médio de compra</p>
+                    <p className="text-[10px] text-[var(--color-text-muted)] mt-1">Baseado no preco atual vs preco medio de compra</p>
                 </div>
 
-                {/* Realized PnL */}
-                <div className="glass p-6 rounded-[var(--radius-xl)]">
-                    <p className="text-xs font-bold uppercase tracking-widest mb-1 opacity-60">PnL Realizado</p>
-                    <div className={`text-2xl font-bold tracking-tight flex items-center gap-2 ${totalRealized >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                <div className="p-6 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)]">
+                    <p className="text-[10px] font-bold uppercase tracking-widest mb-1 text-[var(--color-text-muted)]">PnL Realizado</p>
+                    <div className={`text-2xl font-bold tracking-tight flex items-center gap-2 ${totalRealized >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                         {totalRealized >= 0 ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
                         {formatCurrency(totalRealized)}
                     </div>
-                    <p className="text-[10px] opacity-40 mt-1">Lucro/prejuízo de vendas e swaps</p>
+                    <p className="text-[10px] text-[var(--color-text-muted)] mt-1">Lucro/prejuizo de vendas e swaps</p>
                 </div>
             </div>
 
-            {/* Wallets sidebar */}
-            <div className="glass p-4 rounded-[var(--radius-xl)]">
-                <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-bold text-sm opacity-70">Carteiras</h3>
+            {/* Wallets */}
+            <div className="p-4 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)]">
+                <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-bold text-sm text-[var(--color-text-secondary)]">Carteiras</h3>
                 </div>
                 <div className="flex gap-2 flex-wrap">
                     {wallets.data?.map(w => (
-                        <div key={w.id} className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/5 text-xs">
+                        <div key={w.id} className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] text-xs text-[var(--color-text-secondary)]">
                             <span className={`w-2 h-2 rounded-full ${w.chain_type === 'solana' ? 'bg-purple-400' : 'bg-blue-400'}`} />
                             <span className="truncate max-w-[100px]">{w.label || w.address.slice(0, 6) + '...'}</span>
-                            <button onClick={() => deleteWallet.mutate(w.id)} className="hover:text-red-400 opacity-50 hover:opacity-100 cursor-pointer">
+                            <button onClick={() => deleteWallet.mutate(w.id)} className="hover:text-rose-400 text-[var(--color-text-muted)] hover:opacity-100 cursor-pointer transition-colors">
                                 <X size={10} />
                             </button>
                         </div>
                     ))}
-                    {!hasWallets && <p className="text-xs opacity-40 italic">Adiciona uma carteira para começar.</p>}
+                    {!hasWallets && <p className="text-xs text-[var(--color-text-muted)] italic">Adiciona uma carteira para comecar.</p>}
                 </div>
             </div>
 
             {/* Holdings Table */}
-            <div className="glass rounded-[var(--radius-xl)] overflow-hidden">
-                <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
-                    <h3 className="font-bold">Holdings</h3>
-                    <span className="text-xs opacity-50">Calculados automaticamente a partir das transações</span>
+            <div className="rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] overflow-hidden">
+                <div className="px-6 py-4 border-b border-[var(--color-border)] flex items-center justify-between">
+                    <h3 className="font-bold text-[var(--color-text-primary)]">Holdings</h3>
+                    <span className="text-xs text-[var(--color-text-muted)]">Calculados automaticamente a partir das transacoes</span>
                 </div>
 
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
-                        <thead className="bg-white/5 text-[var(--color-text-muted)] text-[10px] uppercase font-medium">
+                        <thead className="bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)] text-[10px] uppercase font-medium">
                             <tr>
                                 <th className="px-6 py-3"></th>
                                 <th className="px-6 py-3">Ativo</th>
-                                <th className="px-6 py-3 text-right">Preço</th>
+                                <th className="px-6 py-3 text-right">Preco</th>
                                 <th className="px-6 py-3 text-right">24h</th>
                                 <th className="px-6 py-3 text-right">Quantidade</th>
                                 <th className="px-6 py-3 text-right">Valor</th>
-                                <th className="px-6 py-3 text-right">Custo Médio</th>
+                                <th className="px-6 py-3 text-right">Custo Medio</th>
                                 <th className="px-6 py-3 text-right">PnL</th>
                                 <th className="px-6 py-3 text-center">Txs</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody className="text-[var(--color-text-primary)]">
                             {isLoadingPortfolio ? (
-                                <tr><td colSpan={9} className="p-8 text-center opacity-50">
+                                <tr><td colSpan={9} className="p-8 text-center text-[var(--color-text-muted)]">
                                     <RefreshCw size={18} className="animate-spin inline mr-2" /> A carregar...
                                 </td></tr>
                             ) : portfolio.length === 0 ? (
-                                <tr><td colSpan={9} className="p-12 text-center opacity-50">
-                                    {hasWallets ? 'Nenhuma transação registada.' : 'Adiciona uma carteira primeiro.'}
+                                <tr><td colSpan={9} className="p-12 text-center text-[var(--color-text-muted)]">
+                                    {hasWallets ? 'Nenhuma transacao registada.' : 'Adiciona uma carteira primeiro.'}
                                 </td></tr>
                             ) : portfolio.map((asset: UnifiedAsset) => {
                                 const isExpanded = expandedSymbol === asset.symbol
@@ -164,10 +161,8 @@ export function CryptoPage() {
                 </div>
             </div>
 
-            {/* Donut Chart */}
             <PortfolioDonut />
 
-            {/* Modals */}
             <AddWalletModal
                 isOpen={isAddWalletOpen}
                 onClose={() => setAddWalletOpen(false)}
@@ -185,8 +180,6 @@ export function CryptoPage() {
     )
 }
 
-// ─── Asset Row with expandable transaction history ───
-
 function AssetRow({ asset, isExpanded, onToggle, onDeleteTx }: {
     asset: UnifiedAsset
     isExpanded: boolean
@@ -198,27 +191,27 @@ function AssetRow({ asset, isExpanded, onToggle, onDeleteTx }: {
 
     return (
         <>
-            <tr className="border-b border-white/5 hover:bg-white/[0.02] transition-colors cursor-pointer" onClick={onToggle}>
+            <tr className="border-b border-[var(--color-border)] hover:bg-[var(--color-bg-tertiary)]/50 transition-colors cursor-pointer" onClick={onToggle}>
                 <td className="px-6 py-4">
-                    <button className="opacity-40 hover:opacity-100 transition-opacity cursor-pointer">
+                    <button className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors cursor-pointer">
                         {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                     </button>
                 </td>
                 <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                        {asset.image && <img src={asset.image} alt="" className="w-8 h-8 rounded-full bg-white/10" />}
+                        {asset.image && <img src={asset.image} alt="" className="w-8 h-8 rounded-full bg-[var(--color-bg-tertiary)]" />}
                         <div>
-                            <div className="font-bold">{asset.name}</div>
-                            <div className="text-xs opacity-50">{asset.symbol}</div>
+                            <div className="font-bold text-[var(--color-text-primary)]">{asset.name}</div>
+                            <div className="text-xs text-[var(--color-text-muted)]">{asset.symbol}</div>
                         </div>
                     </div>
                 </td>
-                <td className="px-6 py-4 text-right tabular-nums opacity-80">
+                <td className="px-6 py-4 text-right tabular-nums text-[var(--color-text-secondary)]">
                     {hasPrice ? formatCurrency(asset.price) : '-'}
                 </td>
                 <td className="px-6 py-4 text-right">
                     {hasPrice ? (
-                        <span className={`text-xs font-medium ${asset.price_change_24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        <span className={`text-xs font-medium ${asset.price_change_24h >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                             {fmtPct(asset.price_change_24h)}
                         </span>
                     ) : '-'}
@@ -229,23 +222,22 @@ function AssetRow({ asset, isExpanded, onToggle, onDeleteTx }: {
                 <td className="px-6 py-4 text-right tabular-nums font-bold">
                     {hasPrice ? formatCurrency(asset.value) : '-'}
                 </td>
-                <td className="px-6 py-4 text-right tabular-nums opacity-80">
+                <td className="px-6 py-4 text-right tabular-nums text-[var(--color-text-secondary)]">
                     {asset.avg_buy_price > 0 ? formatCurrency(asset.avg_buy_price) : '-'}
                 </td>
                 <td className="px-6 py-4 text-right">
                     {asset.avg_buy_price > 0 && hasPrice ? (
-                        <div className={`flex flex-col items-end tabular-nums ${totalPnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                        <div className={`flex flex-col items-end tabular-nums ${totalPnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                             <span className="font-bold">{formatCurrency(asset.unrealized_pnl)}</span>
                             <span className="text-xs opacity-80">{fmtPct(asset.unrealized_pnl_percent)}</span>
                         </div>
-                    ) : <span className="text-xs opacity-20">-</span>}
+                    ) : <span className="text-xs text-[var(--color-text-muted)]">-</span>}
                 </td>
                 <td className="px-6 py-4 text-center">
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-white/5 font-mono">{asset.transaction_count}</span>
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--color-bg-tertiary)] font-mono text-[var(--color-text-muted)]">{asset.transaction_count}</span>
                 </td>
             </tr>
 
-            {/* Expanded: Transaction History */}
             <AnimatePresence>
                 {isExpanded && (
                     <tr>
@@ -256,18 +248,18 @@ function AssetRow({ asset, isExpanded, onToggle, onDeleteTx }: {
                                 exit={{ height: 0, opacity: 0 }}
                                 className="overflow-hidden"
                             >
-                                <div className="px-8 py-4 bg-white/[0.015] border-b border-white/5">
+                                <div className="px-8 py-4 bg-[var(--color-bg-tertiary)]/30 border-b border-[var(--color-border)]">
                                     <div className="flex items-center justify-between mb-3">
-                                        <h4 className="text-xs font-bold uppercase tracking-widest opacity-50">
-                                            Histórico de Transações — {asset.symbol}
+                                        <h4 className="text-xs font-bold uppercase tracking-widest text-[var(--color-text-muted)]">
+                                            Historico de Transacoes -- {asset.symbol}
                                         </h4>
                                         {asset.realized_pnl !== 0 && (
-                                            <span className={`text-xs font-medium ${asset.realized_pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                            <span className={`text-xs font-medium ${asset.realized_pnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                                                 PnL Realizado: {formatCurrency(asset.realized_pnl)}
                                             </span>
                                         )}
                                     </div>
-                                    <div className="space-y-1.5">
+                                    <div className="flex flex-col gap-1.5">
                                         {asset.transactions.map((tx: CryptoTransaction) => (
                                             <TransactionRow key={tx.id} tx={tx} onDelete={onDeleteTx} />
                                         ))}
@@ -283,51 +275,36 @@ function AssetRow({ asset, isExpanded, onToggle, onDeleteTx }: {
 }
 
 function TransactionRow({ tx, onDelete }: { tx: CryptoTransaction; onDelete: (id: string) => void }) {
-    const typeInfo = TX_TYPE_LABELS[tx.type] ?? { label: tx.type, color: 'text-white/50' }
+    const typeInfo = TX_TYPE_LABELS[tx.type] ?? { label: tx.type, color: 'text-[var(--color-text-muted)]' }
 
     return (
-        <div className="flex items-center gap-4 px-4 py-2.5 rounded-[var(--radius-md)] bg-white/[0.03] hover:bg-white/[0.05] transition-colors group text-xs">
-            {/* Source Badge */}
+        <div className="flex items-center gap-4 px-4 py-2.5 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-[var(--color-accent)]/20 transition-colors group text-xs">
             <span title={tx.source === 'hash_verified' ? 'Hash Verified' : 'Manual'}>
                 {tx.source === 'hash_verified'
                     ? <Hash size={12} className="text-emerald-400" />
-                    : <PenLine size={12} className="text-white/30" />
+                    : <PenLine size={12} className="text-[var(--color-text-muted)]" />
                 }
             </span>
-
-            {/* Type */}
             <span className={`font-bold w-16 ${typeInfo.color}`}>{typeInfo.label}</span>
-
-            {/* Date */}
-            <span className="opacity-50 w-20">{fmtDate(tx.executed_at)}</span>
-
-            {/* Quantity + Price */}
-            <span className="tabular-nums font-medium flex-1">
+            <span className="text-[var(--color-text-muted)] w-20">{fmtDate(tx.executed_at)}</span>
+            <span className="tabular-nums font-medium flex-1 text-[var(--color-text-primary)]">
                 {tx.quantity.toLocaleString('pt-PT', { maximumFractionDigits: 6 })} {tx.symbol}
                 {tx.price_per_unit ? (
-                    <span className="opacity-40 ml-2">@ {formatCurrency(tx.price_per_unit)}</span>
+                    <span className="text-[var(--color-text-muted)] ml-2">@ {formatCurrency(tx.price_per_unit)}</span>
                 ) : null}
             </span>
-
-            {/* Exchange */}
-            {tx.exchange && <span className="opacity-30">{tx.exchange}</span>}
-
-            {/* Fee */}
+            {tx.exchange && <span className="text-[var(--color-text-muted)]">{tx.exchange}</span>}
             {tx.fee && tx.fee > 0 && (
-                <span className="opacity-30">fee: {formatCurrency(tx.fee)}</span>
+                <span className="text-[var(--color-text-muted)]">fee: {formatCurrency(tx.fee)}</span>
             )}
-
-            {/* Hash snippet */}
             {tx.tx_hash && (
-                <span className="font-mono opacity-20 truncate max-w-[80px]" title={tx.tx_hash}>
+                <span className="font-mono text-[var(--color-text-muted)] truncate max-w-[80px] opacity-50" title={tx.tx_hash}>
                     {tx.tx_hash.slice(0, 8)}...
                 </span>
             )}
-
-            {/* Delete */}
             <button
                 onClick={e => { e.stopPropagation(); onDelete(tx.id) }}
-                className="opacity-0 group-hover:opacity-50 hover:!opacity-100 hover:text-red-400 transition-all cursor-pointer"
+                className="opacity-0 group-hover:opacity-50 hover:!opacity-100 hover:text-rose-400 transition-all cursor-pointer text-[var(--color-text-muted)]"
             >
                 <Trash2 size={12} />
             </button>

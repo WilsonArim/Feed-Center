@@ -1,12 +1,12 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 const MONTHS = [
-    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+    'Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho',
     'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
 ]
 
 interface Props {
-    month: string  // 'YYYY-MM'
+    month: string
     onChange: (month: string) => void
 }
 
@@ -33,28 +33,25 @@ export function MonthPicker({ month, onChange }: Props) {
     }
 
     return (
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1 bg-[var(--color-bg-tertiary)] rounded-xl border border-[var(--color-border)] px-1 py-0.5">
             <button
                 onClick={prev}
-                className="p-1.5 rounded-[var(--radius-sm)] hover:bg-white/5 transition-colors cursor-pointer"
-                aria-label="Mês anterior"
+                className="p-1.5 rounded-lg hover:bg-[var(--color-bg-secondary)] transition-colors cursor-pointer"
+                aria-label="Mes anterior"
             >
-                <ChevronLeft size={18} style={{ color: 'var(--color-text-secondary)' }} />
+                <ChevronLeft size={16} className="text-[var(--color-text-secondary)]" />
             </button>
 
-            <span
-                className="text-sm font-semibold min-w-[160px] text-center"
-                style={{ color: 'var(--color-text-primary)' }}
-            >
+            <span className="text-sm font-semibold min-w-[140px] text-center text-[var(--color-text-primary)]">
                 {MONTHS[m - 1]} {year}
             </span>
 
             <button
                 onClick={next}
-                className="p-1.5 rounded-[var(--radius-sm)] hover:bg-white/5 transition-colors cursor-pointer"
-                aria-label="Próximo mês"
+                className="p-1.5 rounded-lg hover:bg-[var(--color-bg-secondary)] transition-colors cursor-pointer"
+                aria-label="Proximo mes"
             >
-                <ChevronRight size={18} style={{ color: 'var(--color-text-secondary)' }} />
+                <ChevronRight size={16} className="text-[var(--color-text-secondary)]" />
             </button>
         </div>
     )

@@ -19,8 +19,8 @@ import type { Todo, TodoStatus } from '@/types'
 
 const COLUMNS: { id: TodoStatus; title: string }[] = [
     { id: 'todo', title: 'To Do' },
-    { id: 'in_progress', title: 'In Progress' },
-    { id: 'done', title: 'Done' },
+    { id: 'in_progress', title: 'Em Progresso' },
+    { id: 'done', title: 'Concluido' },
 ]
 
 interface KanbanBoardProps {
@@ -36,16 +36,13 @@ export function KanbanBoard({ listId, onEditTask }: KanbanBoardProps) {
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
-            activationConstraint: {
-                distance: 5, // Prevent accidental drags
-            },
+            activationConstraint: { distance: 5 },
         }),
         useSensor(KeyboardSensor, {
             coordinateGetter: sortableKeyboardCoordinates,
         })
     )
 
-    // Memoized validation to avoid crashes
     const validTodos = useMemo(() => Array.isArray(todos) ? todos : [], [todos])
 
     const columns = useMemo(() => {
@@ -59,7 +56,6 @@ export function KanbanBoard({ listId, onEditTask }: KanbanBoardProps) {
                 cols[t.status].push(t)
             }
         })
-        // Sort by position within each column
         Object.keys(cols).forEach((key) => {
             cols[key as TodoStatus].sort((a, b) => a.position - b.position)
         })
@@ -94,35 +90,26 @@ export function KanbanBoard({ listId, onEditTask }: KanbanBoardProps) {
             return
         }
 
-        // Dropped over a column (empty area)
         const isOverColumn = COLUMNS.some((c) => c.id === overId)
         if (isOverColumn) {
             const newStatus = overId as TodoStatus
             if (activeTask.status !== newStatus) {
-                // Moved to empty column
                 updateBatch.mutate([
-                    { id: activeId, status: newStatus, position: 0 } // Or max pos
+                    { id: activeId, status: newStatus, position: 0 }
                 ])
             }
             setActiveId(null)
             return
         }
 
-        // Dropped over another task
         if (activeId !== overId && overTask) {
             const activeColumn = activeTask.status
             const overColumn = overTask.status
 
             if (activeColumn === overColumn) {
-                // Reorder within same column
                 const currentColumnTasks = columns[activeColumn]
                 const oldIndex = currentColumnTasks.findIndex(t => t.id === activeId)
                 const newIndex = currentColumnTasks.findIndex(t => t.id === overId)
-
-                // Calculate interactions
-                // For simplicity, we can just update the dragged item's position to swap?
-                // Or re-index the whole array segment.
-                // SOTA way: re-index locally then push batch.
 
                 const newOrder = arrayMove(currentColumnTasks, oldIndex, newIndex)
                 const updates = newOrder.map((t, index) => ({
@@ -130,17 +117,10 @@ export function KanbanBoard({ listId, onEditTask }: KanbanBoardProps) {
                     position: index,
                 }))
 
-                // Optimistic UI handled by dnd-kit visually, but we push updates
                 updateBatch.mutate(updates)
             } else {
-                // Moved to different column over a task
-                // Update status AND position
-                // We'd ideally want to insert at specific index, but simpler to just append or insert at 'over' pos
-
-                // For now, let's just update status to moving column
                 updateBatch.mutate([
                     { id: activeId, status: overColumn, position: overTask.position }
-                    // Note: We should shift others down, but for MVP simpler logic is acceptable
                 ])
             }
         }
@@ -150,11 +130,7 @@ export function KanbanBoard({ listId, onEditTask }: KanbanBoardProps) {
 
     const dropAnimation = {
         sideEffects: defaultDropAnimationSideEffects({
-            styles: {
-                active: {
-                    opacity: '0.5',
-                },
-            },
+            styles: { active: { opacity: '0.5' } },
         }),
     }
 
@@ -165,7 +141,7 @@ export function KanbanBoard({ listId, onEditTask }: KanbanBoardProps) {
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
         >
-            <div className="flex h-full gap-6 overflow-x-auto pb-4">
+            <div className="flex h-full gap-5 overflow-x-auto pb-4 px-1">
                 {COLUMNS.map((col) => (
                     <KanbanColumn
                         key={col.id}

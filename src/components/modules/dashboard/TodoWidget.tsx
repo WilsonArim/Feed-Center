@@ -5,10 +5,9 @@ export function TodoWidget() {
     const { data: todos, isLoading } = useTodos()
 
     if (isLoading) {
-        return <div className="animate-pulse h-16 w-full bg-white/5 rounded" />
+        return <div className="animate-pulse h-16 w-full bg-[var(--color-bg-tertiary)] rounded-xl" />
     }
 
-    // Filter pending tasks
     const pendingTodos = todos?.filter(t => t.status !== 'done') || []
     const highPriority = pendingTodos.filter(t => t.priority === 'high')
     const nextTasks = pendingTodos
@@ -16,38 +15,41 @@ export function TodoWidget() {
         .slice(0, 3)
 
     return (
-        <div className="flex flex-col h-full bg-[var(--color-bg-secondary)]/30 -m-6 p-6">
+        <div className="flex flex-col h-full">
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold text-white">{pendingTodos.length}</span>
-                    <span className="text-sm text-white/50">pendentes</span>
+                    <span className="text-2xl font-bold text-[var(--color-text-primary)]">{pendingTodos.length}</span>
+                    <span className="text-sm text-[var(--color-text-muted)]">pendentes</span>
                 </div>
                 {highPriority.length > 0 && (
-                    <div className="flex items-center gap-1 text-xs text-orange-400 bg-orange-400/10 px-2 py-1 rounded-full border border-orange-400/20">
+                    <div className="flex items-center gap-1 text-xs text-[var(--color-warning)] bg-[var(--color-warning)]/10 px-2 py-1 rounded-lg border border-[var(--color-warning)]/15 font-medium">
                         <AlertCircle size={12} />
-                        {highPriority.length} Alta Prioridade
+                        {highPriority.length} Alta
                     </div>
                 )}
             </div>
 
-            <div className="space-y-2 flex-1 overflow-hidden">
+            <div className="space-y-1.5 flex-1 overflow-hidden">
                 {nextTasks.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-full text-white/20 text-xs text-center">
-                        <CheckCircle2 size={24} className="mb-2 opacity-50" />
+                    <div className="flex flex-col items-center justify-center h-full text-[var(--color-text-muted)] text-xs text-center">
+                        <div className="w-10 h-10 rounded-xl bg-[var(--color-success)]/10 flex items-center justify-center mb-2">
+                            <CheckCircle2 size={18} className="text-[var(--color-success)]" />
+                        </div>
                         Tudo feito!
                     </div>
                 ) : (
                     nextTasks.map(todo => (
-                        <div key={todo.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors group">
-                            <div className={`mt-1 w-2 h-2 rounded-full flex-shrink-0 ${todo.priority === 'high' ? 'bg-orange-500' :
-                                todo.priority === 'medium' ? 'bg-yellow-500' : 'bg-blue-500'
-                                }`} />
+                        <div key={todo.id} className="flex items-start gap-3 p-2 rounded-xl hover:bg-[var(--color-bg-tertiary)] transition-colors group">
+                            <div className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${
+                                todo.priority === 'high' ? 'bg-[var(--color-warning)]' :
+                                todo.priority === 'medium' ? 'bg-[var(--color-accent)]' : 'bg-[var(--color-text-muted)]'
+                            }`} />
                             <div className="min-w-0 flex-1">
-                                <p className="text-sm font-medium text-white/90 truncate group-hover:text-[var(--color-accent)] transition-colors">
+                                <p className="text-sm font-medium text-[var(--color-text-primary)] truncate group-hover:text-[var(--color-accent)] transition-colors">
                                     {todo.title}
                                 </p>
                                 {todo.due_date && (
-                                    <p className="text-[10px] text-white/40 flex items-center gap-1 mt-0.5">
+                                    <p className="text-[10px] text-[var(--color-text-muted)] flex items-center gap-1 mt-0.5">
                                         <Clock size={10} />
                                         {new Date(todo.due_date).toLocaleDateString('pt-PT')}
                                     </p>
