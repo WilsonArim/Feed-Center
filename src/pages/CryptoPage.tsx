@@ -11,7 +11,7 @@ import { useWeb3 } from '@/hooks/useWeb3'
 import type { UnifiedAsset, CryptoTransaction } from '@/types'
 import { formatCurrency } from '@/utils/format'
 import { PortfolioDonut } from '@/components/modules/crypto/PortfolioDonut'
-import { NextActionsStrip, PageHeader, PageSectionHeader } from '@/components/core/PagePrimitives'
+import { NextActionsStrip, PageHeader, PageSectionHeader, StateCard } from '@/components/core/PagePrimitives'
 
 const fmtPct = (v: number) => `${v > 0 ? '+' : ''}${v.toFixed(2)}%`
 const fmtDate = (d: string) => new Date(d).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' })
@@ -69,26 +69,26 @@ export function CryptoPage() {
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                     className="p-6 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-48 h-48 bg-[var(--color-accent)]/5 rounded-full blur-3xl -translate-y-8 translate-x-8" />
-                    <p className="text-[10px] font-bold uppercase tracking-widest mb-1 text-[var(--color-text-muted)]">Portfolio</p>
+                    <p className="text-xs font-bold uppercase tracking-widest mb-1 text-[var(--color-text-muted)]">Portfolio</p>
                     <h2 className="text-4xl font-bold tracking-tighter text-[var(--color-text-primary)]">{formatCurrency(totalBalance)}</h2>
                 </motion.div>
 
                 <div className="p-6 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)]">
-                    <p className="text-[10px] font-bold uppercase tracking-widest mb-1 text-[var(--color-text-muted)]">PnL Nao Realizado</p>
+                    <p className="text-xs font-bold uppercase tracking-widest mb-1 text-[var(--color-text-muted)]">PnL Nao Realizado</p>
                     <div className={`text-2xl font-bold tracking-tight flex items-center gap-2 ${totalUnrealized >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                         {totalUnrealized >= 0 ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
                         {formatCurrency(totalUnrealized)}
                     </div>
-                    <p className="text-[10px] text-[var(--color-text-muted)] mt-1">Baseado no preco atual vs preco medio de compra</p>
+                    <p className="text-xs text-[var(--color-text-muted)] mt-1.5">Baseado no preco atual vs preco medio de compra</p>
                 </div>
 
                 <div className="p-6 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)]">
-                    <p className="text-[10px] font-bold uppercase tracking-widest mb-1 text-[var(--color-text-muted)]">PnL Realizado</p>
+                    <p className="text-xs font-bold uppercase tracking-widest mb-1 text-[var(--color-text-muted)]">PnL Realizado</p>
                     <div className={`text-2xl font-bold tracking-tight flex items-center gap-2 ${totalRealized >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                         {totalRealized >= 0 ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
                         {formatCurrency(totalRealized)}
                     </div>
-                    <p className="text-[10px] text-[var(--color-text-muted)] mt-1">Lucro/prejuizo de vendas e swaps</p>
+                    <p className="text-xs text-[var(--color-text-muted)] mt-1.5">Lucro/prejuizo de vendas e swaps</p>
                 </div>
             </div>
 
@@ -115,48 +115,56 @@ export function CryptoPage() {
             <div className="rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] overflow-hidden">
                 <div className="px-6 py-4 border-b border-[var(--color-border)] flex items-center justify-between">
                     <h3 className="font-bold text-[var(--color-text-primary)]">Holdings</h3>
-                    <span className="text-xs text-[var(--color-text-muted)]">Calculados automaticamente a partir das transacoes</span>
+                    <span className="text-sm text-[var(--color-text-muted)]">Calculados automaticamente a partir das transacoes</span>
                 </div>
 
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left">
-                        <thead className="bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)] text-[10px] uppercase font-medium">
+                {portfolio.length === 0 && !isLoadingPortfolio ? (
+                    <div className="p-4">
+                        <StateCard
+                            title={hasWallets ? 'Nenhuma transacao registada' : 'Adiciona uma carteira para comecar'}
+                            message={hasWallets
+                                ? 'Depois de registares transacoes, os holdings aparecem aqui.'
+                                : 'Liga uma carteira read-only para ativar o teu ledger cripto.'}
+                            icon={<Bitcoin size={18} />}
+                        />
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm text-left">
+                            <thead className="bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)] text-[11px] uppercase font-medium">
                             <tr>
-                                <th className="px-6 py-3"></th>
-                                <th className="px-6 py-3">Ativo</th>
-                                <th className="px-6 py-3 text-right">Preco</th>
-                                <th className="px-6 py-3 text-right">24h</th>
-                                <th className="px-6 py-3 text-right">Quantidade</th>
-                                <th className="px-6 py-3 text-right">Valor</th>
-                                <th className="px-6 py-3 text-right">Custo Medio</th>
-                                <th className="px-6 py-3 text-right">PnL</th>
-                                <th className="px-6 py-3 text-center">Txs</th>
+                                <th className="px-6 py-3.5"></th>
+                                <th className="px-6 py-3.5">Ativo</th>
+                                <th className="px-6 py-3.5 text-right">Preco</th>
+                                <th className="px-6 py-3.5 text-right">24h</th>
+                                <th className="px-6 py-3.5 text-right">Quantidade</th>
+                                <th className="px-6 py-3.5 text-right">Valor</th>
+                                <th className="px-6 py-3.5 text-right">Custo Medio</th>
+                                <th className="px-6 py-3.5 text-right">PnL</th>
+                                <th className="px-6 py-3.5 text-center">Txs</th>
                             </tr>
-                        </thead>
-                        <tbody className="text-[var(--color-text-primary)]">
-                            {isLoadingPortfolio ? (
-                                <tr><td colSpan={9} className="p-8 text-center text-[var(--color-text-muted)]">
-                                    <RefreshCw size={18} className="animate-spin inline mr-2" /> A carregar...
-                                </td></tr>
-                            ) : portfolio.length === 0 ? (
-                                <tr><td colSpan={9} className="p-12 text-center text-[var(--color-text-muted)]">
-                                    {hasWallets ? 'Nenhuma transacao registada.' : 'Adiciona uma carteira primeiro.'}
-                                </td></tr>
-                            ) : portfolio.map((asset: UnifiedAsset) => {
-                                const isExpanded = expandedSymbol === asset.symbol
-                                return (
-                                    <AssetRow
-                                        key={asset.symbol}
-                                        asset={asset}
-                                        isExpanded={isExpanded}
-                                        onToggle={() => setExpandedSymbol(isExpanded ? null : asset.symbol)}
-                                        onDeleteTx={(id) => deleteTransaction.mutate(id)}
-                                    />
-                                )
-                            })}
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody className="text-[var(--color-text-primary)]">
+                                {isLoadingPortfolio ? (
+                                    <tr><td colSpan={9} className="p-8 text-center text-[var(--color-text-muted)]">
+                                        <RefreshCw size={18} className="animate-spin inline mr-2" /> A carregar...
+                                    </td></tr>
+                                ) : portfolio.map((asset: UnifiedAsset) => {
+                                    const isExpanded = expandedSymbol === asset.symbol
+                                    return (
+                                        <AssetRow
+                                            key={asset.symbol}
+                                            asset={asset}
+                                            isExpanded={isExpanded}
+                                            onToggle={() => setExpandedSymbol(isExpanded ? null : asset.symbol)}
+                                            onDeleteTx={(id) => deleteTransaction.mutate(id)}
+                                        />
+                                    )
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
             </div>
 
             <PortfolioDonut />

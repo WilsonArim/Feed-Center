@@ -62,7 +62,7 @@ export function LinksPage() {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="w-full"
+                className="w-full flex flex-col gap-6"
             >
                 {/* Header */}
                 <PageHeader
@@ -86,7 +86,7 @@ export function LinksPage() {
                 />
 
                 {/* Search Bar */}
-                <div className="relative mb-6">
+                <div className="relative">
                     <Search
                         size={18}
                         className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-[var(--color-text-muted)]"
@@ -96,13 +96,13 @@ export function LinksPage() {
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="Pesquisar links por titulo, URL ou descricao..."
-                        className="w-full pl-11 pr-4 py-3 rounded-xl text-sm bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] outline-none transition-all duration-200 focus:ring-2 focus:ring-[var(--color-accent)]/30 focus:border-[var(--color-accent)]/50"
+                        className="w-full pl-11 pr-4 py-3.5 rounded-xl text-base bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] outline-none transition-all duration-200 focus:ring-2 focus:ring-[var(--color-accent)]/30 focus:border-[var(--color-accent)]/50"
                     />
                 </div>
 
                 {/* Tag Filters */}
                 {allTags.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-8">
+                    <div className="flex flex-wrap gap-2">
                         <button
                             onClick={() => setActiveTag(null)}
                             className={`text-xs px-3 py-1.5 rounded-full transition-all duration-200 border ${

@@ -125,11 +125,11 @@ export function TodoPage() {
                 </div>
 
                 {/* Stats Bar */}
-                <div className="px-6 md:px-8 py-3 border-b border-[var(--color-border)]">
+                <div className="px-6 md:px-8 py-4 border-b border-[var(--color-border)]">
                     <TodoStatsBar />
                 </div>
 
-                <div className="px-6 md:px-8 pt-4">
+                <div className="px-6 md:px-8 pt-5 pb-1">
                     <NextActionsStrip
                         title="Ritual recomendado: definir 1 tarefa critica, 1 de manutencao e 1 de crescimento."
                         actions={[

@@ -12,26 +12,26 @@ interface PageHeaderProps {
 
 export function PageHeader({ icon, title, subtitle, actions, meta }: PageHeaderProps) {
     return (
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
             <div className="min-w-0">
-                <div className="flex items-center gap-3">
+                <div className="flex items-start gap-3.5">
                     {icon && (
-                        <div className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--accent)]">
+                        <div className="w-11 h-11 shrink-0 rounded-xl flex items-center justify-center bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--accent)]">
                             {icon}
                         </div>
                     )}
                     <div className="min-w-0">
-                        <h1 className="text-h1 text-2xl md:text-3xl leading-tight">{title}</h1>
-                        <p className="text-sm text-[var(--text-secondary)] mt-1">{subtitle}</p>
+                        <h1 className="text-h1 text-2xl md:text-3xl leading-[1.2]">{title}</h1>
+                        <p className="text-sm md:text-base text-[var(--text-secondary)] mt-1.5 leading-relaxed">{subtitle}</p>
                     </div>
                 </div>
                 {meta && (
-                    <div className="mt-2 text-xs text-[var(--text-tertiary)]">{meta}</div>
+                    <div className="mt-2.5 text-xs text-[var(--text-tertiary)]">{meta}</div>
                 )}
             </div>
 
             {actions && (
-                <div className="flex items-center gap-2 flex-wrap md:justify-end">
+                <div className="flex items-center gap-2.5 flex-wrap md:justify-end md:pt-1">
                     {actions}
                 </div>
             )}
@@ -47,10 +47,10 @@ interface SectionHeaderProps {
 
 export function PageSectionHeader({ title, subtitle, action }: SectionHeaderProps) {
     return (
-        <div className="flex items-end justify-between gap-4">
+        <div className="flex items-end justify-between gap-4 pt-1">
             <div>
-                <h2 className="text-lg md:text-xl font-semibold text-[var(--text-primary)]">{title}</h2>
-                <p className="text-xs md:text-sm text-[var(--text-secondary)] mt-1">{subtitle}</p>
+                <h2 className="text-lg md:text-xl font-semibold text-[var(--text-primary)] leading-snug">{title}</h2>
+                <p className="text-sm text-[var(--text-secondary)] mt-1.5 leading-relaxed">{subtitle}</p>
             </div>
             {action}
         </div>
@@ -102,15 +102,15 @@ interface NextActionsStripProps {
 
 export function NextActionsStrip({ title, actions }: NextActionsStripProps) {
     return (
-        <div className="glass-card-static p-4 md:p-5">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-                <p className="text-sm text-[var(--text-primary)] font-medium">{title}</p>
+        <div className="glass-card-static px-5 py-4 md:px-6 md:py-5">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3.5">
+                <p className="text-sm md:text-base text-[var(--text-primary)] font-medium leading-relaxed">{title}</p>
                 <div className="flex flex-wrap gap-2">
                     {actions.map((action) => (
                         <NavLink
                             key={action.to + action.label}
                             to={action.to}
-                            className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-[var(--border-default)] hover:border-[var(--accent)]/35 hover:text-[var(--accent)] transition-colors"
+                            className="inline-flex items-center gap-1.5 text-sm px-3.5 py-2 rounded-lg border border-[var(--border-default)] hover:border-[var(--accent)]/35 hover:text-[var(--accent)] transition-colors"
                         >
                             {action.label}
                             <ArrowRight size={12} />

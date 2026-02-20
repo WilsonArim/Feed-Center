@@ -147,6 +147,9 @@
   --glass-bg: rgba(255,255,255,0.02);
   --glass-border: rgba(255,255,255,0.06);
   --glass-blur: 24px;
+  --btn-radius: 0.75rem;
+  --surface-interactive: var(--bg-surface);
+  --modal-overlay: var(--bg-overlay);
 
   /* Sidebar */
   --sidebar-bg: rgba(4,8,15,0.80);
@@ -248,6 +251,9 @@
   --glass-bg: rgba(255,255,255,0.70);
   --glass-border: rgba(0,0,0,0.06);
   --glass-blur: 20px;
+  --btn-radius: 0.75rem;
+  --surface-interactive: var(--bg-surface);
+  --modal-overlay: var(--bg-overlay);
 
   --sidebar-bg: rgba(255,255,255,0.85);
   --sidebar-border: rgba(0,0,0,0.06);
@@ -312,9 +318,28 @@ body {
   background-color: var(--bg-deep);
   color: var(--text-primary);
   min-height: 100dvh;
+  line-height: 1.45;
   transition: background-color 0.3s ease, color 0.3s ease;
   width: 100%;
   overflow-x: hidden;
+}
+
+input,
+textarea,
+select,
+button {
+  font: inherit;
+  line-height: 1.35;
+}
+
+input,
+select,
+textarea {
+  min-height: 2.5rem;
+}
+
+textarea {
+  min-height: 6rem;
 }
 
 #root {

@@ -78,10 +78,10 @@ export function SmartEntryInput({ onSubmit, isLoading }: Props) {
                         setIsExpanded(true)
                         setTimeout(() => inputRef.current?.focus(), 100)
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer group bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-[var(--color-accent)]/30 transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl cursor-pointer group bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-[var(--color-accent)]/30 transition-colors"
                 >
                     <Sparkles size={16} className="text-[var(--color-accent)] opacity-60 group-hover:opacity-100 transition-opacity" />
-                    <span className="text-sm text-[var(--color-text-muted)]">
+                    <span className="text-sm md:text-base text-[var(--color-text-muted)]">
                         Regista rapido... <kbd className="ml-2 px-1.5 py-0.5 rounded text-xs bg-[var(--color-bg-tertiary)] border border-[var(--color-border)]">Cmd+K</kbd>
                     </span>
                 </motion.button>
@@ -95,13 +95,13 @@ export function SmartEntryInput({ onSubmit, isLoading }: Props) {
                         exit={{ opacity: 0, y: -8, height: 0 }}
                         className="rounded-xl overflow-hidden bg-[var(--color-surface)] border-2 border-[var(--color-accent)] shadow-lg shadow-[var(--color-accent)]/10"
                     >
-                        <div className="flex gap-1 p-2 pb-0">
+                        <div className="flex gap-2 p-3 pb-0">
                             {typeButtons.map((t) => (
                                 <button
                                     key={t.value}
                                     type="button"
                                     onClick={() => setSelectedType(t.value)}
-                                    className={`px-3 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                                    className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all cursor-pointer ${
                                         selectedType === t.value
                                             ? 'bg-[var(--color-accent)] text-[var(--color-bg-primary)]'
                                             : 'hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)]'
@@ -113,13 +113,13 @@ export function SmartEntryInput({ onSubmit, isLoading }: Props) {
                             <div className="flex-1" />
                             <button
                                 onClick={() => { setValue(''); setIsExpanded(false) }}
-                                className="p-1 rounded-lg hover:bg-[var(--color-bg-tertiary)] cursor-pointer text-[var(--color-text-muted)]"
+                                className="p-1.5 rounded-lg hover:bg-[var(--color-bg-tertiary)] cursor-pointer text-[var(--color-text-muted)]"
                             >
                                 <X size={14} />
                             </button>
                         </div>
 
-                        <div className="flex items-center gap-2 p-3">
+                        <div className="flex items-center gap-3 p-4">
                             <Sparkles size={16} className="text-[var(--color-accent)] flex-shrink-0" />
                             <input
                                 ref={inputRef}
@@ -132,7 +132,7 @@ export function SmartEntryInput({ onSubmit, isLoading }: Props) {
                                         : selectedType === 'income' ? 'Ex: Freelance projeto 500'
                                             : 'Ex: EDP eletricidade 65'
                                 }
-                                className="flex-1 bg-transparent text-sm outline-none text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)]"
+                                className="flex-1 bg-transparent text-base outline-none text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)]"
                                 autoFocus
                             />
                             {parsed?.amount && (
@@ -156,7 +156,7 @@ export function SmartEntryInput({ onSubmit, isLoading }: Props) {
                                     initial={{ opacity: 0, height: 0 }}
                                     animate={{ opacity: 1, height: 'auto' }}
                                     exit={{ opacity: 0, height: 0 }}
-                                    className="px-3 pb-3 flex items-center gap-2 text-xs text-[var(--color-text-muted)]"
+                                    className="px-4 pb-4 flex flex-wrap items-center gap-2 text-xs text-[var(--color-text-muted)]"
                                 >
                                     <span className="px-2 py-0.5 rounded-full bg-[var(--color-bg-tertiary)]">
                                         {parsed.amount.toFixed(2)} EUR

@@ -16,14 +16,14 @@ export function LinksStatsBar() {
     ]
 
     return (
-        <div className="grid grid-cols-3 gap-3 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {stats.map(s => (
-                <div key={s.label} className="rounded-xl p-3 transition-all bg-[var(--color-surface)] border border-[var(--color-border)]">
-                    <div className="flex items-center gap-1.5 mb-1">
+                <div key={s.label} className="rounded-xl p-4 transition-all bg-[var(--color-surface)] border border-[var(--color-border)]">
+                    <div className="flex items-center gap-2 mb-2">
                         <span style={{ color: s.color }}>{s.icon}</span>
-                        <span className="text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-muted)]">{s.label}</span>
+                        <span className="text-[11px] font-medium uppercase tracking-wider text-[var(--color-text-muted)]">{s.label}</span>
                     </div>
-                    <div className="text-lg font-bold truncate" style={{ color: s.color }}>{s.value}</div>
+                    <div className="text-xl font-bold truncate" style={{ color: s.color }}>{s.value}</div>
                 </div>
             ))}
         </div>

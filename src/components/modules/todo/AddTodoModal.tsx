@@ -95,14 +95,14 @@ export function AddTodoModal({ isOpen, onClose, onSubmit, isLoading, editingTodo
                             animate={{ scale: 1, opacity: 1, y: 0 }}
                             exit={{ scale: 0.95, opacity: 0, y: 20 }}
                             onClick={(e) => e.stopPropagation()}
-                            className="w-full max-w-md bg-[#121212] border border-white/10 rounded-2xl shadow-2xl overflow-hidden"
+                            className="w-full max-w-lg bg-[#121212] border border-white/10 rounded-2xl shadow-2xl overflow-hidden"
                             role="dialog"
                             aria-modal="true"
                             aria-labelledby="add-task-modal-title"
                         >
-                            <div className="p-6">
+                            <div className="p-6 md:p-7">
                                 <div className="flex items-center justify-between mb-6">
-                                    <h2 id="add-task-modal-title" className="text-xl font-bold text-white">
+                                    <h2 id="add-task-modal-title" className="text-2xl font-bold text-white">
                                         {editingTodo ? 'Editar tarefa' : 'Nova tarefa'}
                                     </h2>
                                     <button
@@ -114,11 +114,11 @@ export function AddTodoModal({ isOpen, onClose, onSubmit, isLoading, editingTodo
                                     </button>
                                 </div>
 
-                                <form onSubmit={handleSubmit} className="space-y-4">
+                                <form onSubmit={handleSubmit} className="space-y-5">
                                     {/* Title & Voice */}
                                     <div>
-                                        <div className="flex justify-between items-center mb-1.5">
-                                            <label className="text-xs font-medium text-white/50 uppercase">Titulo</label>
+                                        <div className="flex justify-between items-center mb-2">
+                                            <label className="text-sm font-medium text-white/65 uppercase tracking-wide">Titulo</label>
                                             <VoiceInput
                                                 onTranscript={(text) => {
                                                     // Smartly append or replace
@@ -132,26 +132,26 @@ export function AddTodoModal({ isOpen, onClose, onSubmit, isLoading, editingTodo
                                             value={title}
                                             onChange={(e) => setTitle(e.target.value)}
                                             placeholder="Qual e a proxima acao?"
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[var(--color-accent)] transition-colors"
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-[var(--color-accent)] transition-colors"
                                             autoFocus
                                         />
                                     </div>
 
                                     {/* Description */}
                                     <div>
-                                        <label className="block text-xs font-medium text-white/50 uppercase mb-1.5">Descricao (Opcional)</label>
+                                        <label className="block text-sm font-medium text-white/65 uppercase tracking-wide mb-2">Descricao (Opcional)</label>
                                         <textarea
                                             value={description}
                                             onChange={(e) => setDescription(e.target.value)}
                                             placeholder="Adiciona contexto..."
                                             rows={3}
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[var(--color-accent)] transition-colors resize-none"
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-[var(--color-accent)] transition-colors resize-none"
                                         />
                                     </div>
 
                                     {/* Priority */}
                                     <div>
-                                        <label className="block text-xs font-medium text-white/50 uppercase mb-2">Prioridade</label>
+                                        <label className="block text-sm font-medium text-white/65 uppercase tracking-wide mb-2">Prioridade</label>
                                         <div className="flex gap-2">
                                             {PRIORITIES.map((p) => (
                                                 <button
@@ -159,7 +159,7 @@ export function AddTodoModal({ isOpen, onClose, onSubmit, isLoading, editingTodo
                                                     type="button"
                                                     onClick={() => setPriority(p.value)}
                                                     className={`
-                                                        flex-1 py-2 rounded-lg text-sm font-medium border transition-all
+                                                        flex-1 py-2.5 rounded-lg text-sm font-medium border transition-all
                                                         ${priority === p.value ? p.color : 'bg-transparent border-white/10 text-white/50 hover:bg-white/5'}
                                                     `}
                                                 >
@@ -170,11 +170,11 @@ export function AddTodoModal({ isOpen, onClose, onSubmit, isLoading, editingTodo
                                     </div>
 
                                     {/* Footer Actions */}
-                                    <div className="flex gap-3 mt-8 pt-4 border-t border-white/10">
+                                    <div className="flex gap-3 mt-6 pt-5 border-t border-white/10">
                                         <button
                                             type="button"
                                             onClick={onClose}
-                                            className="px-4 py-2 text-white/70 hover:text-white transition-colors text-sm font-medium"
+                                            className="px-4 py-2.5 text-white/70 hover:text-white transition-colors text-sm font-medium"
                                         >
                                             Cancelar
                                         </button>

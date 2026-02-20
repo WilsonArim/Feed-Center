@@ -21,20 +21,20 @@ export function TodoStatsBar() {
     ]
 
     return (
-        <div className="flex items-center gap-5 flex-wrap">
+        <div className="flex items-center gap-3 md:gap-4 flex-wrap">
             {stats.map(s => (
-                <div key={s.label} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)]">
+                <div key={s.label} className="flex items-center gap-2.5 px-3.5 py-2 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border)]">
                     <span style={{ color: s.color }}>{s.icon}</span>
-                    <span className="text-[10px] uppercase tracking-wider font-medium text-[var(--color-text-muted)]">
+                    <span className="text-[11px] uppercase tracking-wider font-medium text-[var(--color-text-muted)]">
                         {s.label}
                     </span>
-                    <span className="text-xs font-bold" style={{ color: s.color }}>{s.value}</span>
+                    <span className="text-sm font-bold" style={{ color: s.color }}>{s.value}</span>
                 </div>
             ))}
 
             {/* Completion bar */}
-            <div className="flex-1 min-w-[80px] flex items-center gap-2">
-                <div className="flex-1 h-1.5 rounded-full overflow-hidden bg-[var(--color-bg-tertiary)]">
+            <div className="flex-1 min-w-[180px] flex items-center gap-2">
+                <div className="flex-1 h-2 rounded-full overflow-hidden bg-[var(--color-bg-tertiary)]">
                     <motion.div
                         className="h-full rounded-full"
                         style={{ background: '#22c55e' }}
@@ -43,7 +43,7 @@ export function TodoStatsBar() {
                         transition={{ duration: 0.8, ease: 'easeOut' }}
                     />
                 </div>
-                <span className="text-[10px] font-mono font-bold text-emerald-400">{completionPct}%</span>
+                <span className="text-xs font-mono font-bold text-emerald-400">{completionPct}%</span>
             </div>
         </div>
     )

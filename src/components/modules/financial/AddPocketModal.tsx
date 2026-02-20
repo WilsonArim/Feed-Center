@@ -41,6 +41,17 @@ export function AddPocketModal({ isOpen, onClose, editingPocket }: Props) {
         }
     }, [editingPocket, isOpen])
 
+    useEffect(() => {
+        if (!isOpen) return
+
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') onClose()
+        }
+
+        window.addEventListener('keydown', handleEscape)
+        return () => window.removeEventListener('keydown', handleEscape)
+    }, [isOpen, onClose])
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         if (!name) return
@@ -77,10 +88,13 @@ export function AddPocketModal({ isOpen, onClose, editingPocket }: Props) {
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
                         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                        className="relative w-full max-w-md rounded-2xl shadow-2xl overflow-hidden bg-[var(--color-surface)] border border-[var(--color-border)]"
+                        className="relative w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden bg-[var(--color-surface)] border border-[var(--color-border)]"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="add-pocket-modal-title"
                     >
                         <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--color-border)]">
-                            <h2 className="text-lg font-semibold flex items-center gap-2 text-[var(--color-text-primary)]">
+                            <h2 id="add-pocket-modal-title" className="text-2xl font-semibold flex items-center gap-2 text-[var(--color-text-primary)]">
                                 <FolderPlus size={20} className="text-[var(--color-accent)]" />
                                 {editingPocket ? 'Editar Envelope' : 'Novo Envelope'}
                             </h2>
@@ -89,9 +103,9 @@ export function AddPocketModal({ isOpen, onClose, editingPocket }: Props) {
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-5">
+                        <form onSubmit={handleSubmit} className="p-6 md:p-7 flex flex-col gap-6">
                             <div className="flex flex-col gap-1.5">
-                                <label className="text-xs font-medium pl-1 text-[var(--color-text-secondary)]">
+                                <label className="text-sm font-medium pl-1 text-[var(--color-text-secondary)]">
                                     Nome do Envelope *
                                 </label>
                                 <input
@@ -105,7 +119,7 @@ export function AddPocketModal({ isOpen, onClose, editingPocket }: Props) {
                             </div>
 
                             <div className="flex flex-col gap-1.5">
-                                <label className="text-xs font-medium pl-1 text-[var(--color-text-secondary)]">
+                                <label className="text-sm font-medium pl-1 text-[var(--color-text-secondary)]">
                                     Limite / Objetivo Mensal (EUR)
                                 </label>
                                 <div className="relative">
@@ -118,22 +132,22 @@ export function AddPocketModal({ isOpen, onClose, editingPocket }: Props) {
                                         placeholder="Ex: 500"
                                         className="w-full pl-8 pr-4 py-2.5 rounded-xl outline-none transition-all focus:ring-2 focus:ring-[var(--color-accent)]/30 focus:border-[var(--color-accent)]/50 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] text-sm"
                                     />
-                                    <span className="absolute left-3 top-2.5 text-[var(--color-text-muted)] text-sm">EUR</span>
+                                    <span className="absolute left-3 top-3 text-[var(--color-text-muted)] text-sm">EUR</span>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="flex flex-col gap-1.5">
-                                    <label className="text-xs font-medium pl-1 flex items-center gap-1 text-[var(--color-text-secondary)]">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="flex flex-col gap-1.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-tertiary)]/35 p-3">
+                                    <label className="text-sm font-medium pl-1 flex items-center gap-1 text-[var(--color-text-secondary)]">
                                         <Smile size={12} /> Icone
                                     </label>
-                                    <div className="flex gap-2 items-center overflow-x-auto pb-1">
+                                    <div className="grid grid-cols-5 gap-2">
                                         {ICONS.map((ic) => (
                                             <button
                                                 key={ic}
                                                 type="button"
                                                 onClick={() => setIcon(ic)}
-                                                className={`w-8 h-8 flex-shrink-0 rounded-lg flex items-center justify-center text-xs font-bold transition-all ${
+                                                className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold transition-all ${
                                                     icon === ic
                                                         ? 'bg-[var(--color-accent)]/15 text-[var(--color-accent)] scale-110'
                                                         : 'hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)] opacity-60'
@@ -145,17 +159,17 @@ export function AddPocketModal({ isOpen, onClose, editingPocket }: Props) {
                                     </div>
                                 </div>
 
-                                <div className="flex flex-col gap-1.5">
-                                    <label className="text-xs font-medium pl-1 flex items-center gap-1 text-[var(--color-text-secondary)]">
+                                <div className="flex flex-col gap-1.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-tertiary)]/35 p-3">
+                                    <label className="text-sm font-medium pl-1 flex items-center gap-1 text-[var(--color-text-secondary)]">
                                         <Palette size={12} /> Cor
                                     </label>
-                                    <div className="flex gap-2 items-center overflow-x-auto pb-1">
+                                    <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
                                         {COLORS.map((c) => (
                                             <button
                                                 key={c}
                                                 type="button"
                                                 onClick={() => setColor(c)}
-                                                className={`w-6 h-6 flex-shrink-0 rounded-full transition-all ${
+                                                className={`w-8 h-8 rounded-full transition-all ${
                                                     color === c
                                                         ? 'ring-2 ring-[var(--color-text-primary)] ring-offset-2 ring-offset-[var(--color-surface)] scale-110'
                                                         : 'opacity-60 hover:opacity-100'
@@ -168,11 +182,11 @@ export function AddPocketModal({ isOpen, onClose, editingPocket }: Props) {
                                 </div>
                             </div>
 
-                            <div className="pt-4 flex justify-end gap-3">
+                            <div className="pt-5 flex justify-end gap-3">
                                 <button
                                     type="button"
                                     onClick={onClose}
-                                    className="px-4 py-2 text-sm font-medium rounded-xl hover:bg-[var(--color-bg-tertiary)] transition-colors text-[var(--color-text-muted)]"
+                                    className="px-4 py-2.5 text-sm font-medium rounded-xl hover:bg-[var(--color-bg-tertiary)] transition-colors text-[var(--color-text-muted)]"
                                 >
                                     Cancelar
                                 </button>

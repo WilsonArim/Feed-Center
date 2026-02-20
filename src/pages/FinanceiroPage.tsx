@@ -114,7 +114,7 @@ export function FinanceiroPage() {
     }
 
     return (
-        <div className="w-full space-y-6 pb-12">
+        <div className="w-full space-y-8 pb-12">
             {/* Header */}
             <PageHeader
                 icon={<Wallet size={18} />}
