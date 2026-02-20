@@ -4,8 +4,8 @@ import { Newspaper } from 'lucide-react'
 import { NavLink } from 'react-router'
 
 const TOPIC_COLORS: Record<string, string> = {
-    AI: '#3b82f6', Crypto: '#f59e0b', Geopolitics: '#ef4444',
-    Macro: '#8b5cf6', Regulation: '#06b6d4', Tech: '#10b981',
+    AI: 'var(--color-accent)', Crypto: 'var(--color-warning)', Geopolitics: 'var(--color-danger)',
+    Macro: 'var(--color-secondary)', Regulation: '#06b6d4', Tech: 'var(--color-success)',
 }
 
 export function NewsWidget() {
@@ -15,7 +15,7 @@ export function NewsWidget() {
         return (
             <div className="flex flex-col gap-3 animate-pulse">
                 {[1, 2, 3].map(i => (
-                    <div key={i} className="h-10 bg-white/5 rounded-lg" />
+                    <div key={i} className="h-10 bg-[var(--color-bg-tertiary)] rounded-xl" />
                 ))}
             </div>
         )
@@ -23,34 +23,36 @@ export function NewsWidget() {
 
     if (items.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center h-full text-white/20 text-xs text-center">
-                <Newspaper size={24} className="mb-2 opacity-50" />
-                Sem notícias ainda
+            <div className="flex flex-col items-center justify-center h-full text-[var(--color-text-muted)] text-xs text-center">
+                <div className="w-10 h-10 rounded-xl bg-[var(--color-bg-tertiary)] flex items-center justify-center mb-2">
+                    <Newspaper size={18} className="opacity-40" />
+                </div>
+                Sem noticias ainda
             </div>
         )
     }
 
     return (
         <div className="flex flex-col h-full">
-            <div className="space-y-2 flex-1">
+            <div className="space-y-1.5 flex-1">
                 {items.map(item => {
-                    const color = TOPIC_COLORS[item.topic_primary] || '#64748b'
+                    const color = TOPIC_COLORS[item.topic_primary] || 'var(--color-text-muted)'
                     return (
                         <a
                             key={item.id}
                             href={item.source_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="block p-2 rounded-lg hover:bg-white/5 transition-colors group"
+                            className="block p-2 rounded-xl hover:bg-[var(--color-bg-tertiary)] transition-colors group"
                         >
                             <div className="flex items-center gap-2 mb-0.5">
-                                <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full"
-                                    style={{ background: `${color}20`, color }}>
+                                <span className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-md"
+                                    style={{ background: `color-mix(in srgb, ${color} 12%, transparent)`, color }}>
                                     {item.topic_primary}
                                 </span>
-                                <span className="text-[10px] text-white/30">{timeAgo(item.published_at)}</span>
+                                <span className="text-[10px] text-[var(--color-text-muted)]">{timeAgo(item.published_at)}</span>
                             </div>
-                            <p className="text-xs font-medium text-white/80 line-clamp-1 group-hover:text-[var(--color-accent)] transition-colors">
+                            <p className="text-xs font-medium text-[var(--color-text-secondary)] line-clamp-1 group-hover:text-[var(--color-accent)] transition-colors">
                                 {item.title}
                             </p>
                         </a>
@@ -59,9 +61,9 @@ export function NewsWidget() {
             </div>
             <NavLink
                 to="/news"
-                className="text-[10px] text-center text-[var(--color-accent)] hover:underline mt-2 block"
+                className="text-[11px] text-center text-[var(--color-accent)] hover:underline mt-2 block font-medium"
             >
-                Ver todas →
+                Ver todas
             </NavLink>
         </div>
     )

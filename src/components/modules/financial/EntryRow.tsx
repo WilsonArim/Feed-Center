@@ -8,23 +8,23 @@ const dateLabel = (d: string) =>
     new Date(d + 'T00:00:00').toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' })
 
 const CATEGORY_ICONS: Record<string, string> = {
-    'Alimentação': '🍕',
+    'Alimentacao': '🍕',
     'Transporte': '🚗',
-    'Saúde': '💊',
-    'Habitação': '🏠',
+    'Saude': '💊',
+    'Habitacao': '🏠',
     'Lazer': '🎮',
-    'Educação': '📚',
+    'Educacao': '📚',
     'Subscriptions': '📦',
-    'Salário': '💰',
+    'Salario': '💰',
     'Freelance': '💻',
     'Investimentos': '📈',
     'Reembolso': '🔄',
     'Renda': '🏠',
     'Eletricidade': '⚡',
-    'Água': '💧',
+    'Agua': '💧',
     'Internet': '🌐',
     'Seguro': '🛡️',
-    'Telecomunicações': '📱',
+    'Telecomunicacoes': '📱',
     'Outros': '📌',
 }
 
@@ -55,31 +55,30 @@ export function EntryRow({ entry, onEdit, onDelete }: Props) {
             initial={{ opacity: 0, x: -8 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 8 }}
-            className="flex items-center gap-3 px-4 py-3 rounded-[var(--radius-md)] transition-colors hover:bg-white/[0.03] group"
+            className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-[var(--color-bg-tertiary)] group"
         >
             {/* Category icon */}
-            <span className="text-lg w-8 text-center shrink-0">{icon}</span>
+            <div className="w-10 h-10 rounded-xl bg-[var(--color-bg-tertiary)] flex items-center justify-center text-lg shrink-0">
+                {icon}
+            </div>
 
             {/* Info */}
             <div className="flex-1 min-w-0">
-                <p
-                    className="text-sm font-medium truncate"
-                    style={{ color: 'var(--color-text-primary)' }}
-                >
+                <p className="text-sm font-medium truncate text-[var(--color-text-primary)]">
                     {entry.description || entry.category}
                 </p>
                 <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                    <span className="text-xs text-[var(--color-text-muted)]">
                         {dateLabel(entry.date)}
                     </span>
-                    <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>·</span>
-                    <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                    <span className="text-xs text-[var(--color-text-muted)]">-</span>
+                    <span className="text-xs text-[var(--color-text-muted)]">
                         {entry.category}
                     </span>
                     {entry.is_recurring && (
                         <>
-                            <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>·</span>
-                            <RotateCw size={10} style={{ color: 'var(--color-accent)' }} />
+                            <span className="text-xs text-[var(--color-text-muted)]">-</span>
+                            <RotateCw size={10} className="text-[var(--color-accent)]" />
                         </>
                     )}
                 </div>
@@ -88,7 +87,7 @@ export function EntryRow({ entry, onEdit, onDelete }: Props) {
             {/* Amount */}
             <span
                 className="text-sm font-semibold tabular-nums shrink-0"
-                style={{ color: isIncome ? 'var(--color-success, #22c55e)' : 'var(--color-danger, #ef4444)' }}
+                style={{ color: isIncome ? 'var(--color-success)' : 'var(--color-danger)' }}
             >
                 {isIncome ? '+' : '-'}{formatCurrency(entry.amount)}
             </span>
@@ -97,29 +96,27 @@ export function EntryRow({ entry, onEdit, onDelete }: Props) {
             <div className="relative shrink-0" ref={ref}>
                 <button
                     onClick={() => setMenuOpen(!menuOpen)}
-                    className="p-1.5 rounded-[var(--radius-sm)] opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:bg-white/5"
+                    className="p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:bg-[var(--color-bg-tertiary)]"
                 >
-                    <MoreHorizontal size={16} style={{ color: 'var(--color-text-muted)' }} />
+                    <MoreHorizontal size={16} className="text-[var(--color-text-muted)]" />
                 </button>
 
                 {menuOpen && (
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="absolute right-0 top-8 z-20 glass rounded-[var(--radius-md)] py-1 min-w-[140px]"
-                        style={{ border: '1px solid var(--color-border)' }}
+                        className="absolute right-0 top-8 z-20 bg-[var(--color-bg-secondary)] border border-[var(--color-border)]
+                            rounded-xl py-1 min-w-[140px] shadow-[0_16px_48px_rgba(0,0,0,0.25)]"
                     >
                         <button
                             onClick={() => { onEdit(entry); setMenuOpen(false) }}
-                            className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-white/5 transition-colors cursor-pointer"
-                            style={{ color: 'var(--color-text-secondary)' }}
+                            className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-[var(--color-bg-tertiary)] transition-colors cursor-pointer text-[var(--color-text-secondary)]"
                         >
                             <Pencil size={14} /> Editar
                         </button>
                         <button
                             onClick={() => { onDelete(entry.id); setMenuOpen(false) }}
-                            className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-white/5 transition-colors cursor-pointer"
-                            style={{ color: 'var(--color-danger)' }}
+                            className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-[var(--color-bg-tertiary)] transition-colors cursor-pointer text-[var(--color-danger)]"
                         >
                             <Trash2 size={14} /> Eliminar
                         </button>

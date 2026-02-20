@@ -28,7 +28,7 @@ const modules: BentoItem[] = [
     {
         id: 'financeiro',
         title: 'Controlo Financeiro',
-        description: 'Receitas, despesas e saldo do mês atual.',
+        description: 'Receitas, despesas e saldo do mes atual.',
         icon: <DollarSign size={20} />,
         colSpan: 2,
         children: <FinancialWidget />,
@@ -58,13 +58,13 @@ const modules: BentoItem[] = [
     {
         id: 'activity',
         title: 'Atividade Recente',
-        description: 'Últimas ações sincronizadas.',
+        description: 'Ultimas acoes sincronizadas.',
         icon: <Activity size={20} />,
     },
     {
         id: 'news',
-        title: 'Notícias',
-        description: 'Últimas notícias curadas.',
+        title: 'Noticias',
+        description: 'Ultimas noticias curadas.',
         icon: <Newspaper size={20} />,
         children: <NewsWidget />,
     },
@@ -84,34 +84,40 @@ function useMarqueeItems() {
 
     return [
         <MarqueeCard
+            key="fin"
             icon={<DollarSign size={14} />}
             title="Financeiro"
             text={summary ? `Saldo: ${formatCurrency(summary.balance)}` : 'A carregar...'}
         />,
         <MarqueeCard
+            key="todo"
             icon={<CheckSquare size={14} />}
             title="Produtividade"
             text={`${pendingTasks} tarefa${pendingTasks !== 1 ? 's' : ''} pendente${pendingTasks !== 1 ? 's' : ''}`}
         />,
         <MarqueeCard
+            key="crypto"
             icon={<Bitcoin size={14} />}
             title="Cripto"
             text={totalPortfolio > 0 ? `Portfolio: ${formatCurrency(totalPortfolio)}` : 'Sem wallets'}
         />,
         <MarqueeCard
+            key="links"
             icon={<Link2 size={14} />}
             title="Links"
             text={`${totalLinks} artigo${totalLinks !== 1 ? 's' : ''} ${totalLinks !== 1 ? 'salvos' : 'salvo'}`}
         />,
         <MarqueeCard
+            key="notif"
             icon={<Bell size={14} />}
-            title="Notificações"
-            text={unreadCount > 0 ? `${unreadCount} alerta${unreadCount !== 1 ? 's' : ''}` : 'Tudo em dia ✓'}
+            title="Notificacoes"
+            text={unreadCount > 0 ? `${unreadCount} alerta${unreadCount !== 1 ? 's' : ''}` : 'Tudo em dia'}
         />,
         <MarqueeCard
+            key="buggy"
             icon={<Sparkles size={14} />}
             title="Buggy IA"
-            text="Análise pronta"
+            text="Analise pronta"
         />,
     ]
 }
@@ -120,45 +126,74 @@ export function DashboardPage() {
     const { user } = useAuth()
     const marqueeItems = useMarqueeItems()
 
+    const greeting = getGreeting()
+
     return (
-        <div className="min-h-screen pt-24 px-6 pb-20">
+        <div className="min-h-screen pb-12">
             <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
+                transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
                 className="w-full"
             >
                 {/* Header */}
-                <div className="mb-10">
-                    <h1
-                        className="text-4xl font-bold tracking-tight mb-2"
-                        style={{ color: 'var(--color-text-primary)' }}
+                <div className="mb-8">
+                    <motion.h1
+                        initial={{ opacity: 0, x: -12 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.1, duration: 0.4 }}
+                        className="text-3xl md:text-4xl font-bold tracking-tight text-[var(--color-text-primary)] mb-1.5"
                     >
-                        Dashboard
-                    </h1>
-                    <p className="text-base" style={{ color: 'var(--color-text-secondary)' }}>
-                        Bem-vindo, <strong>{user?.email?.split('@')[0]}</strong>
-                    </p>
+                        {greeting}, <span className="text-[var(--color-accent)]">{user?.email?.split('@')[0]}</span>
+                    </motion.h1>
+                    <motion.p
+                        initial={{ opacity: 0, x: -12 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.15, duration: 0.4 }}
+                        className="text-sm text-[var(--color-text-secondary)]"
+                    >
+                        Aqui esta o resumo do teu dia.
+                    </motion.p>
                 </div>
 
-                {/* Infinite Marquee - Dynamic Data */}
-                <div className="mb-12 -mx-6 md:-mx-0 opacity-80 hover:opacity-100 transition-opacity">
+                {/* Infinite Marquee */}
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.2, duration: 0.5 }}
+                    className="mb-8 -mx-4 md:-mx-6 lg:-mx-8 opacity-80 hover:opacity-100 transition-opacity"
+                >
                     <InfiniteMarquee speed={40} items={marqueeItems} />
-                </div>
+                </motion.div>
 
                 {/* Bento Grid */}
-                <BentoGrid items={modules} />
+                <motion.div
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3, duration: 0.5 }}
+                >
+                    <BentoGrid items={modules} />
+                </motion.div>
             </motion.div>
         </div>
     )
 }
 
+function getGreeting() {
+    const hour = new Date().getHours()
+    if (hour < 12) return 'Bom dia'
+    if (hour < 18) return 'Boa tarde'
+    return 'Boa noite'
+}
+
 function MarqueeCard({ icon, title, text }: { icon: React.ReactNode, title: string, text: string }) {
     return (
-        <div className="flex items-center gap-3 px-4 py-2 rounded-full glass border border-[var(--color-border)]">
+        <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl
+            bg-[var(--color-bg-secondary)] border border-[var(--color-border)]
+            hover:border-[var(--color-accent)]/20 transition-colors">
             <span className="text-[var(--color-accent)]">{icon}</span>
             <div className="flex flex-col">
-                <span className="text-[10px] uppercase font-bold tracking-wider text-[var(--color-text-muted)]">{title}</span>
+                <span className="text-[10px] uppercase font-semibold tracking-[0.1em] text-[var(--color-text-muted)]">{title}</span>
                 <span className="text-xs font-medium text-[var(--color-text-primary)]">{text}</span>
             </div>
         </div>

@@ -3,7 +3,6 @@ import { formatCurrency } from '@/utils/format'
 import { TrendingUp, TrendingDown } from 'lucide-react'
 import { AreaChart, Area, ResponsiveContainer } from 'recharts'
 
-// Simulated sparkline data (7 days) based on summary
 function generateSparkline(income: number, expenses: number) {
     const days = 7
     const data = []
@@ -25,14 +24,14 @@ export function FinancialWidget() {
     if (isLoading) {
         return (
             <div className="flex flex-col gap-4 animate-pulse">
-                <div className="h-8 w-24 bg-white/10 rounded" />
-                <div className="h-4 w-32 bg-white/5 rounded" />
+                <div className="h-8 w-24 bg-[var(--color-bg-tertiary)] rounded-lg" />
+                <div className="h-4 w-32 bg-[var(--color-bg-tertiary)] rounded-lg" />
             </div>
         )
     }
 
     if (error) {
-        return <div className="text-red-400 text-xs">Erro ao carregar dados financeiros.</div>
+        return <div className="text-[var(--color-danger)] text-xs">Erro ao carregar dados financeiros.</div>
     }
 
     const { income = 0, expenses = 0, balance = 0 } = summary || {}
@@ -41,50 +40,50 @@ export function FinancialWidget() {
     return (
         <div className="flex flex-col h-full justify-between">
             <div>
-                <div className="text-xs font-medium text-white/50 uppercase tracking-wider mb-1">
+                <div className="text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider mb-1">
                     Saldo ({new Date().toLocaleDateString('pt-PT', { month: 'long' })})
                 </div>
-                <div className="text-2xl font-bold tracking-tight text-white">
+                <div className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]">
                     {formatCurrency(balance)}
                 </div>
             </div>
 
             {/* Sparkline */}
-            <div className="h-12 mt-2 -mx-1">
+            <div className="h-12 mt-3 -mx-1">
                 <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={sparkData}>
                         <defs>
                             <linearGradient id="sparkIncome" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stopColor="#22c55e" stopOpacity={0.3} />
-                                <stop offset="100%" stopColor="#22c55e" stopOpacity={0} />
+                                <stop offset="0%" stopColor="var(--color-success)" stopOpacity={0.3} />
+                                <stop offset="100%" stopColor="var(--color-success)" stopOpacity={0} />
                             </linearGradient>
                             <linearGradient id="sparkExpense" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stopColor="#ef4444" stopOpacity={0.2} />
-                                <stop offset="100%" stopColor="#ef4444" stopOpacity={0} />
+                                <stop offset="0%" stopColor="var(--color-danger)" stopOpacity={0.2} />
+                                <stop offset="100%" stopColor="var(--color-danger)" stopOpacity={0} />
                             </linearGradient>
                         </defs>
-                        <Area type="monotone" dataKey="income" stroke="#22c55e" strokeWidth={1.5} fill="url(#sparkIncome)" dot={false} />
-                        <Area type="monotone" dataKey="expense" stroke="#ef4444" strokeWidth={1.5} fill="url(#sparkExpense)" dot={false} />
+                        <Area type="monotone" dataKey="income" stroke="var(--color-success)" strokeWidth={1.5} fill="url(#sparkIncome)" dot={false} />
+                        <Area type="monotone" dataKey="expense" stroke="var(--color-danger)" strokeWidth={1.5} fill="url(#sparkExpense)" dot={false} />
                     </AreaChart>
                 </ResponsiveContainer>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 mt-2">
-                <div className="bg-white/5 rounded-lg p-2.5 border border-white/5">
-                    <div className="flex items-center gap-1.5 text-xs text-green-400 mb-1">
+            <div className="grid grid-cols-2 gap-2 mt-3">
+                <div className="bg-[var(--color-success)]/8 rounded-xl p-2.5 border border-[var(--color-success)]/10">
+                    <div className="flex items-center gap-1.5 text-xs text-[var(--color-success)] mb-1">
                         <TrendingUp size={12} />
-                        <span>Receitas</span>
+                        <span className="font-medium">Receitas</span>
                     </div>
-                    <div className="font-semibold text-white/90">
+                    <div className="font-semibold text-[var(--color-text-primary)]">
                         {formatCurrency(income)}
                     </div>
                 </div>
-                <div className="bg-white/5 rounded-lg p-2.5 border border-white/5">
-                    <div className="flex items-center gap-1.5 text-xs text-red-400 mb-1">
+                <div className="bg-[var(--color-danger)]/8 rounded-xl p-2.5 border border-[var(--color-danger)]/10">
+                    <div className="flex items-center gap-1.5 text-xs text-[var(--color-danger)] mb-1">
                         <TrendingDown size={12} />
-                        <span>Despesas</span>
+                        <span className="font-medium">Despesas</span>
                     </div>
-                    <div className="font-semibold text-white/90">
+                    <div className="font-semibold text-[var(--color-text-primary)]">
                         {formatCurrency(expenses)}
                     </div>
                 </div>

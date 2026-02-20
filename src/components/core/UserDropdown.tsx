@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Settings, LogOut } from 'lucide-react'
+import { Settings, LogOut, User } from 'lucide-react'
 import { NavLink } from 'react-router'
 import { useAuth } from './AuthProvider'
 
@@ -25,8 +25,10 @@ export function UserDropdown() {
         <div ref={dropdownRef} className="relative">
             <button
                 onClick={() => setOpen(!open)}
-                className="w-8 h-8 rounded-full bg-[var(--color-accent)] text-white text-sm font-bold
-                    flex items-center justify-center cursor-pointer transition-transform hover:scale-110"
+                className="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer
+                    transition-all hover:scale-105 active:scale-95
+                    bg-gradient-to-br from-[var(--color-accent)] to-[var(--color-secondary)]
+                    text-white text-sm font-bold shadow-[0_2px_8px_var(--color-accent)/25]"
                 aria-label="Menu do utilizador"
             >
                 {initial}
@@ -35,38 +37,62 @@ export function UserDropdown() {
             <AnimatePresence>
                 {open && (
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.9, y: -4 }}
+                        initial={{ opacity: 0, scale: 0.95, y: -4 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.9, y: -4 }}
+                        exit={{ opacity: 0, scale: 0.95, y: -4 }}
                         transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                        className="glass absolute right-0 top-12 w-56 rounded-[var(--radius-lg)] p-3 shadow-[var(--shadow-lg)]"
+                        className="absolute right-0 top-12 w-56 rounded-2xl p-2 z-50
+                            bg-[var(--color-bg-secondary)] border border-[var(--color-border)]
+                            shadow-[0_20px_60px_-12px_rgba(0,0,0,0.25)] backdrop-blur-xl"
                     >
                         {/* User info */}
-                        <div className="px-3 py-2 mb-2 border-b border-[var(--color-border)]">
-                            <p className="text-sm font-medium text-[var(--color-text-primary)] truncate">
-                                {user?.email ?? 'Utilizador'}
-                            </p>
+                        <div className="px-3 py-2.5 mb-1 rounded-xl bg-[var(--color-bg-tertiary)]">
+                            <div className="flex items-center gap-2.5">
+                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[var(--color-accent)] to-[var(--color-secondary)] flex items-center justify-center text-white text-xs font-bold">
+                                    {initial}
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-sm font-medium text-[var(--color-text-primary)] truncate">
+                                        {user?.email?.split('@')[0] ?? 'Utilizador'}
+                                    </p>
+                                    <p className="text-[10px] text-[var(--color-text-muted)] truncate">
+                                        {user?.email ?? ''}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
 
-                        {/* Actions */}
-                        <NavLink
-                            to="/settings"
-                            onClick={() => setOpen(false)}
-                            className="flex items-center gap-2 px-3 py-2 rounded-[var(--radius-md)] text-sm
-                                text-[var(--color-text-secondary)] hover:bg-[var(--color-accent-soft)] hover:text-[var(--color-text-primary)] transition-colors"
-                        >
-                            <Settings size={16} />
-                            Definições
-                        </NavLink>
+                        <div className="py-1">
+                            <NavLink
+                                to="/settings"
+                                onClick={() => setOpen(false)}
+                                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm
+                                    text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text-primary)] transition-colors"
+                            >
+                                <Settings size={15} />
+                                Definicoes
+                            </NavLink>
+                            <NavLink
+                                to="/settings"
+                                onClick={() => setOpen(false)}
+                                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm
+                                    text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text-primary)] transition-colors"
+                            >
+                                <User size={15} />
+                                Perfil
+                            </NavLink>
+                        </div>
 
-                        <button
-                            onClick={() => { setOpen(false); signOut() }}
-                            className="w-full flex items-center gap-2 px-3 py-2 rounded-[var(--radius-md)] text-sm
-                                text-[var(--color-danger)] hover:bg-[var(--color-danger)]/10 transition-colors cursor-pointer"
-                        >
-                            <LogOut size={16} />
-                            Sair
-                        </button>
+                        <div className="border-t border-[var(--color-border)] mt-1 pt-1">
+                            <button
+                                onClick={() => { setOpen(false); signOut() }}
+                                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm
+                                    text-[var(--color-danger)] hover:bg-[var(--color-danger)]/10 transition-colors cursor-pointer"
+                            >
+                                <LogOut size={15} />
+                                Sair
+                            </button>
+                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>

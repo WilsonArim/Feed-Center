@@ -11,9 +11,9 @@ interface Props {
 }
 
 const AFFORDABILITY_CONFIG = {
-    safe: { color: '#22c55e', label: '🟢 Seguro', bg: 'rgba(34,197,94,0.12)' },
-    caution: { color: '#eab308', label: '🟡 Cuidado', bg: 'rgba(234,179,8,0.12)' },
-    danger: { color: '#ef4444', label: '🔴 Perigo', bg: 'rgba(239,68,68,0.12)' },
+    safe: { color: 'var(--color-success)', label: 'Seguro' },
+    caution: { color: 'var(--color-warning)', label: 'Cuidado' },
+    danger: { color: 'var(--color-danger)', label: 'Perigo' },
 } as const
 
 export function SummaryCards({ summary, affordability, isLoading }: Props) {
@@ -22,21 +22,21 @@ export function SummaryCards({ summary, affordability, isLoading }: Props) {
             key: 'income',
             label: 'Receitas',
             icon: TrendingUp,
-            color: 'var(--color-success, #22c55e)',
+            color: 'var(--color-success)',
             value: summary?.income ?? 0,
         },
         {
             key: 'expenses',
             label: 'Despesas',
             icon: TrendingDown,
-            color: 'var(--color-danger, #ef4444)',
+            color: 'var(--color-danger)',
             value: summary?.expenses ?? 0,
         },
         {
             key: 'balance',
             label: 'Saldo',
             icon: Scale,
-            color: 'var(--color-accent, #3b82f6)',
+            color: 'var(--color-accent)',
             value: summary?.balance ?? 0,
         },
     ]
@@ -51,30 +51,27 @@ export function SummaryCards({ summary, affordability, isLoading }: Props) {
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.08, duration: 0.35 }}
-                    className="modal-panel rounded-[var(--radius-lg)] p-5 relative overflow-hidden"
+                    className="bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-2xl p-5 relative overflow-hidden"
                 >
                     {/* Glow accent */}
                     <div
-                        className="absolute -top-8 -right-8 w-24 h-24 rounded-full blur-2xl opacity-20"
+                        className="absolute -top-8 -right-8 w-24 h-24 rounded-full blur-2xl opacity-[0.12]"
                         style={{ background: card.color }}
                     />
 
-                    <div className="flex items-center gap-2 mb-3">
-                        <card.icon size={18} style={{ color: card.color }} />
-                        <span
-                            className="text-xs font-medium uppercase tracking-wider"
-                            style={{ color: 'var(--color-text-muted)' }}
-                        >
+                    <div className="flex items-center gap-2 mb-3 relative">
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center"
+                            style={{ background: `color-mix(in srgb, ${card.color} 12%, transparent)` }}>
+                            <card.icon size={16} style={{ color: card.color }} />
+                        </div>
+                        <span className="text-xs font-medium uppercase tracking-wider text-[var(--color-text-muted)]">
                             {card.label}
                         </span>
                     </div>
 
-                    <p
-                        className="text-2xl font-bold tracking-tight"
-                        style={{ color: 'var(--color-text-primary)' }}
-                    >
+                    <p className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)] relative">
                         {isLoading ? (
-                            <span className="inline-block w-24 h-7 rounded bg-white/5 animate-pulse" />
+                            <span className="inline-block w-24 h-7 rounded-lg bg-[var(--color-bg-tertiary)] animate-pulse" />
                         ) : (
                             formatCurrency(card.value)
                         )}
@@ -82,50 +79,50 @@ export function SummaryCards({ summary, affordability, isLoading }: Props) {
                 </motion.div>
             ))}
 
-            {/* Saldo Seguro — 4th Live Card */}
+            {/* Affordability Card */}
             <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.24, duration: 0.35 }}
-                className="modal-panel rounded-[var(--radius-lg)] p-5 relative overflow-hidden"
+                className="bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-2xl p-5 relative overflow-hidden"
             >
-                {/* Breathing glow */}
                 <motion.div
-                    animate={{ opacity: [0.15, 0.3, 0.15] }}
+                    animate={{ opacity: [0.08, 0.16, 0.08] }}
                     transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
                     className="absolute -top-8 -right-8 w-28 h-28 rounded-full blur-2xl"
-                    style={{ background: affConfig?.color ?? '#3b82f6' }}
+                    style={{ background: affConfig?.color ?? 'var(--color-accent)' }}
                 />
 
-                <div className="flex items-center gap-2 mb-3">
-                    <ShieldCheck size={18} style={{ color: affConfig?.color ?? 'var(--color-accent)' }} />
-                    <span
-                        className="text-xs font-medium uppercase tracking-wider"
-                        style={{ color: 'var(--color-text-muted)' }}
-                    >
+                <div className="flex items-center gap-2 mb-3 relative">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center"
+                        style={{ background: `color-mix(in srgb, ${affConfig?.color ?? 'var(--color-accent)'} 12%, transparent)` }}>
+                        <ShieldCheck size={16} style={{ color: affConfig?.color ?? 'var(--color-accent)' }} />
+                    </div>
+                    <span className="text-xs font-medium uppercase tracking-wider text-[var(--color-text-muted)]">
                         Saldo Seguro
                     </span>
                 </div>
 
                 {isLoading || !affordability ? (
-                    <span className="inline-block w-24 h-7 rounded bg-white/5 animate-pulse" />
+                    <span className="inline-block w-24 h-7 rounded-lg bg-[var(--color-bg-tertiary)] animate-pulse" />
                 ) : (
                     <>
-                        <p
-                            className="text-2xl font-bold tracking-tight mb-2"
-                            style={{ color: 'var(--color-text-primary)' }}
-                        >
+                        <p className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)] relative mb-2">
                             {formatCurrency(affordability.freeBalance)}
                         </p>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 relative">
                             <span
-                                className="px-2 py-0.5 rounded-full text-[10px] font-bold"
-                                style={{ background: affConfig?.bg, color: affConfig?.color }}
+                                className="px-2 py-0.5 rounded-lg text-[10px] font-bold border"
+                                style={{
+                                    background: `color-mix(in srgb, ${affConfig?.color} 10%, transparent)`,
+                                    color: affConfig?.color,
+                                    borderColor: `color-mix(in srgb, ${affConfig?.color} 15%, transparent)`,
+                                }}
                             >
                                 {affConfig?.label}
                             </span>
                             {affordability.daysUntilZero !== null && (
-                                <span className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
+                                <span className="text-[10px] text-[var(--color-text-muted)]">
                                     {affordability.daysUntilZero > 90
                                         ? '90+ dias'
                                         : `${affordability.daysUntilZero} dias restantes`}

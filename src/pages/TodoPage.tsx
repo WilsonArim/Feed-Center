@@ -4,7 +4,7 @@ import { KanbanBoard } from '@/components/modules/todo/KanbanBoard'
 import { AddTodoModal } from '@/components/modules/todo/AddTodoModal'
 import { CreateListModal } from '@/components/modules/todo/CreateListModal'
 import { TodoSidebar } from '@/components/modules/todo/TodoSidebar'
-import { LiquidButton } from '@/components/ui/LiquidButton'
+import { StardustButton } from '@/components/ui/StardustButton'
 import {
     useCreateTodo,
     useUpdateTodo,
@@ -29,7 +29,6 @@ export function TodoPage() {
     const createList = useCreateTodoList()
     const deleteList = useDeleteTodoList()
 
-    // Reset tab when changing list
     useEffect(() => {
         setActiveTab('tasks')
     }, [activeListId])
@@ -75,28 +74,35 @@ export function TodoPage() {
 
             <div className="flex-1 flex flex-col min-w-0 bg-[var(--color-bg-primary)]">
                 {/* Header */}
-                <div className="flex items-center justify-between px-8 py-6 border-b border-[var(--color-border)] bg-[var(--color-bg-secondary)]/30 backdrop-blur-sm z-10">
+                <div className="flex items-center justify-between px-8 py-5 border-b border-[var(--color-border)] bg-[var(--color-bg-secondary)]/50 backdrop-blur-sm z-10">
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)] flex items-center gap-3">
                             {pageTitle}
                         </h1>
 
-                        {/* Project Tabs */}
                         {activeList?.type === 'project' && (
-                            <div className="flex items-center gap-1 mt-3 bg-white/5 p-1 rounded-lg w-fit">
+                            <div className="flex items-center gap-1 mt-3 bg-[var(--color-bg-tertiary)] p-1 rounded-xl w-fit border border-[var(--color-border)]">
                                 <button
                                     onClick={() => setActiveTab('tasks')}
-                                    className={`px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-2 transition-all ${activeTab === 'tasks' ? 'bg-[var(--color-accent)] text-black shadow-sm' : 'text-white/50 hover:text-white'}`}
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 transition-all cursor-pointer ${
+                                        activeTab === 'tasks'
+                                            ? 'bg-[var(--color-accent)] text-white shadow-sm'
+                                            : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]'
+                                    }`}
                                 >
                                     <CheckSquare size={14} />
                                     Tarefas
                                 </button>
                                 <button
                                     onClick={() => setActiveTab('finance')}
-                                    className={`px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-2 transition-all ${activeTab === 'finance' ? 'bg-[var(--color-accent)] text-black shadow-sm' : 'text-white/50 hover:text-white'}`}
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 transition-all cursor-pointer ${
+                                        activeTab === 'finance'
+                                            ? 'bg-[var(--color-accent)] text-white shadow-sm'
+                                            : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]'
+                                    }`}
                                 >
                                     <CircleDollarSign size={14} />
-                                    Finanças
+                                    Financas
                                 </button>
                             </div>
                         )}
@@ -110,16 +116,15 @@ export function TodoPage() {
                         )}
                     </div>
 
-                    <LiquidButton
+                    <StardustButton
                         onClick={() => {
                             setEditingTodo(null)
                             setIsTaskModalOpen(true)
                         }}
-                        className="flex items-center gap-2 px-4 py-2 bg-[var(--color-accent)] text-black font-medium rounded-xl"
+                        icon={<Plus size={16} />}
                     >
-                        <Plus size={18} />
-                        <span>Nova Tarefa</span>
-                    </LiquidButton>
+                        Nova Tarefa
+                    </StardustButton>
                 </div>
 
                 {/* Stats Bar */}
