@@ -1,183 +1,379 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap');
-
 @import "tailwindcss";
 
 /* ============================================================
-   FEED-CENTER — Design System v1.0
-   "Aurora Dark" — Cognitive Operating System Dashboard
+   FEED-CENTER — Design System v2.0
+   "Nebula Command Center" — Dark + Light Mode
+   Typography: Orbitron (display) + Inter (body)
    ============================================================ */
 
 @theme {
   /* --- Typography --- */
   --font-heading: 'Orbitron', sans-serif;
-  --font-body: 'DM Sans', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
   /* --- Spacing & Radius --- */
+  --radius-xs: 0.25rem;
   --radius-sm: 0.375rem;
-  /* 6px  */
   --radius-md: 0.5rem;
-  /* 8px  */
-  --radius-lg: 0.875rem;
-  /* 14px */
+  --radius-lg: 0.75rem;
   --radius-xl: 1rem;
-  /* 16px */
+  --radius-2xl: 1.25rem;
+  --radius-3xl: 1.5rem;
   --radius-pill: 9999px;
 
   /* --- Layout --- */
   --sidebar-width: 260px;
   --sidebar-collapsed: 72px;
+  --navbar-height: 64px;
 
   /* --- Z Layers --- */
   --z-base: 0;
-  --z-sidebar: 10;
-  --z-navbar: 20;
-  --z-modal: 30;
-  --z-spotlight: 40;
+  --z-sidebar: 40;
+  --z-navbar: 30;
+  --z-dropdown: 50;
+  --z-modal: 60;
+  --z-toast: 70;
+  --z-spotlight: 80;
 
   /* --- Motion --- */
   --motion-fast: 100ms;
   --motion-normal: 150ms;
   --motion-medium: 200ms;
-  --motion-enter: 250ms;
-  --motion-page: 300ms;
+  --motion-enter: 300ms;
+  --motion-page: 400ms;
   --ease-out: cubic-bezier(0.0, 0.0, 0.2, 1);
   --ease-in: cubic-bezier(0.4, 0.0, 1.0, 1);
   --ease-smooth: cubic-bezier(0.4, 0.0, 0.2, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.6, 0.32, 1.6);
 
   /* --- Glass --- */
-  --glass-blur: 24px;
+  --glass-blur: 20px;
   --glass-saturation: 140%;
 
-  /* --- Aurora Keyframes --- */
+  /* --- Keyframes --- */
   @keyframes aurora-shift {
-    0% {
-      background-position: 0% 50%;
-    }
-
-    50% {
-      background-position: 100% 50%;
-    }
-
-    100% {
-      background-position: 0% 50%;
-    }
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
   }
 
   @keyframes glow-spin {
-    from {
-      transform: rotate(0deg);
-    }
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
 
-    to {
-      transform: rotate(360deg);
-    }
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slide-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes slide-down {
+    from { opacity: 0; transform: translateY(-12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes scale-in {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes glow-pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
   }
 
   @keyframes marquee {
-    0% {
-      transform: translateX(0);
-    }
-
-    100% {
-      transform: translateX(-100%);
-    }
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
   }
 
   @keyframes marquee-reverse {
-    0% {
-      transform: translateX(-100%);
-    }
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(0); }
+  }
 
-    100% {
-      transform: translateX(0);
-    }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+
+  @keyframes border-rotate {
+    from { --border-angle: 0deg; }
+    to { --border-angle: 360deg; }
   }
 }
 
 /* ============================================================
-   DESIGN TOKENS
+   DARK MODE TOKENS (default)
    ============================================================ */
 :root {
-  /* --- 1. Surface Layer System --- */
-  --surface-base: #0A0E27;
-  /* page background (deepest) */
-  --surface-elevated: #0D1236;
-  /* cards, panels */
-  --surface-interactive: #131A45;
-  /* actionable cards, inputs — SOLID */
+  color-scheme: dark;
+
+  /* --- 1. Surfaces --- */
+  --bg-primary: #06080F;
+  --bg-secondary: #0C1120;
+  --bg-tertiary: #131A2E;
+  --bg-quaternary: #1A2240;
+  --surface-glass: rgba(12, 17, 32, 0.60);
+  --surface-glass-hover: rgba(19, 26, 46, 0.75);
+  --surface-glass-intense: rgba(12, 17, 32, 0.85);
+  --surface-overlay: rgba(0, 0, 0, 0.60);
+
+  /* --- 2. Typography --- */
+  --text-primary: #F0F2F5;
+  --text-secondary: #8892A7;
+  --text-muted: #4A5568;
+  --text-inverse: #06080F;
+
+  /* --- 3. Accents --- */
+  --accent: #6C5CE7;
+  --accent-hover: #7E70EE;
+  --accent-soft: rgba(108, 92, 231, 0.12);
+  --accent-intense: rgba(108, 92, 231, 0.25);
+  --accent-secondary: #00D2FF;
+  --accent-secondary-soft: rgba(0, 210, 255, 0.12);
+
+  /* --- 4. Semantic --- */
+  --success: #00E876;
+  --success-soft: rgba(0, 232, 118, 0.12);
+  --warning: #FFB020;
+  --warning-soft: rgba(255, 176, 32, 0.12);
+  --danger: #FF4757;
+  --danger-soft: rgba(255, 71, 87, 0.12);
+  --info: #3B82F6;
+  --info-soft: rgba(59, 130, 246, 0.12);
+
+  /* --- 5. Borders --- */
+  --border: rgba(255, 255, 255, 0.06);
+  --border-hover: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.18);
+  --border-glow: rgba(108, 92, 231, 0.35);
+  --border-accent: rgba(108, 92, 231, 0.5);
+
+  /* --- 6. Shadows --- */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.6);
+  --shadow-xl: 0 24px 60px rgba(0, 0, 0, 0.7);
+  --shadow-glow: 0 0 24px rgba(108, 92, 231, 0.2);
+  --shadow-glow-accent: 0 0 40px rgba(108, 92, 231, 0.3);
+  --shadow-glow-cyan: 0 0 24px rgba(0, 210, 255, 0.15);
+
+  /* --- 7. UI Components --- */
+  --sidebar-bg: rgba(8, 10, 20, 0.90);
+  --sidebar-active: rgba(108, 92, 231, 0.12);
+  --navbar-bg: rgba(6, 8, 15, 0.80);
+  --card-bg: rgba(12, 17, 32, 0.50);
+  --card-bg-solid: #0E1428;
+  --card-border: rgba(255, 255, 255, 0.06);
+  --card-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+  --card-hover-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+  --input-bg: rgba(19, 26, 46, 0.6);
+  --input-border: rgba(255, 255, 255, 0.1);
+  --input-focus-border: rgba(108, 92, 231, 0.6);
+  --modal-bg: #0E1428;
+  --modal-overlay: rgba(0, 0, 0, 0.70);
+  --modal-shadow: 0 24px 80px rgba(0, 0, 0, 0.8);
+
+  /* --- 8. Charts --- */
+  --chart-1: #6C5CE7;
+  --chart-2: #00D2FF;
+  --chart-3: #00E876;
+  --chart-4: #FFB020;
+  --chart-5: #FF4757;
+  --chart-6: #A855F7;
+  --chart-grid: rgba(255, 255, 255, 0.04);
+
+  /* --- 9. Noise --- */
+  --noise-opacity: 0.03;
+
+  /* --- 10. Aurora --- */
+  --aurora-1: rgba(108, 92, 231, 0.15);
+  --aurora-2: rgba(0, 210, 255, 0.10);
+  --aurora-3: rgba(168, 85, 247, 0.12);
+
+  /* --- Legacy aliases (backward compat) --- */
+  --surface-base: var(--bg-primary);
+  --surface-elevated: var(--bg-secondary);
+  --surface-interactive: var(--bg-tertiary);
   --surface-critical: #2A0E0E;
-  /* error/alert surfaces — SOLID */
-  --surface-glass: rgba(10, 16, 50, 0.55);
-  /* info cards ONLY */
-
-  /* --- Legacy aliases (keep for existing components) --- */
-  --color-bg-primary: #0A0E27;
-  --color-bg-secondary: #0D1236;
-  --color-bg-tertiary: #131A45;
-  --color-bg-glass: rgba(10, 16, 50, 0.55);
-  --color-bg-glass-hover: rgba(14, 22, 65, 0.72);
-  --color-surface: rgba(13, 18, 54, 0.80);
-
-  /* --- 2. Typography Colors --- */
-  --color-text-primary: #F0F4FF;
-  --color-text-secondary: #8B9DC3;
-  --color-text-muted: #4D5A80;
-
-  /* --- 3. Accent & Semantic --- */
-  --color-accent: #3B9EFF;
-  --color-accent-hover: #60B4FF;
-  --color-accent-soft: rgba(59, 158, 255, 0.10);
-  --color-cta: #8B5CF6;
-
-  --color-success: #00E876;
-  --color-warning: #FFB020;
-  --color-danger: #FF4444;
-
-  /* --- 4. Borders --- */
-  --color-border: rgba(255, 255, 255, 0.07);
-  --color-border-glow: rgba(59, 158, 255, 0.28);
-
-  /* --- 5. Sidebar / Navbar --- */
-  --color-sidebar-bg: rgba(8, 11, 38, 0.85);
-  --color-sidebar-active: rgba(59, 158, 255, 0.10);
-  --color-navbar-glass: rgba(8, 11, 38, 0.80);
-
-  /* --- 6. Button System --- */
-  --btn-radius: 0.625rem;
-  --btn-duration: 150ms;
-  --btn-primary-bg: #3B9EFF;
-  --btn-primary-hover: #60B4FF;
-  --btn-primary-shadow: 0 4px 16px rgba(59, 158, 255, 0.35);
-  --btn-secondary-bg: #1A2456;
-  --btn-secondary-border: rgba(59, 158, 255, 0.25);
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-secondary: var(--bg-secondary);
+  --color-bg-tertiary: var(--bg-tertiary);
+  --color-bg-glass: var(--surface-glass);
+  --color-bg-glass-hover: var(--surface-glass-hover);
+  --color-surface: var(--surface-glass-intense);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-cta: var(--accent);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-border: var(--border);
+  --color-border-glow: var(--border-glow);
+  --color-sidebar-bg: var(--sidebar-bg);
+  --color-sidebar-active: var(--sidebar-active);
+  --color-navbar-glass: var(--navbar-bg);
+  --btn-primary-bg: var(--accent);
+  --btn-primary-hover: var(--accent-hover);
+  --btn-primary-shadow: var(--shadow-glow);
+  --btn-secondary-bg: var(--bg-tertiary);
+  --btn-secondary-border: var(--border-glow);
   --btn-danger-bg: #7F1D1D;
-  --btn-danger-shadow: 0 4px 16px rgba(239, 68, 68, 0.20);
-
-  /* --- 7. Card System --- */
-  --card-radius: 0.875rem;
-  --card-border: rgba(255, 255, 255, 0.07);
-  --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-  --card-hover-shadow: 0 16px 48px rgba(0, 0, 0, 0.50);
-
-  /* --- 8. Modal --- */
-  --modal-bg: #0D1236;
-  --modal-shadow: 0 24px 64px rgba(0, 0, 0, 0.70);
-  --modal-overlay: rgba(0, 0, 0, 0.65);
-  --modal-radius: 1rem;
-
-  /* --- 9. Shadows --- */
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 8px 16px rgba(0, 0, 0, 0.45);
-  --shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.55);
-  --shadow-glow: 0 0 32px rgba(59, 158, 255, 0.18);
-
-  /* --- 10. Noise --- */
-  --noise-opacity: 0.035;
+  --btn-danger-shadow: 0 4px 16px rgba(255, 71, 87, 0.2);
+  --card-radius: var(--radius-xl);
+  --btn-radius: var(--radius-lg);
+  --btn-duration: 150ms;
+  --modal-radius: var(--radius-2xl);
 }
 
 /* ============================================================
-   GLOBAL RESET
+   LIGHT MODE TOKENS
+   ============================================================ */
+.light {
+  color-scheme: light;
+
+  /* --- 1. Surfaces --- */
+  --bg-primary: #F8FAFC;
+  --bg-secondary: #FFFFFF;
+  --bg-tertiary: #F1F5F9;
+  --bg-quaternary: #E2E8F0;
+  --surface-glass: rgba(255, 255, 255, 0.70);
+  --surface-glass-hover: rgba(255, 255, 255, 0.85);
+  --surface-glass-intense: rgba(255, 255, 255, 0.90);
+  --surface-overlay: rgba(0, 0, 0, 0.30);
+
+  /* --- 2. Typography --- */
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #94A3B8;
+  --text-inverse: #F8FAFC;
+
+  /* --- 3. Accents --- */
+  --accent: #6C5CE7;
+  --accent-hover: #5B4BD5;
+  --accent-soft: rgba(108, 92, 231, 0.08);
+  --accent-intense: rgba(108, 92, 231, 0.15);
+  --accent-secondary: #0891B2;
+  --accent-secondary-soft: rgba(8, 145, 178, 0.08);
+
+  /* --- 4. Semantic --- */
+  --success: #059669;
+  --success-soft: rgba(5, 150, 105, 0.08);
+  --warning: #D97706;
+  --warning-soft: rgba(217, 119, 6, 0.08);
+  --danger: #DC2626;
+  --danger-soft: rgba(220, 38, 38, 0.08);
+  --info: #2563EB;
+  --info-soft: rgba(37, 99, 235, 0.08);
+
+  /* --- 5. Borders --- */
+  --border: rgba(0, 0, 0, 0.08);
+  --border-hover: rgba(0, 0, 0, 0.14);
+  --border-strong: rgba(0, 0, 0, 0.20);
+  --border-glow: rgba(108, 92, 231, 0.25);
+  --border-accent: rgba(108, 92, 231, 0.4);
+
+  /* --- 6. Shadows --- */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 24px 60px rgba(0, 0, 0, 0.16);
+  --shadow-glow: 0 0 24px rgba(108, 92, 231, 0.12);
+  --shadow-glow-accent: 0 0 40px rgba(108, 92, 231, 0.15);
+  --shadow-glow-cyan: 0 0 24px rgba(8, 145, 178, 0.10);
+
+  /* --- 7. UI Components --- */
+  --sidebar-bg: rgba(255, 255, 255, 0.92);
+  --sidebar-active: rgba(108, 92, 231, 0.08);
+  --navbar-bg: rgba(248, 250, 252, 0.85);
+  --card-bg: rgba(255, 255, 255, 0.60);
+  --card-bg-solid: #FFFFFF;
+  --card-border: rgba(0, 0, 0, 0.06);
+  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --card-hover-shadow: 0 8px 30px rgba(0, 0, 0, 0.10);
+  --input-bg: rgba(241, 245, 249, 0.8);
+  --input-border: rgba(0, 0, 0, 0.12);
+  --input-focus-border: rgba(108, 92, 231, 0.5);
+  --modal-bg: #FFFFFF;
+  --modal-overlay: rgba(0, 0, 0, 0.40);
+  --modal-shadow: 0 24px 80px rgba(0, 0, 0, 0.18);
+
+  /* --- 8. Charts --- */
+  --chart-1: #6C5CE7;
+  --chart-2: #0891B2;
+  --chart-3: #059669;
+  --chart-4: #D97706;
+  --chart-5: #DC2626;
+  --chart-6: #7C3AED;
+  --chart-grid: rgba(0, 0, 0, 0.06);
+
+  /* --- 9. Noise --- */
+  --noise-opacity: 0.015;
+
+  /* --- 10. Aurora --- */
+  --aurora-1: rgba(108, 92, 231, 0.06);
+  --aurora-2: rgba(8, 145, 178, 0.05);
+  --aurora-3: rgba(124, 58, 237, 0.04);
+
+  /* --- Legacy aliases --- */
+  --surface-base: var(--bg-primary);
+  --surface-elevated: var(--bg-secondary);
+  --surface-interactive: var(--bg-tertiary);
+  --surface-critical: #FEF2F2;
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-secondary: var(--bg-secondary);
+  --color-bg-tertiary: var(--bg-tertiary);
+  --color-bg-glass: var(--surface-glass);
+  --color-bg-glass-hover: var(--surface-glass-hover);
+  --color-surface: var(--surface-glass-intense);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-cta: var(--accent);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-border: var(--border);
+  --color-border-glow: var(--border-glow);
+  --color-sidebar-bg: var(--sidebar-bg);
+  --color-sidebar-active: var(--sidebar-active);
+  --color-navbar-glass: var(--navbar-bg);
+  --btn-primary-bg: var(--accent);
+  --btn-primary-hover: var(--accent-hover);
+  --btn-primary-shadow: var(--shadow-glow);
+  --btn-secondary-bg: var(--bg-tertiary);
+  --btn-secondary-border: var(--border-glow);
+  --btn-danger-bg: #991B1B;
+  --btn-danger-shadow: 0 4px 16px rgba(220, 38, 38, 0.15);
+  --card-radius: var(--radius-xl);
+  --btn-radius: var(--radius-lg);
+  --btn-duration: 150ms;
+  --modal-radius: var(--radius-2xl);
+}
+
+/* ============================================================
+   GLOBAL RESET & BASE
    ============================================================ */
 *,
 *::before,
@@ -188,19 +384,21 @@
 }
 
 html {
-  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
+  text-rendering: optimizeLegibility;
 }
 
 body {
-  background-color: var(--surface-base);
-  color: var(--color-text-primary);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   min-height: 100dvh;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Subtle noise overlay (eliminates gradient banding) */
+/* Subtle noise overlay */
 body::after {
   content: '';
   position: fixed;
@@ -214,10 +412,9 @@ body::after {
 }
 
 /* ============================================================
-   ACCESSIBILITY — prefers-reduced-motion
+   ACCESSIBILITY
    ============================================================ */
 @media (prefers-reduced-motion: reduce) {
-
   *,
   *::before,
   *::after {
@@ -232,7 +429,8 @@ body::after {
    SCROLLBAR
    ============================================================ */
 ::-webkit-scrollbar {
-  width: 5px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -240,83 +438,83 @@ body::after {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-text-muted);
+  background: var(--text-muted);
   border-radius: var(--radius-pill);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-secondary);
+  background: var(--text-secondary);
 }
 
 /* ============================================================
    FOCUS & SELECTION
    ============================================================ */
 :focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
 
 ::selection {
-  background: var(--color-accent-soft);
-  color: var(--color-accent);
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
 /* ============================================================
    SURFACE UTILITIES
    ============================================================ */
-
-/* Glass — informational surfaces ONLY */
 .glass {
   background: var(--surface-glass);
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--border);
 }
 
 .glass:hover {
-  background: var(--color-bg-glass-hover);
+  background: var(--surface-glass-hover);
 }
 
-/* Solid surface — interactive elements */
+.glass-intense {
+  background: var(--surface-glass-intense);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  border: 1px solid var(--border);
+}
+
 .surface-interactive {
-  background: var(--surface-interactive);
-  border: 1px solid var(--color-border);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
 }
 
-/* Elevated card */
 .surface-elevated {
-  background: var(--surface-elevated);
-  border: 1px solid var(--color-border);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
 }
 
 /* ============================================================
    CARD SYSTEM
    ============================================================ */
-
-/* Informational: glassmorphism allowed */
 .card-info {
-  background: var(--surface-glass);
+  background: var(--card-bg);
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
-  border: 1px solid var(--color-border);
-  border-radius: var(--card-radius);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-xl);
   box-shadow: var(--card-shadow);
   transition: border-color var(--motion-medium) var(--ease-smooth),
     box-shadow var(--motion-medium) var(--ease-smooth);
 }
 
 .card-info:hover {
-  border-color: rgba(59, 158, 255, 0.20);
+  border-color: var(--border-hover);
   box-shadow: var(--card-hover-shadow);
 }
 
-/* Actionable: SOLID — clickable cards */
 .card-action {
-  background: var(--surface-interactive);
-  border: 1px solid var(--color-border);
-  border-radius: var(--card-radius);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.30);
+  background: var(--card-bg-solid);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--card-shadow);
   cursor: pointer;
   transition: background var(--motion-medium) var(--ease-smooth),
     border-color var(--motion-medium) var(--ease-smooth),
@@ -325,40 +523,37 @@ body::after {
 }
 
 .card-action:hover {
-  background: #1A2456;
-  border-color: rgba(59, 158, 255, 0.25);
+  border-color: var(--border-glow);
   box-shadow: var(--card-hover-shadow);
   transform: translateY(-2px);
 }
 
-/* Critical: error/danger solid */
 .card-critical {
   background: var(--surface-critical);
-  border: 1px solid rgba(239, 68, 68, 0.30);
-  border-radius: var(--card-radius);
-  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.15);
+  border: 1px solid var(--danger-soft);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 4px 20px rgba(255, 71, 87, 0.1);
   transition: border-color var(--motion-medium) var(--ease-smooth);
 }
 
 .card-critical:hover {
-  border-color: rgba(239, 68, 68, 0.50);
+  border-color: var(--danger);
 }
 
 /* ============================================================
-   BUTTON SYSTEM — ALL SOLID
+   BUTTON SYSTEM
    ============================================================ */
-
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 0.875rem;
   font-weight: 600;
   letter-spacing: 0.01em;
-  border-radius: var(--btn-radius);
+  border-radius: var(--radius-lg);
   border: none;
   cursor: pointer;
   transition: background-color var(--motion-normal) var(--ease-smooth),
@@ -373,63 +568,60 @@ body::after {
 }
 
 .btn:focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
 .btn-primary {
-  background: var(--btn-primary-bg);
+  background: var(--accent);
   color: #ffffff;
-  box-shadow: var(--btn-primary-shadow);
+  box-shadow: var(--shadow-glow);
 }
 
 .btn-primary:hover {
-  background: var(--btn-primary-hover);
+  background: var(--accent-hover);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(59, 158, 255, 0.45);
+  box-shadow: var(--shadow-glow-accent);
 }
 
 .btn-secondary {
-  background: var(--btn-secondary-bg);
-  color: var(--color-accent);
-  border: 1px solid var(--btn-secondary-border);
+  background: var(--bg-tertiary);
+  color: var(--accent);
+  border: 1px solid var(--border-glow);
 }
 
 .btn-secondary:hover {
-  background: #243270;
-  border-color: rgba(59, 158, 255, 0.45);
+  background: var(--accent-soft);
+  border-color: var(--border-accent);
   transform: translateY(-1px);
 }
 
 .btn-ghost {
   background: transparent;
-  color: var(--color-text-secondary);
-  border: 1px solid var(--color-border);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
 }
 
 .btn-ghost:hover {
-  background: var(--color-accent-soft);
-  color: var(--color-text-primary);
-  border-color: rgba(59, 158, 255, 0.20);
+  background: var(--accent-soft);
+  color: var(--text-primary);
+  border-color: var(--border-hover);
 }
 
 .btn-danger {
-  background: var(--btn-danger-bg);
-  color: #fca5a5;
-  border: 1px solid rgba(239, 68, 68, 0.30);
-  box-shadow: var(--btn-danger-shadow);
+  background: var(--danger);
+  color: #ffffff;
+  box-shadow: 0 4px 16px rgba(255, 71, 87, 0.2);
 }
 
 .btn-danger:hover {
-  background: #991b1b;
-  border-color: rgba(239, 68, 68, 0.50);
+  opacity: 0.9;
   transform: translateY(-1px);
 }
 
 /* ============================================================
    MODAL SYSTEM
    ============================================================ */
-
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -439,12 +631,13 @@ body::after {
   align-items: center;
   justify-content: center;
   padding: 1rem;
+  backdrop-filter: blur(4px);
 }
 
 .modal-panel {
   background: var(--modal-bg);
-  border: 1px solid rgba(255, 255, 255, 0.10);
-  border-radius: var(--modal-radius);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2xl);
   box-shadow: var(--modal-shadow);
   padding: 1.5rem;
   width: 100%;
@@ -453,8 +646,7 @@ body::after {
 }
 
 /* ============================================================
-   AURORA BACKGROUND LAYER
-   Fixed behind all content — CSS-only, no JS required
+   AURORA BACKGROUND
    ============================================================ */
 .aurora-layer {
   position: fixed;
@@ -462,12 +654,13 @@ body::after {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 80% 60% at 15% 5%, rgba(0, 128, 255, 0.18) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 50% at 85% 85%, rgba(201, 48, 176, 0.16) 0%, transparent 60%),
-    radial-gradient(ellipse 70% 55% at 55% 45%, rgba(0, 212, 255, 0.10) 0%, transparent 60%),
-    var(--surface-base);
+    radial-gradient(ellipse 80% 60% at 15% 5%, var(--aurora-1) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 85% 85%, var(--aurora-3) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 55% at 55% 45%, var(--aurora-2) 0%, transparent 60%),
+    var(--bg-primary);
   background-size: 200% 200%;
-  animation: aurora-shift 20s ease infinite;
+  animation: aurora-shift 25s ease infinite;
+  transition: background 0.5s ease;
 }
 
 /* ============================================================
@@ -478,23 +671,25 @@ body::after {
 }
 
 .font-body {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .text-h1 {
   font-family: 'Orbitron', sans-serif;
-  font-size: 2rem;
+  font-size: 1.875rem;
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: var(--color-text-primary);
+  color: var(--text-primary);
+  line-height: 1.2;
 }
 
 .text-h2 {
   font-family: 'Orbitron', sans-serif;
-  font-size: 1.5rem;
+  font-size: 1.375rem;
   font-weight: 600;
   letter-spacing: -0.015em;
-  color: var(--color-text-primary);
+  color: var(--text-primary);
+  line-height: 1.3;
 }
 
 .text-h3 {
@@ -502,29 +697,41 @@ body::after {
   font-size: 1.125rem;
   font-weight: 600;
   letter-spacing: -0.01em;
-  color: var(--color-text-primary);
+  color: var(--text-primary);
+  line-height: 1.4;
 }
 
 /* ============================================================
-   GLOW BORDER SPINNER (existing)
+   ANIMATION UTILITIES
    ============================================================ */
-.glow-border-spinner {
-  background: conic-gradient(from 0deg,
-      transparent 0deg,
-      var(--color-accent) 60deg,
-      var(--color-border-glow) 120deg,
-      transparent 180deg);
-  animation: glow-spin 4s linear infinite;
-  transform-origin: center;
-  width: 200%;
-  height: 200%;
-  left: -50%;
-  top: -50%;
+.animate-fade-in {
+  animation: fade-in var(--motion-enter) var(--ease-out) forwards;
 }
 
-/* ============================================================
-   MARQUEE ANIMATIONS
-   ============================================================ */
+.animate-slide-up {
+  animation: slide-up var(--motion-enter) var(--ease-out) forwards;
+}
+
+.animate-slide-down {
+  animation: slide-down var(--motion-enter) var(--ease-out) forwards;
+}
+
+.animate-scale-in {
+  animation: scale-in var(--motion-enter) var(--ease-spring) forwards;
+}
+
+.animate-shimmer {
+  animation: shimmer 2s linear infinite;
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
 .animate-marquee {
   animation: marquee linear infinite;
 }
@@ -539,8 +746,95 @@ body::after {
 }
 
 /* ============================================================
+   GLOW BORDER SPINNER
+   ============================================================ */
+.glow-border-spinner {
+  background: conic-gradient(from 0deg,
+    transparent 0deg,
+    var(--accent) 60deg,
+    var(--border-glow) 120deg,
+    transparent 180deg);
+  animation: glow-spin 4s linear infinite;
+  transform-origin: center;
+  width: 200%;
+  height: 200%;
+  left: -50%;
+  top: -50%;
+}
+
+/* ============================================================
    LAYOUT HELPERS
    ============================================================ */
 .navbar-spacer {
-  height: 64px;
+  height: var(--navbar-height);
+}
+
+/* ============================================================
+   SKELETON LOADING
+   ============================================================ */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+}
+
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, var(--surface-glass), transparent);
+  animation: shimmer 1.5s linear infinite;
+}
+
+/* ============================================================
+   GRADIENT TEXT
+   ============================================================ */
+.text-gradient {
+  background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-warm {
+  background: linear-gradient(135deg, var(--accent), #A855F7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ============================================================
+   INTERACTIVE GLOW CARD
+   ============================================================ */
+.glow-card {
+  position: relative;
+  background: var(--card-bg-solid);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  transition: border-color var(--motion-medium) var(--ease-smooth),
+    box-shadow var(--motion-medium) var(--ease-smooth),
+    transform var(--motion-medium) var(--ease-out);
+}
+
+.glow-card:hover {
+  border-color: var(--border-glow);
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-2px);
+}
+
+.glow-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity var(--motion-medium) var(--ease-smooth);
+  background: radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), var(--accent-soft), transparent 60%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.glow-card:hover::before {
+  opacity: 1;
 }

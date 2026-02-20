@@ -1,46 +1,118 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react'
-import './stardust-button.css'
+import { type ButtonHTMLAttributes, type ReactNode, type MouseEvent, useState, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { cn } from '@/lib/utils'
+import { Loader2 } from 'lucide-react'
+
+type ButtonVariant = 'default' | 'secondary' | 'ghost' | 'danger' | 'outline'
+type ButtonSize = 'sm' | 'md' | 'lg' | 'icon'
 
 interface StardustButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-    children: ReactNode
-    size?: 'sm' | 'md' | 'lg'
-    variant?: 'default' | 'ghost' | 'danger'
-    fullWidth?: boolean
-    icon?: ReactNode
-    isLoading?: boolean
+  children: ReactNode
+  size?: ButtonSize
+  variant?: ButtonVariant
+  fullWidth?: boolean
+  icon?: ReactNode
+  isLoading?: boolean
 }
 
-export function StardustButton({
-    children,
-    size = 'md',
-    variant = 'default',
-    fullWidth = false,
-    icon,
-    isLoading = false,
-    className = '',
-    disabled,
-    ...props
-}: StardustButtonProps) {
-    const sizeClass = `stardust-btn--${size}`
-    const variantClass = variant !== 'default' ? `stardust-btn--${variant}` : ''
-    const widthClass = fullWidth ? 'stardust-btn--full' : ''
+interface Ripple {
+  id: number
+  x: number
+  y: number
+}
 
-    return (
-        <button
-            className={`stardust-btn ${sizeClass} ${variantClass} ${widthClass} ${className}`}
-            disabled={isLoading || disabled}
-            {...props}
-        >
-            <span className="stardust-btn__wrap">
-                <span className="stardust-btn__content">
-                    {isLoading ? (
-                        <span className="animate-spin mr-2">⏳</span>
-                    ) : (
-                        icon
-                    )}
-                    {children}
-                </span>
-            </span>
-        </button>
-    )
+const variantStyles: Record<ButtonVariant, string> = {
+  default:
+    'bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] shadow-[var(--shadow-glow)] hover:shadow-[var(--shadow-glow-accent)]',
+  secondary:
+    'bg-[var(--bg-tertiary)] text-[var(--text-primary)] border border-[var(--border)] hover:border-[var(--border-glow)] hover:bg-[var(--accent-soft)]',
+  ghost:
+    'bg-transparent text-[var(--text-secondary)] hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]',
+  danger:
+    'bg-[var(--danger)] text-white hover:opacity-90 shadow-md',
+  outline:
+    'bg-transparent text-[var(--accent)] border border-[var(--border-glow)] hover:bg-[var(--accent-soft)]',
+}
+
+const sizeStyles: Record<ButtonSize, string> = {
+  sm: 'h-8 px-3 text-xs gap-1.5 rounded-[var(--radius-md)]',
+  md: 'h-10 px-4 text-sm gap-2 rounded-[var(--radius-lg)]',
+  lg: 'h-12 px-6 text-base gap-2.5 rounded-[var(--radius-lg)]',
+  icon: 'h-10 w-10 rounded-[var(--radius-lg)] p-0',
+}
+
+let rippleId = 0
+
+export function StardustButton({
+  children,
+  size = 'md',
+  variant = 'default',
+  fullWidth = false,
+  icon,
+  isLoading = false,
+  className = '',
+  disabled,
+  onClick,
+  ...props
+}: StardustButtonProps) {
+  const [ripples, setRipples] = useState<Ripple[]>([])
+
+  const handleClick = useCallback((e: MouseEvent<HTMLButtonElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const y = e.clientY - rect.top
+    const id = ++rippleId
+    setRipples(prev => [...prev, { id, x, y }])
+    setTimeout(() => setRipples(prev => prev.filter(r => r.id !== id)), 600)
+    onClick?.(e)
+  }, [onClick])
+
+  return (
+    <button
+      onClick={handleClick}
+      disabled={isLoading || disabled}
+      className={cn(
+        'relative inline-flex items-center justify-center font-semibold',
+        'overflow-hidden transition-all duration-150 ease-out',
+        'active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2',
+        'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none',
+        variantStyles[variant],
+        sizeStyles[size],
+        fullWidth && 'w-full',
+        className,
+      )}
+      {...props}
+    >
+      {/* Content */}
+      <span className="relative z-10 flex items-center justify-center gap-inherit">
+        {isLoading ? (
+          <Loader2 className="animate-spin" size={size === 'sm' ? 14 : size === 'lg' ? 20 : 16} />
+        ) : icon ? (
+          <span className="shrink-0">{icon}</span>
+        ) : null}
+        {size !== 'icon' && children}
+      </span>
+
+      {/* Ripple effects */}
+      <AnimatePresence>
+        {ripples.map(r => (
+          <motion.span
+            key={r.id}
+            initial={{ scale: 0, opacity: 0.35 }}
+            animate={{ scale: 4, opacity: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
+            className="absolute rounded-full pointer-events-none z-0"
+            style={{
+              left: r.x - 16,
+              top: r.y - 16,
+              width: 32,
+              height: 32,
+              background: 'radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%)',
+            }}
+          />
+        ))}
+      </AnimatePresence>
+    </button>
+  )
 }
