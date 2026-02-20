@@ -62,24 +62,22 @@ function BentoCell({ item, index }: { item: BentoItem; index: number }) {
         ref={cardRef}
         onMouseMove={handleMouseMove}
         className={cn(
-          'group relative h-full rounded-[var(--radius-xl)] overflow-hidden',
-          'bg-[var(--card-bg-solid)] border border-[var(--card-border)]',
-          'shadow-[var(--card-shadow)] transition-all duration-200',
-          'hover:border-[var(--border-glow)] hover:shadow-[var(--shadow-glow)]',
+          'group relative h-full rounded-2xl overflow-hidden',
+          'bg-[var(--bg-card)] border border-[var(--border-subtle)]',
+          'shadow-[var(--shadow-sm)] transition-all duration-200',
+          'hover:border-[var(--accent-glow)] hover:shadow-[var(--shadow-accent)]',
           'hover:-translate-y-0.5'
         )}
         style={{ minHeight: item.rowSpan === 2 ? '420px' : '200px' }}
       >
-        {/* Mouse-tracking glow */}
         <div
           className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-[1]"
           style={{
-            background: 'radial-gradient(400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), var(--accent-soft), transparent 60%)',
+            background: 'radial-gradient(400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), var(--accent-muted), transparent 60%)',
           }}
           aria-hidden="true"
         />
 
-        {/* Top accent line */}
         <div
           className="absolute top-0 left-0 right-0 h-px opacity-40 group-hover:opacity-70 transition-opacity duration-300 pointer-events-none"
           style={{ background: 'linear-gradient(90deg, transparent, var(--accent), transparent)' }}
@@ -87,10 +85,9 @@ function BentoCell({ item, index }: { item: BentoItem; index: number }) {
         />
 
         <div className="relative z-[2] h-full flex flex-col p-5">
-          {/* Header */}
           <div className="flex items-center gap-3 mb-3">
             {item.icon && (
-              <div className="w-10 h-10 rounded-[var(--radius-lg)] bg-[var(--accent-soft)] flex items-center justify-center text-[var(--accent)] shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-[var(--accent-muted)] flex items-center justify-center text-[var(--accent)] shrink-0">
                 {item.icon}
               </div>
             )}
@@ -99,14 +96,12 @@ function BentoCell({ item, index }: { item: BentoItem; index: number }) {
             </h3>
           </div>
 
-          {/* Description */}
           {item.description && (
-            <p className="text-sm leading-relaxed text-[var(--text-muted)] mb-3">
+            <p className="text-sm leading-relaxed text-[var(--text-secondary)] mb-3">
               {item.description}
             </p>
           )}
 
-          {/* Content slot */}
           {item.children && (
             <div className="flex-1 min-h-0">{item.children}</div>
           )}

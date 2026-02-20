@@ -23,22 +23,22 @@ interface Ripple {
 
 const variantStyles: Record<ButtonVariant, string> = {
   default:
-    'bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] shadow-[var(--shadow-glow)] hover:shadow-[var(--shadow-glow-accent)]',
+    'bg-[var(--accent)] text-[var(--accent-text)] hover:bg-[var(--accent-hover)] shadow-[var(--shadow-accent)]',
   secondary:
-    'bg-[var(--bg-tertiary)] text-[var(--text-primary)] border border-[var(--border)] hover:border-[var(--border-glow)] hover:bg-[var(--accent-soft)]',
+    'bg-[var(--bg-elevated)] text-[var(--text-primary)] border border-[var(--border-default)] hover:border-[var(--accent-glow)] hover:bg-[var(--accent-muted)]',
   ghost:
-    'bg-transparent text-[var(--text-secondary)] hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]',
+    'bg-transparent text-[var(--text-secondary)] hover:bg-[var(--accent-muted)] hover:text-[var(--text-primary)]',
   danger:
     'bg-[var(--danger)] text-white hover:opacity-90 shadow-md',
   outline:
-    'bg-transparent text-[var(--accent)] border border-[var(--border-glow)] hover:bg-[var(--accent-soft)]',
+    'bg-transparent text-[var(--accent)] border border-[var(--accent-glow)] hover:bg-[var(--accent-muted)]',
 }
 
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: 'h-8 px-3 text-xs gap-1.5 rounded-[var(--radius-md)]',
-  md: 'h-10 px-4 text-sm gap-2 rounded-[var(--radius-lg)]',
-  lg: 'h-12 px-6 text-base gap-2.5 rounded-[var(--radius-lg)]',
-  icon: 'h-10 w-10 rounded-[var(--radius-lg)] p-0',
+  sm: 'h-8 px-3 text-xs gap-1.5 rounded-lg',
+  md: 'h-10 px-4 text-sm gap-2 rounded-xl',
+  lg: 'h-12 px-6 text-base gap-2.5 rounded-xl',
+  icon: 'h-10 w-10 rounded-xl p-0',
 }
 
 let rippleId = 0
@@ -73,7 +73,7 @@ export function StardustButton({
       disabled={isLoading || disabled}
       className={cn(
         'relative inline-flex items-center justify-center font-semibold',
-        'overflow-hidden transition-all duration-150 ease-out',
+        'overflow-hidden transition-all duration-150 ease-out cursor-pointer',
         'active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2',
         'disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none',
         variantStyles[variant],
@@ -83,7 +83,6 @@ export function StardustButton({
       )}
       {...props}
     >
-      {/* Content */}
       <span className="relative z-10 flex items-center justify-center gap-inherit">
         {isLoading ? (
           <Loader2 className="animate-spin" size={size === 'sm' ? 14 : size === 'lg' ? 20 : 16} />
@@ -93,7 +92,6 @@ export function StardustButton({
         {size !== 'icon' && children}
       </span>
 
-      {/* Ripple effects */}
       <AnimatePresence>
         {ripples.map(r => (
           <motion.span

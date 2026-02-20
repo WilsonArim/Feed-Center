@@ -9,15 +9,15 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const variantClass: Record<CardVariant, string> = {
   default:
-    'bg-[var(--card-bg-solid)] border border-[var(--card-border)] rounded-[var(--radius-xl)] shadow-[var(--card-shadow)] transition-all duration-200 hover:border-[var(--border-hover)] hover:shadow-[var(--card-hover-shadow)]',
+    'bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-2xl shadow-[var(--shadow-sm)] transition-all duration-200 hover:border-[var(--border-hover)] hover:shadow-[var(--shadow-md)]',
   solid:
-    'bg-[var(--card-bg-solid)] border border-[var(--card-border)] rounded-[var(--radius-xl)] shadow-[var(--card-shadow)] cursor-pointer transition-all duration-200 hover:border-[var(--border-glow)] hover:shadow-[var(--card-hover-shadow)] hover:-translate-y-0.5',
+    'bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-2xl shadow-[var(--shadow-sm)] cursor-pointer transition-all duration-200 hover:border-[var(--accent-glow)] hover:shadow-[var(--shadow-accent)] hover:-translate-y-0.5',
   elevated:
-    'bg-[var(--bg-secondary)] border border-[var(--border)] rounded-[var(--radius-xl)] shadow-[var(--shadow-md)]',
+    'bg-[var(--bg-elevated)] border border-[var(--border-default)] rounded-2xl shadow-[var(--shadow-md)]',
   critical:
-    'bg-[var(--surface-critical)] border border-[var(--danger-soft)] rounded-[var(--radius-xl)] shadow-sm',
+    'bg-[var(--danger-soft)] border border-[var(--danger-soft)] rounded-2xl shadow-sm',
   glass:
-    'bg-[var(--surface-glass)] backdrop-blur-xl border border-[var(--border)] rounded-[var(--radius-xl)] shadow-[var(--card-shadow)] transition-all duration-200 hover:bg-[var(--surface-glass-hover)]',
+    'bg-[var(--glass-bg)] backdrop-blur-xl border border-[var(--border-subtle)] rounded-2xl shadow-[var(--shadow-sm)] transition-all duration-200 hover:bg-[var(--bg-surface-hover)]',
 }
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(

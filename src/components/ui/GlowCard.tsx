@@ -12,10 +12,10 @@ interface GlowCardProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const variantStyles: Record<GlowVariant, string> = {
-  default: 'bg-[var(--card-bg-solid)] border-[var(--border)]',
-  elevated: 'bg-[var(--bg-secondary)] border-[var(--border)] shadow-[var(--shadow-md)]',
-  accent: 'bg-[var(--card-bg-solid)] border-[var(--border-glow)]',
-  subtle: 'bg-[var(--surface-glass)] backdrop-blur-xl border-[var(--border)]',
+  default: 'bg-[var(--bg-card)] border-[var(--border-subtle)]',
+  elevated: 'bg-[var(--bg-elevated)] border-[var(--border-default)] shadow-[var(--shadow-md)]',
+  accent: 'bg-[var(--bg-card)] border-[var(--accent-glow)]',
+  subtle: 'bg-[var(--glass-bg)] backdrop-blur-xl border-[var(--border-subtle)]',
 }
 
 export function GlowCard({
@@ -42,26 +42,24 @@ export function GlowCard({
       ref={cardRef}
       onMouseMove={handleMouseMove}
       className={cn(
-        'relative rounded-[var(--radius-xl)] border overflow-hidden transition-all duration-200',
+        'relative rounded-2xl border overflow-hidden transition-all duration-200',
         variantStyles[variant],
-        hoverable && 'hover:border-[var(--border-glow)] hover:shadow-[var(--shadow-glow)]',
+        hoverable && 'hover:border-[var(--accent-glow)] hover:shadow-[var(--shadow-accent)]',
         hoverable && 'hover:-translate-y-0.5',
         className
       )}
       {...props}
     >
-      {/* Mouse-tracking glow */}
       {glow && (
         <div
           className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none z-[1]"
           style={{
-            background: 'radial-gradient(400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), var(--accent-soft), transparent 60%)',
+            background: 'radial-gradient(400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), var(--accent-muted), transparent 60%)',
           }}
           aria-hidden="true"
         />
       )}
 
-      {/* Subtle top border gradient line */}
       <div
         className="absolute top-0 left-0 right-0 h-px opacity-60 pointer-events-none"
         style={{
@@ -70,7 +68,6 @@ export function GlowCard({
         aria-hidden="true"
       />
 
-      {/* Content */}
       <div className="relative z-[2] p-5 h-full">
         {children}
       </div>

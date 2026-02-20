@@ -12,13 +12,11 @@ export function SpotlightCursor() {
     const el = spotRef.current
     if (!el) return
 
-    // Disable on touch devices
     if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
       el.style.display = 'none'
       return
     }
 
-    // Disable when reduced motion is preferred
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       el.style.display = 'none'
       return
@@ -50,13 +48,12 @@ export function SpotlightCursor() {
   return (
     <div
       ref={spotRef}
-      className="fixed inset-0 pointer-events-none"
+      className="fixed inset-0 pointer-events-none z-[5]"
       style={{
-        zIndex: 'var(--z-spotlight)' as any,
         opacity: 0,
         transition: 'opacity 0.4s ease',
         background:
-          'radial-gradient(350px circle at var(--spot-x, -999px) var(--spot-y, -999px), var(--accent-soft), transparent 70%)',
+          'radial-gradient(350px circle at var(--spot-x, -999px) var(--spot-y, -999px), var(--accent-muted), transparent 70%)',
       } as React.CSSProperties}
       aria-hidden="true"
     />

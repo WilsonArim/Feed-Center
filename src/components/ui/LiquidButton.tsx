@@ -35,9 +35,9 @@ export function LiquidButton({
 
   const variants: Record<string, string> = {
     primary:
-      'bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] shadow-[var(--shadow-glow)]',
+      'bg-[var(--accent)] text-[var(--accent-text)] hover:bg-[var(--accent-hover)] shadow-[var(--shadow-accent)]',
     ghost:
-      'bg-transparent text-[var(--text-secondary)] hover:bg-[var(--accent-soft)] hover:text-[var(--text-primary)]',
+      'bg-transparent text-[var(--text-secondary)] hover:bg-[var(--accent-muted)] hover:text-[var(--text-primary)]',
     danger:
       'bg-[var(--danger)] text-white hover:opacity-90',
   }
@@ -46,7 +46,7 @@ export function LiquidButton({
     <button
       onClick={handleClick}
       className={cn(
-        'relative overflow-hidden px-5 py-2.5 rounded-[var(--radius-lg)] font-medium text-sm',
+        'relative overflow-hidden px-5 py-2.5 rounded-xl font-medium text-sm',
         'transition-all duration-150 cursor-pointer',
         'focus-visible:outline-2 focus-visible:outline-[var(--accent)] focus-visible:outline-offset-2',
         'active:scale-[0.97]',
