@@ -30,17 +30,15 @@ export function AppLayout() {
             <Sidebar />
             <TopBar />
 
-            {/* Main content area — offset by sidebar collapsed width + topbar */}
-            <main className="min-h-dvh transition-[margin] duration-300 ease-out
-                ml-[var(--sidebar-collapsed)] max-md:ml-0
-                pt-[calc(var(--topbar-height)+1rem)] pb-8 px-6 lg:px-8">
+            {/* Main content area — offset by sidebar (72px) + topbar (64px) */}
+            <main className="min-h-dvh ml-[72px] pt-[80px] pb-8 px-6 lg:px-8 max-md:ml-0 max-md:pt-[72px] max-md:pb-20">
                 <AnimatePresence mode="wait">
                     <motion.div
                         variants={pageVariants}
                         initial="initial"
                         animate="enter"
                         exit="exit"
-                        className="mx-auto max-w-[1400px]"
+                        className="mx-auto max-w-[1400px] w-full"
                     >
                         <Outlet />
                     </motion.div>

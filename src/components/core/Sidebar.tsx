@@ -108,9 +108,9 @@ export function Sidebar() {
             <motion.aside
                 onMouseEnter={() => setHovered(true)}
                 onMouseLeave={() => setHovered(false)}
-                animate={{ width: expanded ? 'var(--sidebar-width)' : 'var(--sidebar-collapsed)' }}
+                animate={{ width: expanded ? 260 : 72 }}
                 transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
-                className="fixed left-0 top-0 bottom-0 flex flex-col z-[var(--z-sidebar)] overflow-hidden
+                className="fixed left-0 top-0 bottom-0 flex flex-col z-40 overflow-hidden
                     bg-[var(--sidebar-bg)] backdrop-blur-2xl border-r border-[var(--sidebar-border)]
                     max-md:hidden transition-colors duration-300"
             >
@@ -195,7 +195,7 @@ export function Sidebar() {
             </motion.aside>
 
             {/* Mobile bottom tab bar */}
-            <nav className="fixed bottom-0 left-0 right-0 z-[var(--z-sidebar)] md:hidden
+            <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden
                 bg-[var(--sidebar-bg)] backdrop-blur-2xl border-t border-[var(--sidebar-border)]
                 flex items-center justify-around h-16 px-2 safe-area-pb">
                 {[...navItems.slice(0, 5), systemItems[0]].map(item => (
