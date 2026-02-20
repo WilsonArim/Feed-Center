@@ -92,7 +92,7 @@ export function RegisterPage() {
 
     if (success) {
         return (
-            <div className="min-h-dvh flex items-center justify-center px-4 bg-[var(--color-bg-primary)]">
+            <div className="min-h-dvh flex items-center justify-center px-4 bg-[var(--bg-deep)]">
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -127,7 +127,7 @@ export function RegisterPage() {
     }
 
     return (
-        <div className="min-h-dvh flex items-center justify-center px-4 bg-[var(--color-bg-primary)] relative overflow-hidden">
+        <div className="min-h-dvh flex items-center justify-center px-4 bg-[var(--bg-deep)] relative overflow-hidden">
             {/* Background decoration */}
             <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
                 <div className="absolute top-1/3 -right-32 w-[500px] h-[500px] rounded-full bg-[var(--color-secondary)] opacity-[0.04] blur-[120px]" />

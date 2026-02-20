@@ -74,9 +74,9 @@ export function TodoPage() {
 
             <div className="flex-1 flex flex-col min-w-0 bg-[var(--color-bg-primary)]">
                 {/* Header */}
-                <div className="flex items-center justify-between px-8 py-5 border-b border-[var(--color-border)] bg-[var(--color-bg-secondary)]/50 backdrop-blur-sm z-10">
+                <div className="flex items-center justify-between px-8 py-5 border-b border-[var(--border-subtle)] bg-[var(--bg-deep)]/50 backdrop-blur-sm z-10">
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)] flex items-center gap-3">
+                        <h1 className="text-h2 text-xl flex items-center gap-3">
                             {pageTitle}
                         </h1>
 

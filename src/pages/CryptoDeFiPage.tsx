@@ -57,7 +57,7 @@ export function CryptoDeFiPage() {
     }
 
     return (
-        <div className="p-6 pt-20 w-full flex flex-col gap-6">
+        <div className="w-full flex flex-col gap-6 pb-12">
             <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -67,7 +67,7 @@ export function CryptoDeFiPage() {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight mb-1 text-[var(--color-text-primary)] font-sans">
+                        <h1 className="text-h1 text-2xl md:text-3xl mb-1">
                             Ledger DeFi
                         </h1>
                         <p className="text-sm text-[var(--color-text-muted)]">

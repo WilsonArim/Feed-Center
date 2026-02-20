@@ -120,7 +120,7 @@ export function FinanceiroPage() {
                     <motion.h1
                         initial={{ opacity: 0, x: -12 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className="text-2xl md:text-3xl font-bold tracking-tight text-[var(--color-text-primary)]"
+                        className="text-h1 text-2xl md:text-3xl"
                     >
                         Controlo Financeiro
                     </motion.h1>
@@ -128,7 +128,7 @@ export function FinanceiroPage() {
                         initial={{ opacity: 0, x: -12 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.05 }}
-                        className="text-sm mt-1 text-[var(--color-text-muted)]"
+                        className="text-sm mt-1 text-[var(--text-secondary)]"
                     >
                         Controla os teus gastos e rendimentos com inteligencia
                     </motion.p>
@@ -176,7 +176,7 @@ export function FinanceiroPage() {
                     />
                 </div>
 
-                <div className="bg-[var(--color-bg-secondary)] rounded-2xl border border-[var(--color-border)]">
+                <div className="glass-card-static overflow-hidden">
                     {/* List header */}
                     <div className="flex items-center justify-between px-5 py-3.5 border-b border-[var(--color-border)]">
                         <div className="flex items-center gap-2">

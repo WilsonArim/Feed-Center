@@ -20,9 +20,9 @@ export function SettingsPage() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="p-6 pt-20 w-full max-w-2xl flex flex-col gap-8"
+            className="w-full max-w-2xl flex flex-col gap-8 pb-12"
         >
-            <h1 className="text-3xl font-bold tracking-tight text-[var(--color-text-primary)] font-sans">
+            <h1 className="text-h1 text-2xl md:text-3xl">
                 Definicoes
             </h1>
 

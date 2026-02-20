@@ -39,12 +39,12 @@ export function CryptoPage() {
     const hasWallets = (wallets.data?.length ?? 0) > 0
 
     return (
-        <div className="p-6 pt-20 w-full flex flex-col gap-8">
+        <div className="w-full flex flex-col gap-8 pb-12">
 
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight mb-2 text-[var(--color-text-primary)] font-sans">
+                    <h1 className="text-h1 text-2xl md:text-3xl mb-2">
                         Ledger Cripto
                     </h1>
                     <div className="flex items-center gap-2 text-sm text-[var(--color-text-muted)]">

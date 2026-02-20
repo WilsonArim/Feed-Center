@@ -51,7 +51,7 @@ export function LinksPage() {
     }
 
     return (
-        <div className="min-h-screen pt-24 px-6 pb-20">
+        <div className="pb-12">
             <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -61,7 +61,7 @@ export function LinksPage() {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <div>
-                        <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-1 text-[var(--color-text-primary)] font-sans">
+                        <h1 className="text-h1 text-2xl md:text-3xl mb-1">
                             Gestor de Links
                         </h1>
                         <p className="text-sm text-[var(--color-text-muted)]">

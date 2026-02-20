@@ -34,7 +34,7 @@ export function LoginPage() {
     }
 
     return (
-        <div className="min-h-dvh flex items-center justify-center px-4 bg-[var(--color-bg-primary)] relative overflow-hidden">
+        <div className="min-h-dvh flex items-center justify-center px-4 bg-[var(--bg-deep)] relative overflow-hidden">
             {/* Background decoration */}
             <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
                 <div className="absolute top-1/4 -left-32 w-[500px] h-[500px] rounded-full bg-[var(--color-accent)] opacity-[0.04] blur-[120px]" />
@@ -48,7 +48,7 @@ export function LoginPage() {
                 className="relative w-full max-w-md"
             >
                 {/* Card */}
-                <div className="rounded-3xl p-8 md:p-10 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] shadow-[0_24px_80px_-12px_rgba(0,0,0,0.2)]">
+                <div className="rounded-3xl p-8 md:p-10 bg-[var(--bg-modal)] border border-[var(--border-default)] shadow-[var(--shadow-xl)]">
                     {/* Logo + Title */}
                     <div className="text-center mb-8">
                         <motion.div

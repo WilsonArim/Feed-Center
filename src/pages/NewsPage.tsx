@@ -53,7 +53,7 @@ export function NewsPage() {
     const totalPages = newsList?.totalPages || 1
 
     return (
-        <div className="min-h-screen pt-24 px-4 md:px-6 pb-20">
+        <div className="pb-12">
             <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -66,7 +66,7 @@ export function NewsPage() {
                         <Newspaper size={18} className="text-[var(--color-accent)]" />
                     </div>
                     <div>
-                        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-[var(--color-text-primary)] font-sans">
+                        <h1 className="text-h1 text-2xl md:text-3xl">
                             Noticias
                         </h1>
                         <p className="text-xs text-[var(--color-text-muted)]">

@@ -1,75 +1,51 @@
 import { Outlet } from 'react-router'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Sidebar } from './Sidebar'
-import { FloatingNavbar } from './FloatingNavbar'
-import { SpotlightCursor } from '../ui/SpotlightCursor'
-import { NoiseOverlay } from '../ui/NoiseOverlay'
+import { TopBar } from './TopBar'
 import { BuggyWidget } from '../core/BuggyWidget'
-import { useUIStore } from '@/stores/uiStore'
 import { useThemeStore } from '@/stores/themeStore'
 import { useEffect } from 'react'
 
-function ThemeInitializer() {
+function ThemeSync() {
     const resolvedTheme = useThemeStore((s) => s.resolvedTheme)
-
     useEffect(() => {
         const root = document.documentElement
-        if (resolvedTheme === 'dark') {
-            root.classList.add('dark')
-            root.classList.remove('light')
-        } else {
-            root.classList.add('light')
-            root.classList.remove('dark')
-        }
+        root.classList.toggle('dark', resolvedTheme === 'dark')
+        root.classList.toggle('light', resolvedTheme === 'light')
     }, [resolvedTheme])
-
     return null
 }
 
 const pageVariants = {
     initial: { opacity: 0, y: 8 },
-    enter: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] } },
-    exit: { opacity: 0, y: -8, transition: { duration: 0.15 } },
+    enter: { opacity: 1, y: 0, transition: { duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] } },
+    exit: { opacity: 0, transition: { duration: 0.1 } },
 }
 
 export function AppLayout() {
-    const sidebarOpen = useUIStore((s) => s.sidebarOpen)
-
     return (
-        <div className="relative min-h-dvh bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] transition-colors duration-300">
-            <ThemeInitializer />
-            <SpotlightCursor />
-            <NoiseOverlay />
+        <div className="relative min-h-dvh bg-[var(--bg-deep)] text-[var(--text-primary)] transition-colors duration-300">
+            <ThemeSync />
             <BuggyWidget />
-            <FloatingNavbar />
             <Sidebar />
+            <TopBar />
 
-            <motion.main
-                initial={false}
-                animate={{
-                    marginLeft: sidebarOpen ? 'var(--sidebar-width)' : 'var(--sidebar-collapsed)',
-                }}
-                transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
-                className="min-h-dvh pt-20 pb-8 px-4 md:px-6 lg:px-8 max-md:ml-0!"
-            >
+            {/* Main content area — offset by sidebar collapsed width + topbar */}
+            <main className="min-h-dvh transition-[margin] duration-300 ease-out
+                ml-[var(--sidebar-collapsed)] max-md:ml-0
+                pt-[calc(var(--topbar-height)+1rem)] pb-8 px-6 lg:px-8">
                 <AnimatePresence mode="wait">
                     <motion.div
                         variants={pageVariants}
                         initial="initial"
                         animate="enter"
                         exit="exit"
-                        className="mx-auto max-w-[1440px]"
+                        className="mx-auto max-w-[1400px]"
                     >
                         <Outlet />
                     </motion.div>
                 </AnimatePresence>
-            </motion.main>
-
-            {/* Ambient gradient orbs - subtle background decoration */}
-            <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10" aria-hidden="true">
-                <div className="absolute -top-[40%] -right-[20%] w-[800px] h-[800px] rounded-full bg-[var(--color-accent)] opacity-[0.015] blur-[150px]" />
-                <div className="absolute -bottom-[30%] -left-[15%] w-[600px] h-[600px] rounded-full bg-[var(--color-secondary)] opacity-[0.012] blur-[120px]" />
-            </div>
+            </main>
         </div>
     )
 }

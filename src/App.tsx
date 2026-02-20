@@ -19,9 +19,9 @@ import { NewsPage } from '@/pages/NewsPage'
 export default function App() {
     if (!isSupabaseConfigured) {
         return (
-            <div className="min-h-dvh flex items-center justify-center p-6">
-                <div className="w-full max-w-2xl modal-panel rounded-[var(--radius-xl)] p-6 sm:p-8">
-                    <h1 className="text-2xl sm:text-3xl font-black mb-3">Supabase not configured</h1>
+            <div className="min-h-dvh flex items-center justify-center p-6 bg-[var(--bg-deep)] text-[var(--text-primary)]">
+                <div className="w-full max-w-2xl modal-panel p-6 sm:p-8">
+                    <h1 className="text-h2 mb-3">Supabase not configured</h1>
                     <p className="text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed mb-4">
                         {supabaseConfigError}
                     </p>

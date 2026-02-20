@@ -2,6 +2,7 @@ import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { motion } from 'framer-motion'
 import { TaskCard } from './TaskCard'
+import { GripVertical } from 'lucide-react'
 import type { Todo, TodoStatus } from '@/types'
 
 interface KanbanColumnProps {
@@ -11,22 +12,10 @@ interface KanbanColumnProps {
     onEditTask: (todo: Todo) => void
 }
 
-const COLUMN_STYLES: Record<TodoStatus, { dot: string; bg: string; border: string }> = {
-    todo: {
-        dot: 'bg-[var(--color-text-muted)]',
-        bg: 'bg-[var(--color-surface)]/60',
-        border: 'border-[var(--color-border)]',
-    },
-    in_progress: {
-        dot: 'bg-[var(--color-accent)]',
-        bg: 'bg-[var(--color-accent)]/[0.03]',
-        border: 'border-[var(--color-accent)]/20',
-    },
-    done: {
-        dot: 'bg-emerald-500',
-        bg: 'bg-emerald-500/[0.03]',
-        border: 'border-emerald-500/20',
-    },
+const COLUMN_STYLES: Record<TodoStatus, { dot: string; topBorder: string }> = {
+    todo: { dot: 'bg-[var(--text-secondary)]', topBorder: 'border-t-[rgba(255,255,255,0.20)]' },
+    in_progress: { dot: 'bg-blue-400', topBorder: 'border-t-blue-400' },
+    done: { dot: 'bg-green-400', topBorder: 'border-t-green-400' },
 }
 
 export function KanbanColumn({ id, title, todos, onEditTask }: KanbanColumnProps) {
@@ -36,15 +25,18 @@ export function KanbanColumn({ id, title, todos, onEditTask }: KanbanColumnProps
     return (
         <motion.div
             layout
-            className="flex flex-col h-full min-w-[280px] w-full max-w-[340px]"
+            className={`flex flex-col min-w-[280px] w-full max-w-[340px]
+                min-h-[calc(100vh-180px)] glass-card-static
+                border-t-4 ${style.topBorder} !rounded-t-none`}
         >
             {/* Column Header */}
-            <div className={`flex items-center gap-3 px-4 py-3 mb-3 rounded-xl border ${style.bg} ${style.border} backdrop-blur-sm`}>
+            <div className="flex items-center gap-3 px-4 py-3.5 border-b border-[var(--border-subtle)]">
                 <span className={`w-2 h-2 rounded-full ${style.dot}`} />
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-secondary)]">
+                <h3 className="font-heading text-[13px] font-semibold uppercase tracking-[0.1em] text-[var(--text-secondary)]">
                     {title}
                 </h3>
-                <span className="ml-auto text-[10px] font-mono font-bold text-[var(--color-text-muted)] bg-[var(--color-bg-tertiary)] px-2 py-0.5 rounded-md">
+                <span className="ml-auto text-[10px] font-bold text-[var(--text-tertiary)]
+                    bg-[var(--bg-surface)] px-2 py-0.5 rounded-full tabular-nums">
                     {todos.length}
                 </span>
             </div>
@@ -52,27 +44,21 @@ export function KanbanColumn({ id, title, todos, onEditTask }: KanbanColumnProps
             {/* Droppable Area */}
             <div
                 ref={setNodeRef}
-                className={`flex-1 flex flex-col gap-3 p-2 overflow-y-auto rounded-xl transition-colors duration-200 ${
-                    isOver ? 'bg-[var(--color-accent)]/[0.05] ring-1 ring-[var(--color-accent)]/20 ring-inset' : ''
+                className={`flex-1 flex flex-col gap-3 p-3 overflow-y-auto transition-colors duration-200 ${
+                    isOver ? 'bg-[var(--accent-muted)] ring-1 ring-[var(--accent)]/20 ring-inset' : ''
                 }`}
             >
-                <SortableContext
-                    id={id}
-                    items={todos.map((t) => t.id)}
-                    strategy={verticalListSortingStrategy}
-                >
-                    {todos.map((todo) => (
-                        <TaskCard
-                            key={todo.id}
-                            todo={todo}
-                            onEdit={onEditTask}
-                        />
+                <SortableContext id={id} items={todos.map(t => t.id)} strategy={verticalListSortingStrategy}>
+                    {todos.map(todo => (
+                        <TaskCard key={todo.id} todo={todo} onEdit={onEditTask} />
                     ))}
                 </SortableContext>
 
                 {todos.length === 0 && (
-                    <div className="flex-1 flex items-center justify-center min-h-[120px] border border-dashed border-[var(--color-border)] rounded-xl">
-                        <p className="text-xs text-[var(--color-text-muted)]">Arrastar tarefas aqui</p>
+                    <div className="flex-1 flex flex-col items-center justify-center min-h-[120px]
+                        border border-dashed border-[var(--border-default)] rounded-xl gap-2">
+                        <GripVertical size={18} className="text-[var(--text-tertiary)] opacity-40" />
+                        <p className="text-xs text-[var(--text-tertiary)]">Arrastar tarefas aqui</p>
                     </div>
                 )}
             </div>
