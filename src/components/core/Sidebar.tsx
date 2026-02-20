@@ -7,27 +7,29 @@ import {
 import { useState } from 'react'
 import { useAuth } from './AuthProvider'
 import { ThemeToggle } from '../ui/ThemeToggle'
+import { useTranslation } from 'react-i18next'
 
 interface NavItem {
     id: string; to: string; icon: LucideIcon; label: string
+    labelKey?: string
     section?: string; children?: { to: string; label: string }[]
 }
 
 const navItems: NavItem[] = [
-    { id: 'dashboard', to: '/', icon: LayoutDashboard, label: 'Dashboard', section: 'MENU' },
-    { id: 'financeiro', to: '/financeiro', icon: Wallet, label: 'Financeiro' },
-    { id: 'todo', to: '/todo', icon: CheckSquare, label: 'To-Do' },
-    { id: 'links', to: '/links', icon: Link2, label: 'Links' },
-    { id: 'news', to: '/news', icon: Newspaper, label: 'Noticias' },
-    { id: 'crypto', to: '/crypto', icon: Bitcoin, label: 'Crypto',
+    { id: 'dashboard', to: '/', icon: LayoutDashboard, label: 'Dashboard', labelKey: 'nav.dashboard', section: 'MENU' },
+    { id: 'financeiro', to: '/financeiro', icon: Wallet, label: 'Financeiro', labelKey: 'nav.financial' },
+    { id: 'todo', to: '/todo', icon: CheckSquare, label: 'To-Do', labelKey: 'nav.todo' },
+    { id: 'links', to: '/links', icon: Link2, label: 'Links', labelKey: 'nav.links' },
+    { id: 'news', to: '/news', icon: Newspaper, label: 'Noticias', labelKey: 'nav.news' },
+    { id: 'crypto', to: '/crypto', icon: Bitcoin, label: 'Crypto', labelKey: 'nav.crypto',
         children: [{ to: '/crypto', label: 'Portfolio' }, { to: '/crypto/defi', label: 'DeFi' }] },
 ]
 
 const systemItems: NavItem[] = [
-    { id: 'settings', to: '/settings', icon: Settings, label: 'Definicoes', section: 'SISTEMA' },
+    { id: 'settings', to: '/settings', icon: Settings, label: 'Definicoes', labelKey: 'nav.settings', section: 'SISTEMA' },
 ]
 
-function SidebarLink({ item, expanded }: { item: NavItem; expanded: boolean }) {
+function SidebarLink({ item, expanded, label }: { item: NavItem; expanded: boolean; label: string }) {
     const [subOpen, setSubOpen] = useState(false)
     const hasChildren = item.children && item.children.length > 0
 
@@ -58,7 +60,7 @@ function SidebarLink({ item, expanded }: { item: NavItem; expanded: boolean }) {
                         )}
                         <item.icon size={20} className="shrink-0" />
                         {expanded && (
-                            <span className="text-sm font-medium whitespace-nowrap flex-1">{item.label}</span>
+                            <span className="text-sm font-medium whitespace-nowrap flex-1">{label}</span>
                         )}
                         {hasChildren && expanded && (
                             <motion.div animate={{ rotate: subOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
@@ -98,6 +100,7 @@ function SidebarLink({ item, expanded }: { item: NavItem; expanded: boolean }) {
 
 export function Sidebar() {
     const { signOut, user } = useAuth()
+    const { t } = useTranslation()
     const [hovered, setHovered] = useState(false)
     const expanded = hovered
     const initial = user?.email?.charAt(0).toUpperCase() ?? '?'
@@ -143,7 +146,12 @@ export function Sidebar() {
                 {/* Navigation */}
                 <nav className={`flex-1 py-2 flex flex-col gap-0.5 overflow-y-auto ${expanded ? 'px-3' : 'px-2'}`}>
                     {navItems.map(item => (
-                        <SidebarLink key={item.id} item={item} expanded={expanded} />
+                        <SidebarLink
+                            key={item.id}
+                            item={item}
+                            expanded={expanded}
+                            label={item.labelKey ? t(item.labelKey) : item.label}
+                        />
                     ))}
                 </nav>
 
@@ -165,7 +173,12 @@ export function Sidebar() {
                     </div>
 
                     {systemItems.map(item => (
-                        <SidebarLink key={item.id} item={item} expanded={expanded} />
+                        <SidebarLink
+                            key={item.id}
+                            item={item}
+                            expanded={expanded}
+                            label={item.labelKey ? t(item.labelKey) : item.label}
+                        />
                     ))}
                 </div>
 
@@ -210,7 +223,7 @@ export function Sidebar() {
                         }
                     >
                         <item.icon size={20} />
-                        <span className="text-[9px] font-medium">{item.label}</span>
+                        <span className="text-[9px] font-medium">{item.labelKey ? t(item.labelKey) : item.label}</span>
                     </NavLink>
                 ))}
             </nav>

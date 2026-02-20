@@ -4,9 +4,11 @@ import { Search, Bell, Command } from 'lucide-react'
 import { useNotifications } from '@/hooks/useNotifications'
 import { UserDropdown } from './UserDropdown'
 import { NotificationPanel } from './NotificationPanel'
+import { useTranslation } from 'react-i18next'
 
 export function TopBar() {
     const { notifications, hasNotifications } = useNotifications()
+    const { t } = useTranslation()
     const [notifOpen, setNotifOpen] = useState(false)
 
     return (
@@ -36,7 +38,7 @@ export function TopBar() {
                     bg-[var(--bg-surface)] border border-[var(--border-subtle)]
                     text-sm text-[var(--text-tertiary)]
                     group-hover:border-[var(--accent)]/30 transition-all text-left">
-                    Pesquisar...
+                    {t('common.search')}...
                 </div>
                 <kbd className="absolute right-2.5 flex items-center gap-0.5 text-[10px] text-[var(--text-tertiary)] font-medium
                     bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-md px-1.5 py-0.5
