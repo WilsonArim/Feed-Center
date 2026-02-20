@@ -95,6 +95,17 @@ export function AddTransactionModal({ isOpen, onClose, onSubmit, isLoading, wall
         return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
     }, [query])
 
+    useEffect(() => {
+        if (!isOpen) return
+
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') onClose()
+        }
+
+        window.addEventListener('keydown', handleEscape)
+        return () => window.removeEventListener('keydown', handleEscape)
+    }, [isOpen, onClose])
+
     const handleSelect = (token: CoinGeckoToken) => {
         setSelected(token)
         setQuery(token.name)
@@ -152,13 +163,16 @@ export function AddTransactionModal({ isOpen, onClose, onSubmit, isLoading, wall
                         onClick={e => e.stopPropagation()}
                         className="modal-panel w-full max-w-lg rounded-[var(--radius-xl)] p-6 relative overflow-visible max-h-[90vh] overflow-y-auto custom-scrollbar"
                         style={{ border: '1px solid var(--color-border)' }}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="add-transaction-modal-title"
                     >
                         {/* Header */}
                         <div className="flex items-center justify-between mb-5">
-                            <h2 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                            <h2 id="add-transaction-modal-title" className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
                                 📝 Nova Transação
                             </h2>
-                            <button onClick={onClose} className="p-1 hover:bg-white/5 rounded transition-colors cursor-pointer">
+                            <button onClick={onClose} className="p-1 hover:bg-white/5 rounded transition-colors cursor-pointer" aria-label="Fechar modal">
                                 <X size={18} style={{ color: 'var(--color-text-muted)' }} />
                             </button>
                         </div>

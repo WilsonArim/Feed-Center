@@ -37,6 +37,17 @@ export function AddLinkModal({ open, onClose, onSubmit, isLoading, editingLink }
         }
     }, [editingLink, open])
 
+    useEffect(() => {
+        if (!open) return
+
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') onClose()
+        }
+
+        window.addEventListener('keydown', handleEscape)
+        return () => window.removeEventListener('keydown', handleEscape)
+    }, [open, onClose])
+
     const addTag = () => {
         const cleaned = tagInput.trim().toLowerCase()
         if (cleaned && !tags.includes(cleaned)) {
@@ -89,10 +100,14 @@ export function AddLinkModal({ open, onClose, onSubmit, isLoading, editingLink }
                                 shadow-2xl border"
                             style={{ borderColor: 'var(--color-border)' }}
                             onClick={(e) => e.stopPropagation()}
+                            role="dialog"
+                            aria-modal="true"
+                            aria-labelledby="add-link-modal-title"
                         >
                             {/* Header */}
                             <div className="flex items-center justify-between mb-6">
                                 <h2
+                                    id="add-link-modal-title"
                                     className="text-xl font-bold"
                                     style={{ color: 'var(--color-text-primary)' }}
                                 >
@@ -103,6 +118,7 @@ export function AddLinkModal({ open, onClose, onSubmit, isLoading, editingLink }
                                     onClick={onClose}
                                     className="p-1.5 rounded-md hover:bg-white/5 transition-colors"
                                     style={{ color: 'var(--color-text-muted)' }}
+                                    aria-label="Fechar modal"
                                 >
                                     <X size={18} />
                                 </button>
@@ -208,8 +224,9 @@ export function AddLinkModal({ open, onClose, onSubmit, isLoading, editingLink }
                                 {tags.length > 0 && (
                                     <div className="flex flex-wrap gap-1.5 mt-2">
                                         {tags.map((tag) => (
-                                            <span
+                                            <button
                                                 key={tag}
+                                                type="button"
                                                 className="text-xs px-2.5 py-1 rounded-full flex items-center gap-1 cursor-pointer hover:opacity-70 transition-opacity"
                                                 style={{
                                                     background: 'var(--color-bg-glass)',
@@ -217,10 +234,11 @@ export function AddLinkModal({ open, onClose, onSubmit, isLoading, editingLink }
                                                     border: '1px solid var(--color-border)',
                                                 }}
                                                 onClick={() => removeTag(tag)}
+                                                aria-label={`Remover tag ${tag}`}
                                             >
                                                 {tag}
                                                 <X size={12} />
-                                            </span>
+                                            </button>
                                         ))}
                                     </div>
                                 )}

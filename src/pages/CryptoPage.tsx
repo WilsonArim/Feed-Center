@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
     Plus, TrendingUp, TrendingDown, ChevronDown, ChevronUp,
-    Trash2, X, RefreshCw, Hash, PenLine
+    Trash2, X, RefreshCw, Hash, PenLine, Bitcoin
 } from 'lucide-react'
 import { StardustButton } from '@/components/ui/StardustButton'
 import { AddWalletModal } from '@/components/modules/crypto/AddWalletModal'
@@ -11,6 +11,7 @@ import { useWeb3 } from '@/hooks/useWeb3'
 import type { UnifiedAsset, CryptoTransaction } from '@/types'
 import { formatCurrency } from '@/utils/format'
 import { PortfolioDonut } from '@/components/modules/crypto/PortfolioDonut'
+import { NextActionsStrip, PageHeader, PageSectionHeader } from '@/components/core/PagePrimitives'
 
 const fmtPct = (v: number) => `${v > 0 ? '+' : ''}${v.toFixed(2)}%`
 const fmtDate = (d: string) => new Date(d).toLocaleDateString('pt-PT', { day: '2-digit', month: 'short', year: 'numeric' })
@@ -42,31 +43,28 @@ export function CryptoPage() {
         <div className="w-full flex flex-col gap-8 pb-12">
 
             {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                <div>
-                    <h1 className="text-h1 text-2xl md:text-3xl mb-2">
-                        Ledger Cripto
-                    </h1>
-                    <div className="flex items-center gap-2 text-sm text-[var(--color-text-muted)]">
-                        <span>{wallets.data?.length ?? 0} Carteira{(wallets.data?.length ?? 0) !== 1 ? 's' : ''}</span>
-                        <span className="text-[var(--color-border)]">|</span>
-                        <span>{portfolio.length} Ativo{portfolio.length !== 1 ? 's' : ''}</span>
-                        <span className="text-[var(--color-border)]">|</span>
-                        <span>Precos CoinGecko (60s)</span>
-                    </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                    <StardustButton size="sm" variant="ghost" onClick={() => setAddWalletOpen(true)}>
-                        + Carteira
-                    </StardustButton>
-                    <StardustButton size="sm" icon={<Plus size={16} />} onClick={() => setAddTxOpen(true)} disabled={!hasWallets}>
-                        Nova Transacao
-                    </StardustButton>
-                </div>
-            </div>
+            <PageHeader
+                icon={<Bitcoin size={18} />}
+                title="Ledger Cripto"
+                subtitle="Acompanha exposicao, PnL e historico com contexto de decisao."
+                meta={`${wallets.data?.length ?? 0} carteira${(wallets.data?.length ?? 0) !== 1 ? 's' : ''} | ${portfolio.length} ativo${portfolio.length !== 1 ? 's' : ''}`}
+                actions={(
+                    <>
+                        <StardustButton size="sm" variant="ghost" onClick={() => setAddWalletOpen(true)}>
+                            + Carteira
+                        </StardustButton>
+                        <StardustButton size="sm" icon={<Plus size={16} />} onClick={() => setAddTxOpen(true)} disabled={!hasWallets}>
+                            Nova Transacao
+                        </StardustButton>
+                    </>
+                )}
+            />
 
             {/* Stats Row */}
+            <PageSectionHeader
+                title="Snapshot de Performance"
+                subtitle="Visao rapida do valor total e dos resultados realizados e nao realizados."
+            />
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                     className="p-6 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] relative overflow-hidden">
@@ -162,6 +160,15 @@ export function CryptoPage() {
             </div>
 
             <PortfolioDonut />
+
+            <NextActionsStrip
+                title="Proxima acao recomendada para a tua carteira"
+                actions={[
+                    { label: 'Adicionar transacao', to: '/crypto' },
+                    { label: 'Abrir DeFi', to: '/crypto/defi' },
+                    { label: 'Rever noticias', to: '/news' },
+                ]}
+            />
 
             <AddWalletModal
                 isOpen={isAddWalletOpen}

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Loader2, Calendar, ArrowDownUp } from 'lucide-react'
 import { VisionUploadButton } from './VisionUploadButton'
@@ -48,6 +48,17 @@ export function AddBorrowLendModal({ isOpen, onClose, onSubmit, isLoading }: Pro
         setTokenSymbol(''); setTokenAmount(''); setPriceAtEntry(''); setApy(''); setNotes('')
     }
 
+    useEffect(() => {
+        if (!isOpen) return
+
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') onClose()
+        }
+
+        window.addEventListener('keydown', handleEscape)
+        return () => window.removeEventListener('keydown', handleEscape)
+    }, [isOpen, onClose])
+
     return (
         <AnimatePresence>
             {isOpen && (
@@ -55,6 +66,7 @@ export function AddBorrowLendModal({ isOpen, onClose, onSubmit, isLoading }: Pro
                     initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                     className="fixed inset-0 z-50 flex items-center justify-center p-4"
                     style={{ background: 'var(--modal-overlay)' }}
+                    onClick={onClose}
                 >
                     <motion.form
                         initial={{ opacity: 0, y: 12, scale: 0.97 }}
@@ -62,10 +74,14 @@ export function AddBorrowLendModal({ isOpen, onClose, onSubmit, isLoading }: Pro
                         exit={{ opacity: 0, y: 12, scale: 0.97 }}
                         onSubmit={handleSubmit}
                         className="modal-panel w-full max-w-md"
+                        onClick={(event) => event.stopPropagation()}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="add-borrow-lend-modal-title"
                     >
                         <div className="flex items-center justify-between mb-5">
-                            <h2 className="text-h3 flex items-center gap-2"><ArrowDownUp size={18} /> Borrow / Lend</h2>
-                            <button type="button" onClick={onClose} className="btn-ghost w-8 h-8 rounded-full flex items-center justify-center">
+                            <h2 id="add-borrow-lend-modal-title" className="text-h3 flex items-center gap-2"><ArrowDownUp size={18} /> Borrow / Lend</h2>
+                            <button type="button" onClick={onClose} className="btn-ghost w-8 h-8 rounded-full flex items-center justify-center" aria-label="Fechar modal">
                                 <X size={16} />
                             </button>
                         </div>

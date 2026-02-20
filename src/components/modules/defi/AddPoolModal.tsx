@@ -73,6 +73,17 @@ export function AddPoolModal({ isOpen, onClose, onSubmit, isLoading }: Props) {
         }
     }, [pair, entryDate, fetchPrices])
 
+    useEffect(() => {
+        if (!isOpen) return
+
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') onClose()
+        }
+
+        window.addEventListener('keydown', handleEscape)
+        return () => window.removeEventListener('keydown', handleEscape)
+    }, [isOpen, onClose])
+
     const handleVisionResult = (result: VisionOcrResult) => {
         const f = result.fields
         if (f.tickLower) setTickLower(f.tickLower)
@@ -126,6 +137,7 @@ export function AddPoolModal({ isOpen, onClose, onSubmit, isLoading }: Props) {
                     exit={{ opacity: 0 }}
                     className="fixed inset-0 z-50 flex items-center justify-center p-4"
                     style={{ background: 'var(--modal-overlay)' }}
+                    onClick={onClose}
                 >
                     <motion.form
                         initial={{ opacity: 0, y: 12, scale: 0.97 }}
@@ -134,11 +146,15 @@ export function AddPoolModal({ isOpen, onClose, onSubmit, isLoading }: Props) {
                         transition={{ duration: 0.25 }}
                         onSubmit={handleSubmit}
                         className="modal-panel w-full max-w-lg max-h-[90vh] overflow-y-auto"
+                        onClick={(event) => event.stopPropagation()}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="add-pool-modal-title"
                     >
                         {/* Header */}
                         <div className="flex items-center justify-between mb-5">
-                            <h2 className="text-h3">Adicionar Pool</h2>
-                            <button type="button" onClick={onClose} className="btn-ghost w-8 h-8 rounded-full flex items-center justify-center">
+                            <h2 id="add-pool-modal-title" className="text-h3">Adicionar Pool</h2>
+                            <button type="button" onClick={onClose} className="btn-ghost w-8 h-8 rounded-full flex items-center justify-center" aria-label="Fechar modal">
                                 <X size={16} />
                             </button>
                         </div>

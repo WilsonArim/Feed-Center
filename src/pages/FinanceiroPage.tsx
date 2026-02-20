@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Wallet, ScanLine } from 'lucide-react'
+import { Plus, Wallet, ScanLine, AlertCircle } from 'lucide-react'
 import { StardustButton } from '@/components/ui/StardustButton'
 import { SummaryCards } from '@/components/modules/financial/SummaryCards'
 import { CategoryChart } from '@/components/modules/financial/CategoryChart'
@@ -25,6 +25,7 @@ import {
 import { useCreateTodo } from '@/hooks/useTodos'
 import { useAuth } from '@/components/core/AuthProvider'
 import type { FinancialEntry, CreateEntryInput, EntryType } from '@/types'
+import { NextActionsStrip, PageHeader, PageSectionHeader, StateCard } from '@/components/core/PagePrimitives'
 
 function currentMonth() {
     const d = new Date()
@@ -115,51 +116,44 @@ export function FinanceiroPage() {
     return (
         <div className="w-full space-y-6 pb-12">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div>
-                    <motion.h1
-                        initial={{ opacity: 0, x: -12 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="text-h1 text-2xl md:text-3xl"
-                    >
-                        Controlo Financeiro
-                    </motion.h1>
-                    <motion.p
-                        initial={{ opacity: 0, x: -12 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.05 }}
-                        className="text-sm mt-1 text-[var(--text-secondary)]"
-                    >
-                        Controla os teus gastos e rendimentos com inteligencia
-                    </motion.p>
-                </div>
-
-                <div className="flex items-center gap-3">
-                    <MonthPicker month={month} onChange={setMonth} />
-
-                    <StardustButton
-                        size="sm"
-                        variant="ghost"
-                        icon={<ScanLine size={16} />}
-                        onClick={() => setScanModalOpen(true)}
-                    >
-                        Scan
-                    </StardustButton>
-
-                    <StardustButton
-                        size="sm"
-                        icon={<Plus size={16} />}
-                        onClick={() => { setEditingEntry(null); setModalOpen(true) }}
-                    >
-                        Nova Entrada
-                    </StardustButton>
-                </div>
-            </div>
+            <PageHeader
+                icon={<Wallet size={18} />}
+                title="Controlo Financeiro"
+                subtitle="Transforma movimentos em decisoes claras de caixa e prioridade."
+                actions={(
+                    <>
+                        <MonthPicker month={month} onChange={setMonth} />
+                        <StardustButton
+                            size="sm"
+                            variant="ghost"
+                            icon={<ScanLine size={16} />}
+                            onClick={() => setScanModalOpen(true)}
+                        >
+                            Scan
+                        </StardustButton>
+                        <StardustButton
+                            size="sm"
+                            icon={<Plus size={16} />}
+                            onClick={() => { setEditingEntry(null); setModalOpen(true) }}
+                        >
+                            Nova Entrada
+                        </StardustButton>
+                    </>
+                )}
+            />
 
             {/* Smart Entry Input */}
+            <PageSectionHeader
+                title="Registo Rapido"
+                subtitle="Adiciona movimentos com linguagem natural."
+            />
             <SmartEntryInput onSubmit={handleSmartEntry} isLoading={createEntry.isPending} />
 
             {/* Summary Cards */}
+            <PageSectionHeader
+                title="Leitura do Mes"
+                subtitle="Resumo imediato de saldo, despesas e capacidade de compra."
+            />
             <SummaryCards
                 summary={summary.data}
                 affordability={affordability.data}
@@ -205,6 +199,16 @@ export function FinanceiroPage() {
                             {[...Array(4)].map((_, i) => (
                                 <div key={i} className="h-14 rounded-xl bg-[var(--color-bg-tertiary)] animate-pulse" />
                             ))}
+                        </div>
+                    ) : entries.isError ? (
+                        <div className="p-4">
+                            <StateCard
+                                title="Falha ao carregar movimentos"
+                                message="Nao foi possivel ler os registos financeiros agora."
+                                icon={<AlertCircle size={18} />}
+                                actionLabel="Tentar novamente"
+                                onAction={() => { void entries.refetch() }}
+                            />
                         </div>
                     ) : entries.data && entries.data.length > 0 ? (
                         <div className="py-1">
@@ -261,6 +265,15 @@ export function FinanceiroPage() {
 
             {/* Pockets Grid */}
             <PocketsGrid />
+
+            <NextActionsStrip
+                title="Proxima melhoria financeira recomendada"
+                actions={[
+                    { label: 'Registar movimento', to: '/financeiro' },
+                    { label: 'Criar tarefa financeira', to: '/todo' },
+                    { label: 'Rever dashboard', to: '/' },
+                ]}
+            />
 
             {/* Modals */}
             <AddEntryModal

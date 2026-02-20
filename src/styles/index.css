@@ -304,6 +304,8 @@ html {
   -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
   text-rendering: optimizeLegibility;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -311,6 +313,60 @@ body {
   color: var(--text-primary);
   min-height: 100dvh;
   transition: background-color 0.3s ease, color 0.3s ease;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100dvh;
+  width: 100%;
+}
+
+.app-shell {
+  position: relative;
+  min-height: 100dvh;
+  width: 100%;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  overflow-x: hidden;
+}
+
+.app-topbar {
+  left: var(--sidebar-collapsed);
+}
+
+.app-main {
+  min-height: 100dvh;
+  margin-left: var(--sidebar-collapsed);
+  padding-top: calc(var(--topbar-height) + 1rem);
+  padding-right: 1.5rem;
+  padding-bottom: 2rem;
+  padding-left: 1.5rem;
+}
+
+.app-main-inner {
+  width: min(1400px, 100%);
+  margin-inline: auto;
+}
+
+@media (min-width: 1024px) {
+  .app-main {
+    padding-right: 2rem;
+    padding-left: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-topbar {
+    left: 0;
+  }
+
+  .app-main {
+    margin-left: 0;
+    padding-top: calc(var(--topbar-height) + 0.5rem);
+    padding-bottom: 5rem;
+  }
 }
 
 /* Subtle noise texture */

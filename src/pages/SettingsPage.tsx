@@ -3,6 +3,7 @@ import { useAuth } from '@/components/core/AuthProvider'
 import { useTranslation } from 'react-i18next'
 import { Globe, User, LogOut, Check, Palette } from 'lucide-react'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
+import { NextActionsStrip, PageHeader } from '@/components/core/PagePrimitives'
 
 const languageOptions = [
     { value: 'pt', label: 'Portugues (PT)', flag: 'PT' },
@@ -22,9 +23,12 @@ export function SettingsPage() {
             transition={{ duration: 0.4 }}
             className="w-full max-w-2xl flex flex-col gap-8 pb-12"
         >
-            <h1 className="text-h1 text-2xl md:text-3xl">
-                Definicoes
-            </h1>
+            <PageHeader
+                icon={<User size={18} />}
+                title="Definicoes"
+                subtitle="Ajusta idioma, aparencia e preferencias da tua conta."
+                meta={user?.email || ''}
+            />
 
             {/* Profile Section */}
             <Section title="Perfil" icon={<User size={18} />}>
@@ -91,6 +95,15 @@ export function SettingsPage() {
                     Terminar Sessao
                 </button>
             </Section>
+
+            <NextActionsStrip
+                title="Continua a configuracao da tua operacao"
+                actions={[
+                    { label: 'Rever dashboard', to: '/' },
+                    { label: 'Atualizar tarefas', to: '/todo' },
+                    { label: 'Organizar links', to: '/links' },
+                ]}
+            />
         </motion.div>
     )
 }

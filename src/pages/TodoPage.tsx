@@ -15,6 +15,7 @@ import {
 import type { CreateTodoInput, UpdateTodoInput, Todo, CreateListInput } from '@/types'
 import { ProjectFinanceView } from '@/components/modules/project/ProjectFinanceView'
 import { TodoStatsBar } from '@/components/modules/todo/TodoStatsBar'
+import { NextActionsStrip, PageHeader } from '@/components/core/PagePrimitives'
 
 export function TodoPage() {
     const [activeListId, setActiveListId] = useState<string | null>(null)
@@ -35,6 +36,9 @@ export function TodoPage() {
 
     const activeList = activeListId ? lists.find(l => l.id === activeListId) : null
     const pageTitle = activeList ? activeList.title : 'Inbox'
+    const pageSubtitle = activeListId
+        ? 'Executa com foco: escolhe a proxima tarefa de maior impacto.'
+        : 'Captura prioridades e transforma intencao em entrega.'
 
     const handleCreateList = async (data: CreateListInput) => {
         await createList.mutateAsync(data)
@@ -74,84 +78,86 @@ export function TodoPage() {
 
             <div className="flex-1 flex flex-col min-w-0 bg-[var(--color-bg-primary)]">
                 {/* Header */}
-                <div className="flex items-center justify-between px-8 py-5 border-b border-[var(--border-subtle)] bg-[var(--bg-deep)]/50 backdrop-blur-sm z-10">
-                    <div>
-                        <h1 className="text-h2 text-xl flex items-center gap-3">
-                            {pageTitle}
-                        </h1>
-
-                        {activeList?.type === 'project' && (
-                            <div className="flex items-center gap-1 mt-3 bg-[var(--color-bg-tertiary)] p-1 rounded-xl w-fit border border-[var(--color-border)]">
-                                <button
-                                    onClick={() => setActiveTab('tasks')}
-                                    className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 transition-all cursor-pointer ${
-                                        activeTab === 'tasks'
-                                            ? 'bg-[var(--color-accent)] text-white shadow-sm'
-                                            : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]'
-                                    }`}
-                                >
-                                    <CheckSquare size={14} />
-                                    Tarefas
-                                </button>
-                                <button
-                                    onClick={() => setActiveTab('finance')}
-                                    className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 transition-all cursor-pointer ${
-                                        activeTab === 'finance'
-                                            ? 'bg-[var(--color-accent)] text-white shadow-sm'
-                                            : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]'
-                                    }`}
-                                >
-                                    <CircleDollarSign size={14} />
-                                    Financas
-                                </button>
-                            </div>
+                <div className="px-6 md:px-8 py-5 border-b border-[var(--border-subtle)] bg-[var(--bg-deep)]/50 backdrop-blur-sm z-10">
+                    <PageHeader
+                        icon={<CheckSquare size={18} />}
+                        title={pageTitle}
+                        subtitle={pageSubtitle}
+                        actions={(
+                            <StardustButton
+                                onClick={() => {
+                                    setEditingTodo(null)
+                                    setIsTaskModalOpen(true)
+                                }}
+                                icon={<Plus size={16} />}
+                            >
+                                Nova Tarefa
+                            </StardustButton>
                         )}
+                    />
 
-                        {activeList?.type !== 'project' && (
-                            <p className="text-[var(--color-text-secondary)] text-sm mt-1">
-                                {activeListId
-                                    ? 'Organize tasks for this collection.'
-                                    : 'Manage your energy, not just your time.'}
-                            </p>
-                        )}
-                    </div>
-
-                    <StardustButton
-                        onClick={() => {
-                            setEditingTodo(null)
-                            setIsTaskModalOpen(true)
-                        }}
-                        icon={<Plus size={16} />}
-                    >
-                        Nova Tarefa
-                    </StardustButton>
+                    {activeList?.type === 'project' && (
+                        <div className="flex items-center gap-1 mt-4 bg-[var(--color-bg-tertiary)] p-1 rounded-xl w-fit border border-[var(--color-border)]">
+                            <button
+                                onClick={() => setActiveTab('tasks')}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 transition-all cursor-pointer ${
+                                    activeTab === 'tasks'
+                                        ? 'bg-[var(--color-accent)] text-white shadow-sm'
+                                        : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]'
+                                }`}
+                            >
+                                <CheckSquare size={14} />
+                                Tarefas
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('finance')}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 transition-all cursor-pointer ${
+                                    activeTab === 'finance'
+                                        ? 'bg-[var(--color-accent)] text-white shadow-sm'
+                                        : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]'
+                                }`}
+                            >
+                                <CircleDollarSign size={14} />
+                                Financas
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Stats Bar */}
-                <div className="px-8 py-3 border-b border-[var(--color-border)]">
+                <div className="px-6 md:px-8 py-3 border-b border-[var(--color-border)]">
                     <TodoStatsBar />
                 </div>
 
+                <div className="px-6 md:px-8 pt-4">
+                    <NextActionsStrip
+                        title="Ritual recomendado: definir 1 tarefa critica, 1 de manutencao e 1 de crescimento."
+                        actions={[
+                            { label: 'Criar tarefa', to: '/todo' },
+                            { label: 'Ligar a financeiro', to: '/financeiro' },
+                            { label: 'Voltar ao dashboard', to: '/' },
+                        ]}
+                    />
+                </div>
+
                 {/* Main View Area */}
-                <div className="flex-1 min-h-0 overflow-hidden p-6 relative">
-                    <div className="absolute inset-0 overflow-x-auto p-6">
-                        {activeTab === 'tasks' ? (
-                            <KanbanBoard
-                                listId={activeListId}
-                                onEditTask={(todo) => {
-                                    setEditingTodo(todo)
-                                    setIsTaskModalOpen(true)
-                                }}
+                <div className="flex-1 min-h-0 overflow-auto p-6">
+                    {activeTab === 'tasks' ? (
+                        <KanbanBoard
+                            listId={activeListId}
+                            onEditTask={(todo) => {
+                                setEditingTodo(todo)
+                                setIsTaskModalOpen(true)
+                            }}
+                        />
+                    ) : (
+                        activeList && (
+                            <ProjectFinanceView
+                                projectId={activeList.id}
+                                budget={activeList.budget ?? 0}
                             />
-                        ) : (
-                            activeList && (
-                                <ProjectFinanceView
-                                    projectId={activeList.id}
-                                    budget={activeList.budget ?? 0}
-                                />
-                            )
-                        )}
-                    </div>
+                        )
+                    )}
                 </div>
             </div>
 

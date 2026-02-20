@@ -1,28 +1,168 @@
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/components/core/AuthProvider'
 import { NavLink } from 'react-router'
 import {
     DollarSign, CheckSquare, Link2, Bitcoin, ArrowRight,
     Newspaper, Activity, TrendingUp, TrendingDown, AlertCircle,
-    Clock, ExternalLink, BookOpen, CheckCircle2,
+    Clock, ExternalLink, BookOpen, CheckCircle2, Plus,
 } from 'lucide-react'
 import { AreaChart, Area, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts'
-import { useMonthSummary } from '@/hooks/useFinancial'
+import { useEntries, useMonthSummary } from '@/hooks/useFinancial'
 import { useTodos } from '@/hooks/useTodos'
 import { useWeb3 } from '@/hooks/useWeb3'
 import { useLinks } from '@/hooks/useLinks'
 import { useTopStories } from '@/hooks/useNews'
 import { timeAgo } from '@/services/newsService'
 import { formatCurrency } from '@/utils/format'
+import { NextActionsStrip, PageSectionHeader, StateCard } from '@/components/core/PagePrimitives'
 
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } }
 const fadeUp = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { duration: 0.35 } } }
+const STORAGE_KEY = 'fc-onboarding-dismissed'
 
 function getGreeting() {
     const h = new Date().getHours()
     if (h < 12) return 'Bom dia'
     if (h < 18) return 'Boa tarde'
     return 'Boa noite'
+}
+
+function readDismissed(): boolean {
+    try {
+        return window.localStorage.getItem(STORAGE_KEY) === '1'
+    } catch {
+        return false
+    }
+}
+
+function writeDismissed(value: boolean) {
+    try {
+        window.localStorage.setItem(STORAGE_KEY, value ? '1' : '0')
+    } catch {
+        // Ignore storage failures in private mode.
+    }
+}
+
+function OnboardingChecklist({
+    hasTodos,
+    hasFinancialEntries,
+    hasLinks,
+    userName,
+}: {
+    hasTodos: boolean
+    hasFinancialEntries: boolean
+    hasLinks: boolean
+    userName: string
+}) {
+    const [dismissed, setDismissed] = useState(false)
+
+    useEffect(() => {
+        setDismissed(readDismissed())
+    }, [])
+
+    const steps = [
+        {
+            id: 'todo',
+            done: hasTodos,
+            title: 'Criar primeira tarefa',
+            desc: 'Define uma prioridade para hoje.',
+            to: '/todo',
+        },
+        {
+            id: 'financial',
+            done: hasFinancialEntries,
+            title: 'Registar primeiro movimento',
+            desc: 'Comeca a visibilidade financeira.',
+            to: '/financeiro',
+        },
+        {
+            id: 'links',
+            done: hasLinks,
+            title: 'Guardar primeiro link',
+            desc: 'Centraliza referencias importantes.',
+            to: '/links',
+        },
+    ]
+
+    const completed = steps.filter((s) => s.done).length
+    const progress = Math.round((completed / steps.length) * 100)
+    const allDone = completed === steps.length
+
+    if (dismissed && allDone) return null
+
+    return (
+        <motion.div variants={fadeUp} className="glass-card-static p-5 md:p-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                <div>
+                    <p className="text-xs uppercase tracking-wider text-[var(--text-tertiary)]">Quick Setup</p>
+                    <h3 className="text-lg font-semibold text-[var(--text-primary)] mt-1">
+                        {allDone ? 'Excelente trabalho' : `Bem-vindo, ${userName}`}
+                    </h3>
+                    <p className="text-sm text-[var(--text-secondary)] mt-1">
+                        {allDone
+                            ? 'Base inicial concluida. O teu painel esta pronto para escalar.'
+                            : 'Completa estes 3 passos e desbloqueia valor real em menos de 2 minutos.'}
+                    </p>
+                </div>
+
+                <div className="min-w-[180px]">
+                    <div className="flex items-center justify-between text-xs mb-2">
+                        <span className="text-[var(--text-secondary)]">Progresso</span>
+                        <span className="text-[var(--text-primary)] font-semibold">{progress}%</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-[var(--bg-surface)] overflow-hidden">
+                        <div
+                            className="h-full bg-[var(--accent)] transition-all duration-500"
+                            style={{ width: `${progress}%` }}
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {steps.map((step) => (
+                    <NavLink
+                        key={step.id}
+                        to={step.to}
+                        className={`rounded-xl p-3 border transition-all ${
+                            step.done
+                                ? 'border-[var(--success)]/30 bg-[var(--success-soft)]'
+                                : 'border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:border-[var(--accent)]/30'
+                        }`}
+                    >
+                        <div className="flex items-start gap-2">
+                            <div className={`mt-0.5 w-4 h-4 rounded-full border flex items-center justify-center ${
+                                step.done
+                                    ? 'border-[var(--success)] text-[var(--success)]'
+                                    : 'border-[var(--text-tertiary)] text-transparent'
+                            }`}>
+                                <CheckCircle2 size={11} />
+                            </div>
+                            <div>
+                                <p className="text-sm font-medium text-[var(--text-primary)]">{step.title}</p>
+                                <p className="text-xs text-[var(--text-secondary)] mt-1">{step.desc}</p>
+                            </div>
+                        </div>
+                    </NavLink>
+                ))}
+            </div>
+
+            {allDone && (
+                <div className="mt-4 flex justify-end">
+                    <button
+                        onClick={() => {
+                            writeDismissed(true)
+                            setDismissed(true)
+                        }}
+                        className="text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer"
+                    >
+                        Ocultar checklist
+                    </button>
+                </div>
+            )}
+        </motion.div>
+    )
 }
 
 /* ============================================================
@@ -78,19 +218,13 @@ function FinancialHero() {
 
     return (
         <motion.div variants={fadeUp} className="glass-card-static relative overflow-hidden p-6 md:p-8">
-            {/* Subtle dot grid */}
-            <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
-                style={{
-                    backgroundImage: 'radial-gradient(circle, var(--text-primary) 0.5px, transparent 0.5px)',
-                    backgroundSize: '24px 24px',
-                }} />
-
             <div className="relative z-10">
-                <p className="text-overline mb-2">
-                    Saldo de {new Date().toLocaleDateString('pt-PT', { month: 'long' }).toUpperCase()}
+                <p className="text-overline mb-2">Saude Financeira</p>
+                <p className="text-xs text-[var(--text-secondary)] mb-3">
+                    Saldo de {new Date().toLocaleDateString('pt-PT', { month: 'long' })}
                 </p>
                 <p className="text-4xl md:text-[3.5rem] font-bold tabular-nums text-[var(--text-primary)] tracking-tight leading-none"
-                    style={{ textShadow: '0 0 40px var(--accent-glow)' }}>
+                >
                     {formatCurrency(balance)}
                 </p>
             </div>
@@ -156,8 +290,19 @@ function ModuleCard({ title, accent, icon: Icon, to, children }: {
 
 /* --- Todo Module Content --- */
 function TodoContent() {
-    const { data: todos, isLoading } = useTodos()
+    const { data: todos, isLoading, isError, refetch } = useTodos()
     if (isLoading) return <div className="skeleton h-20 rounded-xl" />
+    if (isError) {
+        return (
+            <StateCard
+                title="Nao foi possivel carregar tarefas"
+                message="Verifica a ligacao e tenta novamente."
+                actionLabel="Tentar novamente"
+                onAction={() => { void refetch() }}
+                icon={<AlertCircle size={18} />}
+            />
+        )
+    }
 
     const pending = todos?.filter(t => t.status !== 'done') || []
     const high = pending.filter(t => t.priority === 'high')
@@ -186,8 +331,14 @@ function TodoContent() {
                     </div>
                 ))}
                 {pending.length === 0 && (
-                    <div className="flex items-center justify-center h-full">
-                        <CheckCircle2 size={18} className="text-[var(--success)] opacity-50" />
+                    <div className="pt-2">
+                        <NavLink
+                            to="/todo"
+                            className="inline-flex items-center gap-2 text-xs text-[var(--accent)] hover:text-[var(--accent-hover)] transition-colors"
+                        >
+                            <Plus size={12} />
+                            Criar primeira tarefa
+                        </NavLink>
                     </div>
                 )}
             </div>
@@ -197,8 +348,19 @@ function TodoContent() {
 
 /* --- Links Module Content --- */
 function LinksContent() {
-    const { data: links, isLoading } = useLinks()
+    const { data: links, isLoading, isError, refetch } = useLinks()
     if (isLoading) return <div className="skeleton h-20 rounded-xl" />
+    if (isError) {
+        return (
+            <StateCard
+                title="Erro ao carregar links"
+                message="Nao conseguimos ler os teus links agora."
+                actionLabel="Tentar novamente"
+                onAction={() => { void refetch() }}
+                icon={<Link2 size={18} />}
+            />
+        )
+    }
 
     const recent = links?.slice(0, 3) || []
     return (
@@ -215,8 +377,14 @@ function LinksContent() {
                     </a>
                 ))}
                 {recent.length === 0 && (
-                    <div className="flex flex-col items-center justify-center h-full text-[var(--text-tertiary)]">
-                        <BookOpen size={18} className="opacity-30 mb-1" /> <span className="text-xs">Sem links</span>
+                    <div className="pt-2">
+                        <NavLink
+                            to="/links"
+                            className="inline-flex items-center gap-2 text-xs text-[var(--accent)] hover:text-[var(--accent-hover)] transition-colors"
+                        >
+                            <Plus size={12} />
+                            Guardar primeiro link
+                        </NavLink>
                     </div>
                 )}
             </div>
@@ -226,8 +394,19 @@ function LinksContent() {
 
 /* --- Crypto Module Content --- */
 function CryptoContent() {
-    const { portfolio, isLoadingPortfolio } = useWeb3()
+    const { portfolio, isLoadingPortfolio, transactions } = useWeb3()
     if (isLoadingPortfolio) return <div className="skeleton h-20 rounded-xl" />
+    if (transactions.isError) {
+        return (
+            <StateCard
+                title="Erro ao carregar portfolio"
+                message="Os dados cripto estao temporariamente indisponiveis."
+                actionLabel="Tentar novamente"
+                onAction={() => { void transactions.refetch() }}
+                icon={<Bitcoin size={18} />}
+            />
+        )
+    }
 
     const totalValue = portfolio.reduce((acc, a) => acc + (a.value || 0), 0)
     const change = totalValue > 0 ? portfolio.reduce((acc, a) => acc + (a.price_change_24h ?? 0) * (a.value / totalValue), 0) : 0
@@ -256,7 +435,15 @@ function CryptoContent() {
                 </div>
             )}
             {portfolio.length === 0 && (
-                <div className="flex items-center justify-center h-full text-[var(--text-tertiary)] text-xs">Sem wallets</div>
+                <div className="pt-2">
+                    <NavLink
+                        to="/crypto"
+                        className="inline-flex items-center gap-2 text-xs text-[var(--accent)] hover:text-[var(--accent-hover)] transition-colors"
+                    >
+                        <Plus size={12} />
+                        Adicionar primeira wallet
+                    </NavLink>
+                </div>
             )}
         </div>
     )
@@ -277,7 +464,7 @@ function ActivityContent() {
    NEWS SECTION
    ============================================================ */
 function NewsSection() {
-    const { data: items = [], isLoading } = useTopStories(5)
+    const { data: items = [], isLoading, isError, refetch } = useTopStories(5)
 
     const TOPIC_COLORS: Record<string, string> = {
         AI: 'var(--accent)', Crypto: 'var(--warning)', Geopolitics: 'var(--danger)',
@@ -287,6 +474,18 @@ function NewsSection() {
     if (isLoading) return (
         <motion.div variants={fadeUp} className="glass-card-static p-6 h-48 flex items-center justify-center">
             <div className="skeleton h-10 w-48 rounded-xl" />
+        </motion.div>
+    )
+
+    if (isError) return (
+        <motion.div variants={fadeUp} className="glass-card-static">
+            <StateCard
+                title="Erro no feed de noticias"
+                message="Nao foi possivel atualizar as noticias agora."
+                actionLabel="Recarregar feed"
+                onAction={() => { void refetch() }}
+                icon={<Newspaper size={18} />}
+            />
         </motion.div>
     )
 
@@ -339,42 +538,67 @@ function NewsSection() {
 export function DashboardPage() {
     const { user } = useAuth()
     const currentMonth = new Date().toISOString().slice(0, 7)
-    const { data: summary } = useMonthSummary(currentMonth)
-    const { data: todos } = useTodos()
+    const summaryQuery = useMonthSummary(currentMonth)
+    const todosQuery = useTodos()
+    const entriesQuery = useEntries(currentMonth)
     const { portfolio } = useWeb3()
-    const { data: links } = useLinks()
+    const linksQuery = useLinks()
+
+    const summary = summaryQuery.data
+    const todos = todosQuery.data
+    const links = linksQuery.data
 
     const pending = todos?.filter(t => t.status !== 'done')?.length ?? 0
     const totalPortfolio = portfolio.reduce((acc: number, a: any) => acc + (a.value || 0), 0)
+    const hasTodos = (todos?.length ?? 0) > 0
+    const hasFinancialEntries = (entriesQuery.data?.length ?? 0) > 0
+    const hasLinks = (links?.length ?? 0) > 0
+    const userName = user?.email?.split('@')[0] || 'Operador'
 
     return (
         <motion.div variants={stagger} initial="hidden" animate="show" className="space-y-6 pb-12">
             {/* Header */}
             <motion.div variants={fadeUp}>
                 <h1 className="text-h1 text-2xl md:text-3xl mb-1">
-                    {getGreeting()}, <span className="text-[var(--accent)]">{user?.email?.split('@')[0]}</span>
+                    {getGreeting()}, <span className="text-[var(--accent)]">{userName}</span>
                 </h1>
-                <p className="text-sm text-[var(--text-secondary)]">Aqui esta o resumo do teu dia.</p>
+                <p className="text-sm text-[var(--text-secondary)]">
+                    Centro de comando para executar o teu dia com foco.
+                </p>
             </motion.div>
+
+            <OnboardingChecklist
+                hasTodos={hasTodos}
+                hasFinancialEntries={hasFinancialEntries}
+                hasLinks={hasLinks}
+                userName={userName}
+            />
+
+            <PageSectionHeader
+                title="Hoje"
+                subtitle="Acoes e sinais mais importantes para o dia."
+            />
 
             {/* KPI Row */}
             <motion.div variants={stagger} className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                <KpiCard icon={DollarSign} label="Saldo" value={summary ? formatCurrency(summary.balance) : '--'}
-                    color="var(--success)" to="/financeiro" />
-                <KpiCard icon={CheckSquare} label="Tarefas" value={`${pending}`}
-                    color="var(--warning)" to="/todo" />
-                <KpiCard icon={Link2} label="Links" value={`${links?.length ?? 0}`}
-                    color="var(--accent)" to="/links" />
-                <KpiCard icon={Bitcoin} label="Crypto" value={formatCurrency(totalPortfolio)}
-                    color="var(--purple)" to="/crypto" />
-                <KpiCard icon={Newspaper} label="Noticias" value="Feed"
-                    color="var(--info)" to="/news" />
+                <KpiCard icon={DollarSign} label="Saldo" value={summary ? formatCurrency(summary.balance) : '--'} color="var(--success)" to="/financeiro" />
+                <KpiCard icon={CheckSquare} label="Tarefas" value={`${pending}`} color="var(--warning)" to="/todo" />
+                <KpiCard icon={Link2} label="Links" value={`${links?.length ?? 0}`} color="var(--accent)" to="/links" />
+                <KpiCard icon={Bitcoin} label="Crypto" value={formatCurrency(totalPortfolio)} color="var(--purple)" to="/crypto" />
+                <KpiCard icon={Newspaper} label="Noticias" value="Feed" color="var(--info)" to="/news" />
             </motion.div>
 
-            {/* Financial Hero */}
+            <PageSectionHeader
+                title="Saude Financeira"
+                subtitle="Balanco mensal com leitura imediata de receitas e despesas."
+            />
             <FinancialHero />
 
-            {/* Module Cards — 2 columns */}
+            <PageSectionHeader
+                title="Foco da Semana"
+                subtitle="Modulos operacionais com proximas acoes claras."
+            />
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <ModuleCard title="To-Do" accent="var(--warning)" icon={CheckSquare} to="/todo">
                     <TodoContent />
@@ -385,13 +609,27 @@ export function DashboardPage() {
                 <ModuleCard title="Ledger Cripto" accent="var(--purple)" icon={Bitcoin} to="/crypto">
                     <CryptoContent />
                 </ModuleCard>
-                <ModuleCard title="Atividade Recente" accent="var(--success)" icon={Activity} to="/">
+                <ModuleCard title="Atividade Recente" accent="var(--success)" icon={Activity} to="/todo">
                     <ActivityContent />
                 </ModuleCard>
             </div>
 
-            {/* News */}
+            <PageSectionHeader
+                title="Radar de Noticias"
+                subtitle="Atualizacoes curadas para contexto e decisao."
+            />
             <NewsSection />
+
+            <motion.div variants={fadeUp}>
+                <NextActionsStrip
+                    title="Proxima melhoria recomendada"
+                    actions={[
+                        { label: 'Priorizar tarefas', to: '/todo' },
+                        { label: 'Rever despesas', to: '/financeiro' },
+                        { label: 'Curar referencias', to: '/links' },
+                    ]}
+                />
+            </motion.div>
         </motion.div>
     )
 }

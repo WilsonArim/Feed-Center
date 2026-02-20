@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Plus, Link2, Loader2 } from 'lucide-react'
+import { Search, Plus, Link2, Loader2, AlertCircle } from 'lucide-react'
 import { StardustButton } from '@/components/ui/StardustButton'
 import { useLinks, useTags, useCreateLink, useUpdateLink, useDeleteLink } from '@/hooks/useLinks'
 import { LinkCard } from '@/components/modules/links/LinkCard'
@@ -8,6 +8,7 @@ import { AddLinkModal } from '@/components/modules/links/AddLinkModal'
 import type { Link } from '@/services/linksService'
 import type { CreateLinkInput } from '@/services/linksService'
 import { LinksStatsBar } from '@/components/modules/links/LinksStatsBar'
+import { NextActionsStrip, PageHeader, PageSectionHeader, StateCard } from '@/components/core/PagePrimitives'
 
 export function LinksPage() {
     const [search, setSearch] = useState('')
@@ -15,7 +16,12 @@ export function LinksPage() {
     const [modalOpen, setModalOpen] = useState(false)
     const [editingLink, setEditingLink] = useState<Link | null>(null)
 
-    const { data: links = [], isLoading } = useLinks({ search: search || undefined, tag: activeTag || undefined })
+    const {
+        data: links = [],
+        isLoading,
+        isError,
+        refetch,
+    } = useLinks({ search: search || undefined, tag: activeTag || undefined })
     const { data: allTags = [] } = useTags()
     const createLink = useCreateLink()
     const updateLink = useUpdateLink()
@@ -59,23 +65,25 @@ export function LinksPage() {
                 className="w-full"
             >
                 {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-                    <div>
-                        <h1 className="text-h1 text-2xl md:text-3xl mb-1">
-                            Gestor de Links
-                        </h1>
-                        <p className="text-sm text-[var(--color-text-muted)]">
-                            {links.length} link{links.length !== 1 ? 's' : ''} guardado{links.length !== 1 ? 's' : ''}
-                        </p>
-                    </div>
-
-                    <StardustButton onClick={openNewModal} size="sm" icon={<Plus size={16} />}>
-                        Novo Link
-                    </StardustButton>
-                </div>
+                <PageHeader
+                    icon={<Link2 size={18} />}
+                    title="Gestor de Links"
+                    subtitle="Guarda, organiza e recupera referencias sem perder contexto."
+                    meta={`${links.length} link${links.length !== 1 ? 's' : ''} guardado${links.length !== 1 ? 's' : ''}`}
+                    actions={(
+                        <StardustButton onClick={openNewModal} size="sm" icon={<Plus size={16} />}>
+                            Novo Link
+                        </StardustButton>
+                    )}
+                />
 
                 {/* Stats Bar */}
                 <LinksStatsBar />
+
+                <PageSectionHeader
+                    title="Explorar e Filtrar"
+                    subtitle="Pesquisa por titulo, URL, descricao e tags para chegar mais rapido ao que precisas."
+                />
 
                 {/* Search Bar */}
                 <div className="relative mb-6">
@@ -122,7 +130,15 @@ export function LinksPage() {
                 )}
 
                 {/* Links Grid */}
-                {isLoading ? (
+                {isError ? (
+                    <StateCard
+                        title="Nao foi possivel carregar os links"
+                        message="A tua biblioteca esta temporariamente indisponivel."
+                        icon={<AlertCircle size={18} />}
+                        actionLabel="Tentar novamente"
+                        onAction={() => { void refetch() }}
+                    />
+                ) : isLoading ? (
                     <div className="flex items-center justify-center py-20">
                         <Loader2 size={24} className="animate-spin text-[var(--color-accent)]" />
                     </div>
@@ -165,6 +181,15 @@ export function LinksPage() {
                         </AnimatePresence>
                     </div>
                 )}
+
+                <NextActionsStrip
+                    title="Proximo passo sugerido"
+                    actions={[
+                        { label: 'Guardar novo recurso', to: '/links' },
+                        { label: 'Transformar em tarefa', to: '/todo' },
+                        { label: 'Abrir radar de noticias', to: '/news' },
+                    ]}
+                />
             </motion.div>
 
             <AddLinkModal

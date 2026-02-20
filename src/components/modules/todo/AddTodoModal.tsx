@@ -48,6 +48,17 @@ export function AddTodoModal({ isOpen, onClose, onSubmit, isLoading, editingTodo
         }
     }, [isOpen, editingTodo, initialData])
 
+    useEffect(() => {
+        if (!isOpen) return
+
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') onClose()
+        }
+
+        window.addEventListener('keydown', handleEscape)
+        return () => window.removeEventListener('keydown', handleEscape)
+    }, [isOpen, onClose])
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
         if (!title.trim()) return
@@ -85,15 +96,19 @@ export function AddTodoModal({ isOpen, onClose, onSubmit, isLoading, editingTodo
                             exit={{ scale: 0.95, opacity: 0, y: 20 }}
                             onClick={(e) => e.stopPropagation()}
                             className="w-full max-w-md bg-[#121212] border border-white/10 rounded-2xl shadow-2xl overflow-hidden"
+                            role="dialog"
+                            aria-modal="true"
+                            aria-labelledby="add-task-modal-title"
                         >
                             <div className="p-6">
                                 <div className="flex items-center justify-between mb-6">
-                                    <h2 className="text-xl font-bold text-white">
-                                        {editingTodo ? 'Edit Task' : 'New Task'}
+                                    <h2 id="add-task-modal-title" className="text-xl font-bold text-white">
+                                        {editingTodo ? 'Editar tarefa' : 'Nova tarefa'}
                                     </h2>
                                     <button
                                         onClick={onClose}
                                         className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                                        aria-label="Fechar modal"
                                     >
                                         <X size={20} className="text-white/70" />
                                     </button>
@@ -103,7 +118,7 @@ export function AddTodoModal({ isOpen, onClose, onSubmit, isLoading, editingTodo
                                     {/* Title & Voice */}
                                     <div>
                                         <div className="flex justify-between items-center mb-1.5">
-                                            <label className="text-xs font-medium text-white/50 uppercase">Title</label>
+                                            <label className="text-xs font-medium text-white/50 uppercase">Titulo</label>
                                             <VoiceInput
                                                 onTranscript={(text) => {
                                                     // Smartly append or replace
@@ -116,7 +131,7 @@ export function AddTodoModal({ isOpen, onClose, onSubmit, isLoading, editingTodo
                                             type="text"
                                             value={title}
                                             onChange={(e) => setTitle(e.target.value)}
-                                            placeholder="What needs to be done?"
+                                            placeholder="Qual e a proxima acao?"
                                             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[var(--color-accent)] transition-colors"
                                             autoFocus
                                         />
@@ -124,11 +139,11 @@ export function AddTodoModal({ isOpen, onClose, onSubmit, isLoading, editingTodo
 
                                     {/* Description */}
                                     <div>
-                                        <label className="block text-xs font-medium text-white/50 uppercase mb-1.5">Description (Optional)</label>
+                                        <label className="block text-xs font-medium text-white/50 uppercase mb-1.5">Descricao (Opcional)</label>
                                         <textarea
                                             value={description}
                                             onChange={(e) => setDescription(e.target.value)}
-                                            placeholder="Add details..."
+                                            placeholder="Adiciona contexto..."
                                             rows={3}
                                             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[var(--color-accent)] transition-colors resize-none"
                                         />
@@ -136,7 +151,7 @@ export function AddTodoModal({ isOpen, onClose, onSubmit, isLoading, editingTodo
 
                                     {/* Priority */}
                                     <div>
-                                        <label className="block text-xs font-medium text-white/50 uppercase mb-2">Priority</label>
+                                        <label className="block text-xs font-medium text-white/50 uppercase mb-2">Prioridade</label>
                                         <div className="flex gap-2">
                                             {PRIORITIES.map((p) => (
                                                 <button
@@ -161,14 +176,14 @@ export function AddTodoModal({ isOpen, onClose, onSubmit, isLoading, editingTodo
                                             onClick={onClose}
                                             className="px-4 py-2 text-white/70 hover:text-white transition-colors text-sm font-medium"
                                         >
-                                            Cancel
+                                            Cancelar
                                         </button>
                                         <LiquidButton
                                             type="submit"
                                             className="flex-1 bg-[var(--color-accent)] text-black"
                                             disabled={isLoading || !title.trim()}
                                         >
-                                            {isLoading ? 'Saving...' : (editingTodo ? 'Save Changes' : 'Create Task')}
+                                            {isLoading ? 'A guardar...' : (editingTodo ? 'Guardar alteracoes' : 'Criar tarefa')}
                                         </LiquidButton>
                                     </div>
                                 </form>

@@ -1,12 +1,13 @@
 import { useState, useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { Newspaper, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Newspaper, ChevronLeft, ChevronRight, AlertCircle, BookOpen } from 'lucide-react'
 import { useTopStories, useNewsList, useNewsTopics } from '@/hooks/useNews'
 import { type NewsSortMode, priorityFromScore, getBookmarks, toggleBookmark, getHiddenSources, hideSource } from '@/services/newsService'
 import { TopStoriesCarousel } from '@/components/modules/news/TopStoriesCarousel'
 import { NewsCard, NewsCardSkeleton } from '@/components/modules/news/NewsCard'
 import { FiltersBar } from '@/components/modules/news/FiltersBar'
 import { NewsStatsBar } from '@/components/modules/news/NewsStatsBar'
+import { NextActionsStrip, PageHeader, PageSectionHeader, StateCard } from '@/components/core/PagePrimitives'
 
 const PAGE_SIZE = 20
 
@@ -19,15 +20,15 @@ export function NewsPage() {
     const [bookmarks, setBookmarks] = useState(() => getBookmarks())
     const [hiddenSources, setHiddenSources] = useState(() => getHiddenSources())
 
-    const { data: topStories = [], isLoading: topLoading } = useTopStories(5)
-    const { data: newsList, isLoading: listLoading } = useNewsList({
+    const { data: topStories = [], isLoading: topLoading, isError: topError, refetch: retryTop } = useTopStories(5)
+    const { data: newsList, isLoading: listLoading, isError: listError, refetch: retryList } = useNewsList({
         topic: activeTopic || undefined,
         page,
         pageSize: PAGE_SIZE,
         sort,
         q: search || undefined,
     })
-    const { data: topicCounts } = useNewsTopics()
+    const { data: topicCounts, isError: topicsError, refetch: retryTopics } = useNewsTopics()
 
     const filteredItems = useMemo(() => {
         const items = newsList?.items || []
@@ -61,26 +62,38 @@ export function NewsPage() {
                 className="w-full flex flex-col gap-6"
             >
                 {/* Header */}
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[var(--color-surface)] border border-[var(--color-border)]">
-                        <Newspaper size={18} className="text-[var(--color-accent)]" />
-                    </div>
-                    <div>
-                        <h1 className="text-h1 text-2xl md:text-3xl">
-                            Noticias
-                        </h1>
-                        <p className="text-xs text-[var(--color-text-muted)]">
-                            Curadoria automatica por Buggy OpenClaw
-                        </p>
-                    </div>
-                </div>
+                <PageHeader
+                    icon={<Newspaper size={18} />}
+                    title="Radar de Noticias"
+                    subtitle="Atualizacoes curadas para contexto, decisao e proximas acoes."
+                    meta={`${filteredItems.length} itens visiveis no feed atual`}
+                />
 
                 <NewsStatsBar />
+
+                <PageSectionHeader
+                    title="Top Stories"
+                    subtitle="Leitura rapida das noticias com maior impacto."
+                />
 
                 <TopStoriesCarousel
                     items={topStories.filter(s => !hiddenSources.has(s.source_name))}
                     isLoading={topLoading}
                 />
+
+                {topError && (
+                    <div className="rounded-xl border border-[var(--danger)]/25 bg-[var(--danger-soft)] px-4 py-3">
+                        <p className="text-sm font-medium text-[var(--color-danger)]">
+                            Falha ao atualizar top stories.
+                        </p>
+                        <button
+                            onClick={() => { void retryTop() }}
+                            className="mt-2 text-xs underline text-[var(--color-danger)] hover:opacity-90 cursor-pointer"
+                        >
+                            Tentar novamente
+                        </button>
+                    </div>
+                )}
 
                 <FiltersBar
                     search={search}
@@ -92,18 +105,39 @@ export function NewsPage() {
                     topicCounts={topicCounts}
                 />
 
+                {topicsError && (
+                    <div className="rounded-xl border border-[var(--warning)]/25 bg-[var(--warning-soft)] px-4 py-3">
+                        <p className="text-sm text-[var(--color-warning)]">
+                            Nao foi possivel carregar os topicos.
+                        </p>
+                        <button
+                            onClick={() => { void retryTopics() }}
+                            className="mt-2 text-xs underline text-[var(--color-warning)] hover:opacity-90 cursor-pointer"
+                        >
+                            Recarregar topicos
+                        </button>
+                    </div>
+                )}
+
                 {/* News sections by priority */}
-                {listLoading ? (
+                {listError ? (
+                    <StateCard
+                        title="Feed temporariamente indisponivel"
+                        message="Nao foi possivel carregar noticias agora. Tenta novamente em alguns segundos."
+                        icon={<AlertCircle size={18} />}
+                        actionLabel="Recarregar feed"
+                        onAction={() => { void retryList() }}
+                    />
+                ) : listLoading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {Array.from({ length: 6 }).map((_, i) => <NewsCardSkeleton key={i} />)}
                     </div>
                 ) : filteredItems.length === 0 ? (
-                    <div className="text-center py-16">
-                        <Newspaper size={40} className="mx-auto mb-4 text-[var(--color-text-muted)] opacity-20" />
-                        <p className="text-sm text-[var(--color-text-muted)]">
-                            {search ? `Sem resultados para "${search}"` : 'Sem noticias de momento. O OpenClaw ira trazer novidades.'}
-                        </p>
-                    </div>
+                    <StateCard
+                        title={search ? 'Sem resultados para esta pesquisa' : 'Sem noticias neste momento'}
+                        message={search ? `Nao encontramos noticias para "${search}".` : 'Volta em instantes para novas atualizacoes curadas.'}
+                        icon={<BookOpen size={18} />}
+                    />
                 ) : (
                     <div className="flex flex-col gap-8">
                         {grouped.high.length > 0 && (
@@ -139,6 +173,15 @@ export function NewsPage() {
                         )}
                     </div>
                 )}
+
+                <NextActionsStrip
+                    title="Queres tirar mais valor deste feed?"
+                    actions={[
+                        { label: 'Refinar topico', to: '/news' },
+                        { label: 'Guardar fontes em links', to: '/links' },
+                        { label: 'Rever prioridades', to: '/todo' },
+                    ]}
+                />
 
                 {/* Pagination */}
                 {totalPages > 1 && (

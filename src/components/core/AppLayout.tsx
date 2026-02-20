@@ -24,21 +24,21 @@ const pageVariants = {
 
 export function AppLayout() {
     return (
-        <div className="relative min-h-dvh bg-[var(--bg-deep)] text-[var(--text-primary)] transition-colors duration-300">
+        <div className="app-shell">
             <ThemeSync />
             <BuggyWidget />
             <Sidebar />
             <TopBar />
 
             {/* Main content area — offset by sidebar (72px) + topbar (64px) */}
-            <main className="min-h-dvh ml-[72px] pt-[80px] pb-8 px-6 lg:px-8 max-md:ml-0 max-md:pt-[72px] max-md:pb-20">
+            <main className="app-main">
                 <AnimatePresence mode="wait">
                     <motion.div
                         variants={pageVariants}
                         initial="initial"
                         animate="enter"
                         exit="exit"
-                        className="mx-auto max-w-[1400px] w-full"
+                        className="app-main-inner"
                     >
                         <Outlet />
                     </motion.div>

@@ -21,14 +21,14 @@ export default function App() {
         return (
             <div className="min-h-dvh flex items-center justify-center p-6 bg-[var(--bg-deep)] text-[var(--text-primary)]">
                 <div className="w-full max-w-2xl modal-panel p-6 sm:p-8">
-                    <h1 className="text-h2 mb-3">Supabase not configured</h1>
+                    <h1 className="text-h2 mb-3">Supabase nao configurado</h1>
                     <p className="text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed mb-4">
                         {supabaseConfigError}
                     </p>
                     <ol className="list-decimal pl-5 space-y-2 text-sm sm:text-base text-[var(--text-primary)]">
-                        <li>Open your Vercel project settings.</li>
-                        <li>Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in Production.</li>
-                        <li>Trigger a new deploy (preferably without cache).</li>
+                        <li>Abre as definicoes do projeto na Vercel.</li>
+                        <li>Adiciona `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` em Production.</li>
+                        <li>Faz novo deploy (de preferencia sem cache).</li>
                     </ol>
                 </div>
             </div>

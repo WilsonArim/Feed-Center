@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, List, FolderOpen } from 'lucide-react'
 import { LiquidButton } from '@/components/ui/LiquidButton'
@@ -29,6 +29,17 @@ export function CreateListModal({ isOpen, onClose, onSubmit, isLoading }: Create
         setType('list')
     }
 
+    useEffect(() => {
+        if (!isOpen) return
+
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') onClose()
+        }
+
+        window.addEventListener('keydown', handleEscape)
+        return () => window.removeEventListener('keydown', handleEscape)
+    }, [isOpen, onClose])
+
     return (
         <AnimatePresence>
             {isOpen && (
@@ -46,10 +57,13 @@ export function CreateListModal({ isOpen, onClose, onSubmit, isLoading }: Create
                         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
                         onClick={(e) => e.stopPropagation()}
                         className="w-full max-w-sm bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl shadow-2xl shadow-black/40 overflow-hidden"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="create-list-modal-title"
                     >
                         <div className="p-6">
                             <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-lg font-bold text-[var(--color-text-primary)] font-sans">
+                                <h2 id="create-list-modal-title" className="text-lg font-bold text-[var(--color-text-primary)] font-sans">
                                     Nova Colecao
                                 </h2>
                                 <button

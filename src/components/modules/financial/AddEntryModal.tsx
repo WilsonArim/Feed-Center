@@ -112,6 +112,17 @@ export function AddEntryModal({ isOpen, onClose, onSubmit, isLoading, editingEnt
         }
     }, [editingEntry, isOpen, todayStr])
 
+    useEffect(() => {
+        if (!isOpen) return
+
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') onClose()
+        }
+
+        window.addEventListener('keydown', handleEscape)
+        return () => window.removeEventListener('keydown', handleEscape)
+    }, [isOpen, onClose])
+
     const resetForm = () => {
         setType('expense')
         setAmount('')
@@ -178,15 +189,19 @@ export function AddEntryModal({ isOpen, onClose, onSubmit, isLoading, editingEnt
                         onClick={(e) => e.stopPropagation()}
                         className="w-full max-w-lg rounded-2xl p-6 max-h-[90vh] overflow-y-auto bg-[var(--color-surface)]"
                         style={{ border: '1px solid var(--color-border)' }}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="add-entry-modal-title"
                     >
                         {/* Header */}
                         <div className="flex items-center justify-between mb-5">
-                            <h2 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                            <h2 id="add-entry-modal-title" className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
                                 {editingEntry ? 'Editar Entrada' : TYPE_CONTEXT[type].title}
                             </h2>
                             <button
                                 onClick={onClose}
                                 className="p-1.5 rounded-lg hover:bg-[var(--color-bg-tertiary)] cursor-pointer"
+                                aria-label="Fechar modal"
                             >
                                 <X size={18} style={{ color: 'var(--color-text-muted)' }} />
                             </button>

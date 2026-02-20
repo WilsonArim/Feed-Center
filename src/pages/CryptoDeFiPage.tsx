@@ -8,6 +8,7 @@ import { AddBorrowLendModal } from '@/components/modules/defi/AddBorrowLendModal
 import { PoolPositionCard } from '@/components/modules/defi/PoolPositionCard'
 import { TokenPositionCard } from '@/components/modules/defi/TokenPositionCard'
 import type { DefiPositionType } from '@/types'
+import { NextActionsStrip, PageHeader, PageSectionHeader, StateCard } from '@/components/core/PagePrimitives'
 
 type Tab = 'pool' | 'stake' | 'borrow-lend'
 
@@ -65,22 +66,20 @@ export function CryptoDeFiPage() {
                 className="flex flex-col gap-6"
             >
                 {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <h1 className="text-h1 text-2xl md:text-3xl mb-1">
-                            Ledger DeFi
-                        </h1>
-                        <p className="text-sm text-[var(--color-text-muted)]">
-                            Pools, Stake e Borrow/Lend -- acompanhe todas as suas posicoes DeFi.
-                        </p>
-                    </div>
-                    <button
-                        onClick={handleOpenModal}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-[var(--color-accent)] text-[var(--color-bg-primary)] hover:opacity-90 transition-opacity"
-                    >
-                        <Plus size={16} /> Adicionar
-                    </button>
-                </div>
+                <PageHeader
+                    icon={<Droplets size={18} />}
+                    title="Ledger DeFi"
+                    subtitle="Monitora pools, staking e borrow/lend num unico cockpit."
+                    meta={`${active.length} posicoes ativas | ${closed.length} no historico`}
+                    actions={(
+                        <button
+                            onClick={handleOpenModal}
+                            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-[var(--color-accent)] text-[var(--color-bg-primary)] hover:opacity-90 transition-opacity"
+                        >
+                            <Plus size={16} /> Adicionar
+                        </button>
+                    )}
+                />
 
                 {/* Tabs */}
                 <div className="flex gap-1 p-1 rounded-xl bg-[var(--color-bg-tertiary)] border border-[var(--color-border)]">
@@ -101,6 +100,10 @@ export function CryptoDeFiPage() {
                 </div>
 
                 {/* Summary stats */}
+                <PageSectionHeader
+                    title="Resumo de Exposicao"
+                    subtitle="Volume ativo e historico das tuas operacoes DeFi."
+                />
                 <div className="grid grid-cols-3 gap-4">
                     <div className="p-4 text-center rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)]">
                         <p className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-wider mb-1">Posicoes Ativas</p>
@@ -167,19 +170,23 @@ export function CryptoDeFiPage() {
 
                 {/* Empty state */}
                 {!positions.isLoading && filtered.length === 0 && (
-                    <div className="text-center py-16">
-                        <tabConfig.icon size={40} className="mx-auto text-[var(--color-text-muted)] opacity-20 mb-4" />
-                        <p className="text-sm text-[var(--color-text-muted)] mb-4">
-                            Sem posicoes de {tabConfig.label.toLowerCase()} registadas.
-                        </p>
-                        <button
-                            onClick={handleOpenModal}
-                            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-accent)]/30 transition-colors"
-                        >
-                            <Plus size={14} /> Adicionar primeira posicao
-                        </button>
-                    </div>
+                    <StateCard
+                        title={`Sem posicoes de ${tabConfig.label.toLowerCase()} registadas`}
+                        message="Adiciona a primeira posicao para acompanhar performance e risco desde o inicio."
+                        icon={<tabConfig.icon size={18} />}
+                        actionLabel="Adicionar primeira posicao"
+                        onAction={handleOpenModal}
+                    />
                 )}
+
+                <NextActionsStrip
+                    title="Proximo passo sugerido em DeFi"
+                    actions={[
+                        { label: 'Adicionar posicao', to: '/crypto/defi' },
+                        { label: 'Rever carteira spot', to: '/crypto' },
+                        { label: 'Atualizar tarefas', to: '/todo' },
+                    ]}
+                />
             </motion.div>
 
             <AddPoolModal

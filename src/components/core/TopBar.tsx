@@ -14,7 +14,7 @@ export function TopBar() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
-            className="fixed top-0 right-0 left-[72px] max-md:left-0 z-30
+            className="app-topbar fixed top-0 right-0 z-30
                 h-16 flex items-center justify-between gap-4 px-6 lg:px-8
                 bg-[var(--topbar-bg)] backdrop-blur-2xl border-b border-[var(--topbar-border)]
                 transition-all duration-300"

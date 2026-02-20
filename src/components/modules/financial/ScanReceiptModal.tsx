@@ -141,6 +141,17 @@ export function ScanReceiptModal({ open, onClose, onConfirm, onAddToTodo }: Scan
         onClose()
     }
 
+    useEffect(() => {
+        if (!open) return
+
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') resetAndClose()
+        }
+
+        window.addEventListener('keydown', handleEscape)
+        return () => window.removeEventListener('keydown', handleEscape)
+    }, [open])
+
     return (
         <AnimatePresence>
             {open && (
@@ -163,13 +174,16 @@ export function ScanReceiptModal({ open, onClose, onConfirm, onAddToTodo }: Scan
                             className="modal-panel rounded-2xl w-full max-w-md overflow-hidden pointer-events-auto shadow-2xl flex flex-col max-h-[90vh]"
                             onClick={(e) => e.stopPropagation()}
                             style={{ borderColor: 'var(--color-border)' }}
+                            role="dialog"
+                            aria-modal="true"
+                            aria-labelledby="scan-receipt-modal-title"
                         >
                             {/* Header */}
                             <div className="flex items-center justify-between p-4 border-b border-[var(--color-border)]">
-                                <h2 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                                <h2 id="scan-receipt-modal-title" className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
                                     Digitalizar Recibo
                                 </h2>
-                                <button onClick={resetAndClose} className="p-1 rounded-full hover:bg-white/10">
+                                <button onClick={resetAndClose} className="p-1 rounded-full hover:bg-white/10" aria-label="Fechar modal">
                                     <X size={20} style={{ color: 'var(--color-text-muted)' }} />
                                 </button>
                             </div>

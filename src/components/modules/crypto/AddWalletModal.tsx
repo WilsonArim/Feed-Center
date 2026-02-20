@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Wallet, Loader2 } from 'lucide-react'
 import { StardustButton } from '@/components/ui/StardustButton'
@@ -29,6 +29,17 @@ export function AddWalletModal({ isOpen, onClose, onSubmit, isLoading }: Props) 
         setLabel('')
     }
 
+    useEffect(() => {
+        if (!isOpen) return
+
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') onClose()
+        }
+
+        window.addEventListener('keydown', handleEscape)
+        return () => window.removeEventListener('keydown', handleEscape)
+    }, [isOpen, onClose])
+
     return (
         <AnimatePresence>
             {isOpen && (
@@ -46,6 +57,9 @@ export function AddWalletModal({ isOpen, onClose, onSubmit, isLoading }: Props) 
                         onClick={(e) => e.stopPropagation()}
                         className="modal-panel w-full max-w-md rounded-[var(--radius-xl)] p-6 relative overflow-hidden"
                         style={{ border: '1px solid var(--color-border)' }}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="add-wallet-modal-title"
                     >
                         {/* Header */}
                         <div className="flex items-center justify-between mb-6">
@@ -53,11 +67,11 @@ export function AddWalletModal({ isOpen, onClose, onSubmit, isLoading }: Props) 
                                 <div className="p-2 rounded-full bg-[var(--color-accent-soft)]">
                                     <Wallet size={20} className="text-[var(--color-accent)]" />
                                 </div>
-                                <h2 className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                                <h2 id="add-wallet-modal-title" className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
                                     Adicionar Carteira
                                 </h2>
                             </div>
-                            <button onClick={onClose} className="p-1 hover:bg-white/5 rounded transition-colors">
+                            <button onClick={onClose} className="p-1 hover:bg-white/5 rounded transition-colors" aria-label="Fechar modal">
                                 <X size={18} style={{ color: 'var(--color-text-muted)' }} />
                             </button>
                         </div>
