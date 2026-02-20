@@ -80,6 +80,17 @@
 :root {
   color-scheme: dark;
 
+  /* Layout geometry (duplicated from @theme so var() works in arbitrary values) */
+  --sidebar-width: 260px;
+  --sidebar-collapsed: 72px;
+  --topbar-height: 64px;
+  --z-base: 0;
+  --z-topbar: 30;
+  --z-sidebar: 40;
+  --z-dropdown: 50;
+  --z-modal: 60;
+  --z-toast: 70;
+
   /* Surfaces */
   --bg-deep: #04080f;
   --bg-surface: rgba(255,255,255,0.02);

@@ -7,7 +7,7 @@ export function StubPage({ title }: { title: string }) {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="p-6 pt-20"
+            className="pb-12"
         >
             <h1 className="text-3xl font-bold tracking-tight mb-2 text-[var(--color-text-primary)] font-sans">
                 {title}
