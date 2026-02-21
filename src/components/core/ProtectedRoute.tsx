@@ -1,7 +1,9 @@
 import { Navigate } from 'react-router'
 import { useAuth } from './AuthProvider'
+import { useLocaleText } from '@/i18n/useLocaleText'
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
+    const { txt } = useLocaleText()
     const { user, loading } = useAuth()
 
     if (loading) {
@@ -10,7 +12,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
                 <div
                     className="w-8 h-8 rounded-full border-2 border-[var(--color-accent)] border-t-transparent animate-spin"
                     role="status"
-                    aria-label="Loading"
+                    aria-label={txt('A carregar', 'Loading')}
                 />
             </div>
         )

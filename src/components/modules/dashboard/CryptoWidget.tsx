@@ -2,10 +2,12 @@ import { useWeb3 } from '@/hooks/useWeb3'
 import { formatCurrency } from '@/utils/format'
 import { TrendingUp, TrendingDown, Bitcoin } from 'lucide-react'
 import { BarChart, Bar, ResponsiveContainer, Cell } from 'recharts'
+import { useLocaleText } from '@/i18n/useLocaleText'
 
 const COLORS = ['var(--color-accent)', 'var(--color-warning)', 'var(--color-secondary)', 'var(--color-success)', 'var(--color-danger)', '#06b6d4']
 
 export function CryptoWidget() {
+    const { txt } = useLocaleText()
     const { portfolio, isLoadingPortfolio } = useWeb3()
 
     if (isLoadingPortfolio) {
@@ -32,7 +34,7 @@ export function CryptoWidget() {
         <div className="flex flex-col h-full justify-between">
             <div>
                 <div className="text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider mb-1">
-                    Portfolio
+                    {txt('Portfolio', 'Portfolio')}
                 </div>
                 <div className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)] flex items-center gap-2">
                     {formatCurrency(totalValue)}

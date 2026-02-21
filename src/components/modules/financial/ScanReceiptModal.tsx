@@ -1,17 +1,75 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Camera, Loader2, Check, ScanLine, FileText, ListTodo } from 'lucide-react'
+import { X, Camera, Loader2, Check, ScanLine, FileText, ListTodo, ShieldCheck } from 'lucide-react'
 import { StardustButton } from '@/components/ui/StardustButton'
-import { ocrService, type OCRResult } from '@/services/ocrService'
+import { ocrService, type OCRReceiptItem, type OCRResult, type OCREngine } from '@/services/ocrService'
+import { useLocaleText } from '@/i18n/useLocaleText'
+import { CATEGORIES_BY_TYPE, type EntryType } from '@/types'
+import { localizeFinancialCategory } from '@/i18n/financialCategoryLabel'
+import { useAuth } from '@/components/core/AuthProvider'
+import { receiptLearningService } from '@/services/receiptLearningService'
+
+interface ScannedFinancialPayload {
+    amount: number
+    merchant: string
+    nif?: string | null
+    receiptItems?: OCRReceiptItem[]
+    date: string
+    category: string
+    type: EntryType
+    isRecurring?: boolean
+    buggyAlert?: boolean
+}
 
 interface ScanReceiptModalProps {
     open: boolean
     onClose: () => void
-    onConfirm: (data: { amount: number; merchant: string; date: string; category: string }) => void
-    onAddToTodo?: (data: { amount: number; merchant: string; date: string; category: string }) => void
+    onConfirm: (data: ScannedFinancialPayload) => void
+    onAddToTodo?: (data: ScannedFinancialPayload) => void
 }
 
+const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/
+
+function getTodayIso() {
+    return new Date().toISOString().split('T')[0] ?? ''
+}
+
+function toIsoDate(raw: string | null | undefined): string | null {
+    if (!raw) return null
+    if (ISO_DATE_RE.test(raw)) return raw
+
+    const dmy = raw.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})$/)
+    if (dmy?.[1] && dmy[2] && dmy[3]) {
+        const day = Number(dmy[1])
+        const month = Number(dmy[2])
+        const yearRaw = Number(dmy[3])
+        const year = yearRaw < 100 ? 2000 + yearRaw : yearRaw
+        if (year >= 2000 && year <= 2100 && month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+            return `${String(year)}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+        }
+    }
+
+    return null
+}
+
+function parseAmountInput(value: string): number | null {
+    const normalized = value.replace(',', '.').replace(/[^\d.-]/g, '')
+    const parsed = Number(normalized)
+    if (!Number.isFinite(parsed) || parsed <= 0) return null
+    return parsed
+}
+
+function getEntryTypeLabel(entryType: EntryType, txt: (pt: string, en: string) => string): string {
+    if (entryType === 'expense') return txt('Despesa', 'Expense')
+    if (entryType === 'bill') return txt('Despesa Fixa', 'Bill')
+    return txt('Receita', 'Income')
+}
+
+type SuggestionOrigin = 'memory' | 'heuristic' | 'manual'
+
 export function ScanReceiptModal({ open, onClose, onConfirm, onAddToTodo }: ScanReceiptModalProps) {
+    const { txt, isEnglish } = useLocaleText()
+    const { user } = useAuth()
     const [file, setFile] = useState<File | null>(null)
     const [preview, setPreview] = useState<string | null>(null)
     const [isScanning, setIsScanning] = useState(false)
@@ -21,8 +79,14 @@ export function ScanReceiptModal({ open, onClose, onConfirm, onAddToTodo }: Scan
     // Result form state
     const [amount, setAmount] = useState('')
     const [merchant, setMerchant] = useState('')
+    const [nif, setNif] = useState('')
     const [date, setDate] = useState('')
-    const [category, setCategory] = useState('Despesas')
+    const [entryType, setEntryType] = useState<EntryType>('expense')
+    const [category, setCategory] = useState(CATEGORIES_BY_TYPE.expense[0] ?? 'Outros')
+    const [autoRecurring, setAutoRecurring] = useState(false)
+    const [suggestionOrigin, setSuggestionOrigin] = useState<SuggestionOrigin>('manual')
+    const [suggestionConfidence, setSuggestionConfidence] = useState<number | null>(null)
+    const [ocrEngine, setOcrEngine] = useState<OCREngine | null>(null)
 
     const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -42,20 +106,17 @@ export function ScanReceiptModal({ open, onClose, onConfirm, onAddToTodo }: Scan
 
     const processFile = (f: File) => {
         // Validate type
-        if (!f.type.startsWith('image/') && f.type !== 'application/pdf') {
-            setMsg('Formato não suportado. Apenas Imagens e PDF.')
+        if (!f.type.startsWith('image/')) {
+            setMsg(txt('Formato não suportado. Usa imagem (PNG/JPG/WebP).', 'Unsupported format. Use image (PNG/JPG/WebP).'))
             return
         }
         setMsg(null)
         setFile(f)
         setResult(null)
-
-        if (f.type.startsWith('image/')) {
-            const url = URL.createObjectURL(f)
-            setPreview(url)
-        } else {
-            setPreview(null) // PDF doesn't have image preview in this simple implementation
-        }
+        const url = URL.createObjectURL(f)
+        setPreview(url)
+        // Nuclear loop: capture -> understand -> act without extra clicks.
+        void runScan(f)
     }
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -77,55 +138,90 @@ export function ScanReceiptModal({ open, onClose, onConfirm, onAddToTodo }: Scan
         e.stopPropagation()
     }
 
-    const handleScan = async () => {
-        if (!file) return
-
+    const runScan = async (targetFile: File) => {
         setIsScanning(true)
+        setMsg(null)
         try {
-            const data = await ocrService.scanReceipt(file)
+            const data = await ocrService.scanReceipt(targetFile)
             setResult(data)
+            setOcrEngine(data.engine)
 
             // Auto-fill form
-            setAmount(data.total?.amount.toString() || '')
+            setAmount(data.total?.amount !== null && data.total?.amount !== undefined ? data.total.amount.toFixed(2) : '')
             setMerchant(data.merchant || '')
-            setDate(data.date || new Date().toISOString().split('T')[0] || '')
+            setNif(data.nif ?? '')
+            setDate(toIsoDate(data.date) ?? getTodayIso())
+            const learnedRule = user && data.merchant
+                ? receiptLearningService.findRule(user.id, data.merchant)
+                : null
 
-            if (['Pingo Doce', 'Continente', 'Mercadona', 'Lidl'].includes(data.merchant || '')) {
-                setCategory('Alimentação')
-            } else if (['Galp', 'BP', 'Repsol'].includes(data.merchant || '')) {
-                setCategory('Transporte')
-            } else if (['Uber', 'Bolt'].includes(data.merchant || '')) {
-                setCategory('Transporte')
-            } else if (['Worten', 'Fnac', 'Amazon'].includes(data.merchant || '')) {
-                setCategory('Compras')
+            const suggestedType = learnedRule?.type ?? data.suggestion?.type ?? 'expense'
+            const suggestedCategory = learnedRule?.category ?? data.suggestion?.category ?? null
+            const categoriesForType = CATEGORIES_BY_TYPE[suggestedType]
+
+            setEntryType(suggestedType)
+            if (suggestedCategory && categoriesForType.includes(suggestedCategory)) {
+                setCategory(suggestedCategory)
+            } else {
+                setCategory(categoriesForType[0] ?? 'Outros')
+            }
+            setAutoRecurring(suggestedType === 'bill')
+            if (learnedRule) {
+                setSuggestionOrigin('memory')
+                setSuggestionConfidence(0.99)
+            } else if (data.suggestion) {
+                setSuggestionOrigin('heuristic')
+                setSuggestionConfidence(data.suggestion.confidence)
+            } else {
+                setSuggestionOrigin('manual')
+                setSuggestionConfidence(null)
             }
 
         } catch (error) {
             console.error(error)
-            setMsg('Erro ao analisar o recibo. Tente novamente.')
+            setMsg(error instanceof Error ? error.message : txt('Erro ao analisar o recibo. Tente novamente.', 'Error analyzing receipt. Please try again.'))
         } finally {
             setIsScanning(false)
         }
     }
 
+    const handleScan = async () => {
+        if (!file) return
+        await runScan(file)
+    }
+
     const handleConfirm = () => {
-        if (!amount || !merchant) return
+        const parsedAmount = parseAmountInput(amount)
+        if (!parsedAmount || !merchant) return
+
+        if (user?.id && merchant.trim().length >= 2) {
+            receiptLearningService.saveRule(user.id, merchant, entryType, category)
+        }
+
         onConfirm({
-            amount: parseFloat(amount),
+            amount: parsedAmount,
             merchant,
-            date,
-            category
+            nif: nif.trim() || null,
+            receiptItems: result?.receiptItems ?? [],
+            date: toIsoDate(date) ?? getTodayIso(),
+            category,
+            type: entryType,
+            isRecurring: entryType === 'bill' ? autoRecurring : undefined,
+            buggyAlert: entryType === 'bill' ? autoRecurring : undefined,
         })
         resetAndClose()
     }
 
     const handleCreateTask = () => {
-        if (!amount || !merchant) return
+        const parsedAmount = parseAmountInput(amount)
+        if (!parsedAmount || !merchant) return
         onAddToTodo?.({
-            amount: parseFloat(amount),
+            amount: parsedAmount,
             merchant,
-            date,
-            category
+            nif: nif.trim() || null,
+            date: toIsoDate(date) ?? getTodayIso(),
+            category,
+            type: entryType,
         })
         resetAndClose()
     }
@@ -136,7 +232,14 @@ export function ScanReceiptModal({ open, onClose, onConfirm, onAddToTodo }: Scan
         setResult(null)
         setAmount('')
         setMerchant('')
+        setNif('')
         setDate('')
+        setEntryType('expense')
+        setCategory(CATEGORIES_BY_TYPE.expense[0] ?? 'Outros')
+        setAutoRecurring(false)
+        setSuggestionOrigin('manual')
+        setSuggestionConfidence(null)
+        setOcrEngine(null)
         setMsg(null)
         onClose()
     }
@@ -151,6 +254,19 @@ export function ScanReceiptModal({ open, onClose, onConfirm, onAddToTodo }: Scan
         window.addEventListener('keydown', handleEscape)
         return () => window.removeEventListener('keydown', handleEscape)
     }, [open])
+
+    useEffect(() => {
+        const categoriesForType = CATEGORIES_BY_TYPE[entryType]
+        if (!categoriesForType.includes(category)) {
+            setCategory(categoriesForType[0] ?? 'Outros')
+        }
+    }, [entryType, category])
+
+    useEffect(() => {
+        if (entryType !== 'bill' && autoRecurring) {
+            setAutoRecurring(false)
+        }
+    }, [entryType, autoRecurring])
 
     return (
         <AnimatePresence>
@@ -181,9 +297,9 @@ export function ScanReceiptModal({ open, onClose, onConfirm, onAddToTodo }: Scan
                             {/* Header */}
                             <div className="flex items-center justify-between p-4 border-b border-[var(--color-border)]">
                                 <h2 id="scan-receipt-modal-title" className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                                    Digitalizar Recibo
+                                    {txt('Digitalizar Recibo', 'Scan Receipt')}
                                 </h2>
-                                <button onClick={resetAndClose} className="p-1 rounded-full hover:bg-white/10" aria-label="Fechar modal">
+                                <button onClick={resetAndClose} className="p-1 rounded-full hover:bg-white/10" aria-label={txt('Fechar modal', 'Close modal')}>
                                     <X size={20} style={{ color: 'var(--color-text-muted)' }} />
                                 </button>
                             </div>
@@ -203,10 +319,10 @@ export function ScanReceiptModal({ open, onClose, onConfirm, onAddToTodo }: Scan
                                         </div>
                                         <div className="text-center">
                                             <p className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
-                                                Tirar foto ou Upload
+                                                {txt('Tirar foto ou Upload', 'Take photo or Upload')}
                                             </p>
                                             <p className="text-xs mt-1" style={{ color: 'var(--color-text-muted)' }}>
-                                                Suporta: Printscreen (Ctrl+V), PDF, Imagens
+                                                {txt('Suporta: Printscreen (Ctrl+V) e Imagens', 'Supports: Screenshot (Ctrl+V) and Images')}
                                             </p>
                                         </div>
 
@@ -219,7 +335,7 @@ export function ScanReceiptModal({ open, onClose, onConfirm, onAddToTodo }: Scan
                                         <input
                                             ref={fileInputRef}
                                             type="file"
-                                            accept="image/*,application/pdf"
+                                            accept="image/*"
                                             className="hidden"
                                             onChange={handleFileSelect}
                                         />
@@ -229,7 +345,7 @@ export function ScanReceiptModal({ open, onClose, onConfirm, onAddToTodo }: Scan
                                         {/* Image Preview or File Icon */}
                                         <div className="relative rounded-xl overflow-hidden shadow-lg aspect-[3/4] bg-black flex items-center justify-center">
                                             {preview ? (
-                                                <img src={preview} alt="Receipt" className="w-full h-full object-contain opacity-80" />
+                                                <img src={preview} alt={txt('Recibo', 'Receipt')} className="w-full h-full object-contain opacity-80" />
                                             ) : (
                                                 <div className="flex flex-col items-center gap-3">
                                                     <FileText size={48} className="text-[var(--color-text-muted)]" />
@@ -237,7 +353,7 @@ export function ScanReceiptModal({ open, onClose, onConfirm, onAddToTodo }: Scan
                                                         {file.name}
                                                     </span>
                                                     <span className="text-xs text-[var(--color-text-muted)] bg-white/10 px-2 py-1 rounded">
-                                                        PDF Document
+                                                        {txt('Documento PDF', 'PDF Document')}
                                                     </span>
                                                 </div>
                                             )}
@@ -258,7 +374,7 @@ export function ScanReceiptModal({ open, onClose, onConfirm, onAddToTodo }: Scan
                                                     <div className="flex flex-col items-center gap-2">
                                                         <Loader2 size={32} className="animate-spin text-[var(--color-accent)]" />
                                                         <span className="text-xs font-mono text-white/90 uppercase tracking-widest">
-                                                            Processando IA...
+                                                            {txt('Processando IA...', 'Processing AI...')}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -268,7 +384,7 @@ export function ScanReceiptModal({ open, onClose, onConfirm, onAddToTodo }: Scan
                                         {/* Result Form */}
                                         {!isScanning && !result && (
                                             <StardustButton onClick={handleScan} className="w-full" icon={<ScanLine size={18} />}>
-                                                Analisar Recibo
+                                                {txt('Analisar Recibo', 'Analyze Receipt')}
                                             </StardustButton>
                                         )}
 
@@ -280,19 +396,20 @@ export function ScanReceiptModal({ open, onClose, onConfirm, onAddToTodo }: Scan
                                             >
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div>
-                                                        <label className="text-xs text-[var(--color-text-muted)] block mb-1">Valor</label>
-                                                        <div className="relative">
+                                                        <label className="text-xs text-[var(--color-text-muted)] block mb-1">{txt('Valor', 'Amount')}</label>
+                                                        <div className="flex items-center bg-[var(--color-bg-secondary)] rounded-lg focus-within:ring-1 focus-within:ring-[var(--color-accent)]">
+                                                            <span className="pl-3 pr-2 text-sm text-[var(--color-text-muted)]">€</span>
                                                             <input
-                                                                type="number"
+                                                                type="text"
+                                                                inputMode="decimal"
                                                                 value={amount}
                                                                 onChange={(e) => setAmount(e.target.value)}
-                                                                className="w-full pl-8 pr-3 py-2 bg-[var(--color-bg-secondary)] rounded-lg text-sm outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
+                                                                className="w-full min-w-0 bg-transparent pr-3 py-2 rounded-r-lg text-sm outline-none"
                                                             />
-                                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs">€</span>
                                                         </div>
                                                     </div>
                                                     <div>
-                                                        <label className="text-xs text-[var(--color-text-muted)] block mb-1">Data</label>
+                                                        <label className="text-xs text-[var(--color-text-muted)] block mb-1">{txt('Data', 'Date')}</label>
                                                         <input
                                                             type="date"
                                                             value={date}
@@ -303,7 +420,7 @@ export function ScanReceiptModal({ open, onClose, onConfirm, onAddToTodo }: Scan
                                                 </div>
 
                                                 <div>
-                                                    <label className="text-xs text-[var(--color-text-muted)] block mb-1">Comerciante</label>
+                                                    <label className="text-xs text-[var(--color-text-muted)] block mb-1">{txt('Comerciante', 'Merchant')}</label>
                                                     <input
                                                         type="text"
                                                         value={merchant}
@@ -311,20 +428,108 @@ export function ScanReceiptModal({ open, onClose, onConfirm, onAddToTodo }: Scan
                                                         className="w-full px-3 py-2 bg-[var(--color-bg-secondary)] rounded-lg text-sm outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
                                                     />
                                                 </div>
+                                                <div>
+                                                    <label className="text-xs text-[var(--color-text-muted)] block mb-1">NIF</label>
+                                                    <input
+                                                        type="text"
+                                                        inputMode="numeric"
+                                                        value={nif}
+                                                        onChange={(e) => setNif(e.target.value.replace(/[^\d]/g, '').slice(0, 9))}
+                                                        className="w-full px-3 py-2 bg-[var(--color-bg-secondary)] rounded-lg text-sm outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
+                                                        placeholder="000000000"
+                                                    />
+                                                </div>
+
+                                                <div className="space-y-3">
+                                                    <div>
+                                                        <label className="text-xs text-[var(--color-text-muted)] block mb-1">{txt('Tipo de movimento', 'Entry type')}</label>
+                                                        <div className="grid grid-cols-3 gap-2">
+                                                            {(['expense', 'bill', 'income'] as EntryType[]).map((type) => (
+                                                                <button
+                                                                    key={type}
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setEntryType(type)
+                                                                        if (type === 'bill') setAutoRecurring(true)
+                                                                        setSuggestionOrigin('manual')
+                                                                        setSuggestionConfidence(null)
+                                                                    }}
+                                                                    className={`rounded-lg px-2 py-2 text-xs font-medium transition-colors border cursor-pointer ${entryType === type
+                                                                        ? 'bg-[var(--color-accent)]/20 text-[var(--color-accent)] border-[var(--color-accent)]/40'
+                                                                        : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] border-[var(--color-border)] hover:border-[var(--color-accent)]/30'
+                                                                        }`}
+                                                                >
+                                                                    {getEntryTypeLabel(type, txt)}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-xs text-[var(--color-text-muted)] block mb-1">{txt('Categoria', 'Category')}</label>
+                                                        <select
+                                                            value={category}
+                                                            onChange={(e) => {
+                                                                setCategory(e.target.value)
+                                                                setSuggestionOrigin('manual')
+                                                                setSuggestionConfidence(null)
+                                                            }}
+                                                            className="w-full px-3 py-2 bg-[var(--color-bg-secondary)] rounded-lg text-sm outline-none border border-[var(--color-border)] focus:border-[var(--color-accent)]"
+                                                        >
+                                                            {CATEGORIES_BY_TYPE[entryType].map((categoryOption) => (
+                                                                <option key={categoryOption} value={categoryOption}>
+                                                                    {localizeFinancialCategory(categoryOption, isEnglish)}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-2.5 space-y-1.5">
+                                                    <div className="flex items-center gap-2 text-xs text-[var(--color-text-secondary)]">
+                                                        <ShieldCheck size={13} className="text-[var(--color-accent)]" />
+                                                        <span>
+                                                            {txt('Confianca OCR', 'OCR confidence')}: {Math.round((result.confidence ?? 0) * 100)}%
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-xs text-[var(--color-text-muted)]">
+                                                        {txt('Motor', 'Engine')}: {ocrEngine === 'vision' ? 'Google Vision' : txt('OCR local', 'Local OCR')}
+                                                        {' • '}
+                                                        {txt('Origem da classificacao', 'Classification source')}: {
+                                                            suggestionOrigin === 'memory'
+                                                                ? txt('Memoria aprendida', 'Learned memory')
+                                                                : suggestionOrigin === 'heuristic'
+                                                                    ? txt('Heuristica IA', 'AI heuristic')
+                                                                    : txt('Manual', 'Manual')
+                                                        }
+                                                        {suggestionConfidence !== null ? ` • ${txt('Confianca da sugestao', 'Suggestion confidence')}: ${Math.round(suggestionConfidence * 100)}%` : ''}
+                                                    </p>
+                                                </div>
+
+                                                {entryType === 'bill' && (
+                                                    <label className="flex items-start gap-2 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-2.5 cursor-pointer">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={autoRecurring}
+                                                            onChange={(e) => setAutoRecurring(e.target.checked)}
+                                                            className="mt-0.5 accent-[var(--color-accent)]"
+                                                        />
+                                                        <div>
+                                                            <p className="text-xs font-medium text-[var(--color-text-primary)]">
+                                                                {txt('Ativar automacao desta conta fixa', 'Enable automation for this recurring bill')}
+                                                            </p>
+                                                            <p className="text-xs text-[var(--color-text-muted)]">
+                                                                {txt('O Buggy vai priorizar esta categoria e sugerir alerta recorrente.', 'Buggy will prioritize this category and suggest recurring alerts.')}
+                                                            </p>
+                                                        </div>
+                                                    </label>
+                                                )}
 
                                                 <div className="flex gap-3">
                                                     <StardustButton onClick={handleCreateTask} className="flex-1" variant="ghost" icon={<ListTodo size={18} />}>
-                                                        Criar Tarefa
+                                                        {txt('Criar Tarefa', 'Create Task')}
                                                     </StardustButton>
-                                                    {/* <button onClick={() => {
-                                                        setAmount('45.50')
-                                                        setMerchant('Pingo Doce Teste')
-                                                        setDate(new Date().toISOString().split('T')[0])
-                                                        setCategory('Alimentação')
-                                                        setMsg(null) 
-                                                    }} className="hidden">Debug Fill</button> */}
                                                     <StardustButton onClick={handleConfirm} className="flex-1" icon={<Check size={18} />}>
-                                                        Confirmar
+                                                        {txt('Adicionar às Finanças', 'Add to Finance')}
                                                     </StardustButton>
                                                 </div>
                                             </motion.div>

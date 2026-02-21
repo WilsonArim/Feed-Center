@@ -1,8 +1,10 @@
 import { CheckCircle2, Clock, AlertTriangle, ListTodo } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useTodos } from '@/hooks/useTodos'
+import { useLocaleText } from '@/i18n/useLocaleText'
 
 export function TodoStatsBar() {
+    const { txt } = useLocaleText()
     const { data: todos = [], isLoading } = useTodos()
 
     if (isLoading) return null
@@ -14,10 +16,10 @@ export function TodoStatsBar() {
     const completionPct = total > 0 ? Math.round((done / total) * 100) : 0
 
     const stats = [
-        { label: 'Total', value: String(total), icon: <ListTodo size={13} />, color: 'var(--color-accent)' },
-        { label: 'Pendentes', value: String(pending), icon: <Clock size={13} />, color: '#f59e0b' },
-        { label: 'Concluidas', value: `${done} (${completionPct}%)`, icon: <CheckCircle2 size={13} />, color: '#22c55e' },
-        { label: 'Alta Prioridade', value: String(high), icon: <AlertTriangle size={13} />, color: high > 0 ? '#ef4444' : 'var(--color-text-muted)' },
+        { label: txt('Total', 'Total'), value: String(total), icon: <ListTodo size={13} />, color: 'var(--color-accent)' },
+        { label: txt('Pendentes', 'Pending'), value: String(pending), icon: <Clock size={13} />, color: '#f59e0b' },
+        { label: txt('Concluidas', 'Completed'), value: `${done} (${completionPct}%)`, icon: <CheckCircle2 size={13} />, color: '#22c55e' },
+        { label: txt('Alta Prioridade', 'High Priority'), value: String(high), icon: <AlertTriangle size={13} />, color: high > 0 ? '#ef4444' : 'var(--color-text-muted)' },
     ]
 
     return (

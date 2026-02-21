@@ -4,6 +4,7 @@ import { X, Plus, Loader2 } from 'lucide-react'
 import { StardustButton } from '@/components/ui/StardustButton'
 import type { Link } from '@/services/linksService'
 import type { CreateLinkInput } from '@/services/linksService'
+import { useLocaleText } from '@/i18n/useLocaleText'
 
 interface AddLinkModalProps {
     open: boolean
@@ -14,6 +15,7 @@ interface AddLinkModalProps {
 }
 
 export function AddLinkModal({ open, onClose, onSubmit, isLoading, editingLink }: AddLinkModalProps) {
+    const { txt } = useLocaleText()
     const [url, setUrl] = useState('')
     const [title, setTitle] = useState('')
     const [description, setDescription] = useState('')
@@ -111,14 +113,14 @@ export function AddLinkModal({ open, onClose, onSubmit, isLoading, editingLink }
                                     className="text-xl font-bold"
                                     style={{ color: 'var(--color-text-primary)' }}
                                 >
-                                    {editingLink ? 'Editar Link' : 'Novo Link'}
+                                    {editingLink ? txt('Editar Link', 'Edit Link') : txt('Novo Link', 'New Link')}
                                 </h2>
                                 <button
                                     type="button"
                                     onClick={onClose}
                                     className="p-1.5 rounded-md hover:bg-white/5 transition-colors"
                                     style={{ color: 'var(--color-text-muted)' }}
-                                    aria-label="Fechar modal"
+                                    aria-label={txt('Fechar modal', 'Close modal')}
                                 >
                                     <X size={18} />
                                 </button>
@@ -133,7 +135,7 @@ export function AddLinkModal({ open, onClose, onSubmit, isLoading, editingLink }
                                     type="url"
                                     value={url}
                                     onChange={(e) => setUrl(e.target.value)}
-                                    placeholder="https://exemplo.com"
+                                    placeholder="https://example.com"
                                     required
                                     className="w-full px-4 py-2.5 rounded-[var(--radius-md)] text-sm
                                         outline-none transition-all duration-200
@@ -149,13 +151,13 @@ export function AddLinkModal({ open, onClose, onSubmit, isLoading, editingLink }
                             {/* Title */}
                             <div className="mb-4">
                                 <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
-                                    Título
+                                    {txt('Titulo', 'Title')}
                                 </label>
                                 <input
                                     type="text"
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
-                                    placeholder="Auto-detectado se vazio"
+                                    placeholder={txt('Auto-detectado se vazio', 'Auto-detected if empty')}
                                     className="w-full px-4 py-2.5 rounded-[var(--radius-md)] text-sm
                                         outline-none transition-all duration-200
                                         focus:ring-2 focus:ring-[var(--color-accent)]/40"
@@ -170,13 +172,13 @@ export function AddLinkModal({ open, onClose, onSubmit, isLoading, editingLink }
                             {/* Description */}
                             <div className="mb-4">
                                 <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
-                                    Descrição
+                                    {txt('Descricao', 'Description')}
                                 </label>
                                 <input
                                     type="text"
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
-                                    placeholder="Breve descrição do link"
+                                    placeholder={txt('Breve descricao do link', 'Short link description')}
                                     className="w-full px-4 py-2.5 rounded-[var(--radius-md)] text-sm
                                         outline-none transition-all duration-200
                                         focus:ring-2 focus:ring-[var(--color-accent)]/40"
@@ -199,7 +201,7 @@ export function AddLinkModal({ open, onClose, onSubmit, isLoading, editingLink }
                                         value={tagInput}
                                         onChange={(e) => setTagInput(e.target.value)}
                                         onKeyDown={handleKeyDown}
-                                        placeholder="Adicionar tag + Enter"
+                                        placeholder={txt('Adicionar tag + Enter', 'Add tag + Enter')}
                                         className="flex-1 px-4 py-2.5 rounded-[var(--radius-md)] text-sm
                                             outline-none transition-all duration-200
                                             focus:ring-2 focus:ring-[var(--color-accent)]/40"
@@ -234,7 +236,7 @@ export function AddLinkModal({ open, onClose, onSubmit, isLoading, editingLink }
                                                     border: '1px solid var(--color-border)',
                                                 }}
                                                 onClick={() => removeTag(tag)}
-                                                aria-label={`Remover tag ${tag}`}
+                                                aria-label={`${txt('Remover tag', 'Remove tag')} ${tag}`}
                                             >
                                                 {tag}
                                                 <X size={12} />
@@ -247,12 +249,12 @@ export function AddLinkModal({ open, onClose, onSubmit, isLoading, editingLink }
                             {/* Notes */}
                             <div className="mb-6">
                                 <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
-                                    Notas
+                                    {txt('Notas', 'Notes')}
                                 </label>
                                 <textarea
                                     value={notes}
                                     onChange={(e) => setNotes(e.target.value)}
-                                    placeholder="Notas opcionais sobre este link..."
+                                    placeholder={txt('Notas opcionais sobre este link...', 'Optional notes about this link...')}
                                     rows={3}
                                     className="w-full px-4 py-2.5 rounded-[var(--radius-md)] text-sm resize-none
                                         outline-none transition-all duration-200
@@ -273,7 +275,7 @@ export function AddLinkModal({ open, onClose, onSubmit, isLoading, editingLink }
                                     variant="ghost"
                                     size="sm"
                                 >
-                                    Cancelar
+                                    {txt('Cancelar', 'Cancel')}
                                 </StardustButton>
                                 <StardustButton
                                     type="submit"
@@ -281,7 +283,7 @@ export function AddLinkModal({ open, onClose, onSubmit, isLoading, editingLink }
                                     size="sm"
                                     icon={isLoading ? <Loader2 size={14} className="animate-spin" /> : undefined}
                                 >
-                                    {editingLink ? '✧ Guardar' : '✧ Adicionar'}
+                                    {editingLink ? `✧ ${txt('Guardar', 'Save')}` : `✧ ${txt('Adicionar', 'Add')}`}
                                 </StardustButton>
                             </div>
                         </form>

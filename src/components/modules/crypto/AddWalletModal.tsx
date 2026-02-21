@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { X, Wallet, Loader2 } from 'lucide-react'
 import { StardustButton } from '@/components/ui/StardustButton'
 import { ChainType, CreateWalletInput } from '@/types'
+import { useLocaleText } from '@/i18n/useLocaleText'
 
 interface Props {
     isOpen: boolean
@@ -12,6 +13,7 @@ interface Props {
 }
 
 export function AddWalletModal({ isOpen, onClose, onSubmit, isLoading }: Props) {
+    const { txt } = useLocaleText()
     const [address, setAddress] = useState('')
     const [label, setLabel] = useState('')
     const [chain, setChain] = useState<ChainType>('solana')
@@ -68,10 +70,10 @@ export function AddWalletModal({ isOpen, onClose, onSubmit, isLoading }: Props) 
                                     <Wallet size={20} className="text-[var(--color-accent)]" />
                                 </div>
                                 <h2 id="add-wallet-modal-title" className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                                    Adicionar Carteira
+                                    {txt('Adicionar Carteira', 'Add Wallet')}
                                 </h2>
                             </div>
-                            <button onClick={onClose} className="p-1 hover:bg-white/5 rounded transition-colors" aria-label="Fechar modal">
+                            <button onClick={onClose} className="p-1 hover:bg-white/5 rounded transition-colors" aria-label={txt('Fechar modal', 'Close modal')}>
                                 <X size={18} style={{ color: 'var(--color-text-muted)' }} />
                             </button>
                         </div>
@@ -104,7 +106,7 @@ export function AddWalletModal({ isOpen, onClose, onSubmit, isLoading }: Props) 
                             {/* Address Input */}
                             <div>
                                 <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--color-text-secondary)' }}>
-                                    Endereço Público *
+                                    {txt('Endereco Publico *', 'Public Address *')}
                                 </label>
                                 <input
                                     type="text"
@@ -117,7 +119,9 @@ export function AddWalletModal({ isOpen, onClose, onSubmit, isLoading }: Props) 
                                 />
                                 {address && !isValid && (
                                     <p className="text-[10px] mt-1 text-red-400">
-                                        {chain === 'evm' ? 'Endereço EVM inválido. Deve começar com 0x e ter 42 caracteres.' : 'Endereço Solana inválido. Base58, 32-44 caracteres.'}
+                                        {chain === 'evm'
+                                            ? txt('Endereco EVM invalido. Deve comecar com 0x e ter 42 caracteres.', 'Invalid EVM address. Must start with 0x and have 42 characters.')
+                                            : txt('Endereco Solana invalido. Base58, 32-44 caracteres.', 'Invalid Solana address. Base58, 32-44 characters.')}
                                     </p>
                                 )}
                             </div>
@@ -125,13 +129,13 @@ export function AddWalletModal({ isOpen, onClose, onSubmit, isLoading }: Props) 
                             {/* Label Input */}
                             <div>
                                 <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--color-text-secondary)' }}>
-                                    Nome da Carteira (Opcional)
+                                    {txt('Nome da Carteira (Opcional)', 'Wallet Name (Optional)')}
                                 </label>
                                 <input
                                     type="text"
                                     value={label}
                                     onChange={(e) => setLabel(e.target.value)}
-                                    placeholder="Ex: Cofre Principal"
+                                    placeholder={txt('Ex: Cofre Principal', 'Ex: Main Vault')}
                                     className="w-full px-4 py-3 rounded-[var(--radius-md)] text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border)] outline-none focus:border-[var(--color-accent)] transition-colors"
                                     style={{ color: 'var(--color-text-primary)' }}
                                 />
@@ -145,7 +149,7 @@ export function AddWalletModal({ isOpen, onClose, onSubmit, isLoading }: Props) 
                                     size="sm"
                                     onClick={onClose}
                                 >
-                                    Cancelar
+                                    {txt('Cancelar', 'Cancel')}
                                 </StardustButton>
                                 <StardustButton
                                     type="submit"
@@ -153,14 +157,14 @@ export function AddWalletModal({ isOpen, onClose, onSubmit, isLoading }: Props) 
                                     disabled={isLoading || !isValid}
                                     icon={isLoading ? <Loader2 size={14} className="animate-spin" /> : undefined}
                                 >
-                                    Conectar (Read-Only)
+                                    {txt('Conectar (Read-Only)', 'Connect (Read-Only)')}
                                 </StardustButton>
                             </div>
                         </form>
 
                         {/* Security Note */}
                         <div className="mt-4 pt-4 border-t border-white/5 text-[10px] text-center" style={{ color: 'var(--color-text-muted)' }}>
-                            🔒 Nunca pedimos chaves privadas. Apenas leitura de endereços públicos.
+                            🔒 {txt('Nunca pedimos chaves privadas. Apenas leitura de enderecos publicos.', 'We never ask for private keys. Public-address read-only access only.')}
                         </div>
                     </motion.div>
                 </motion.div>

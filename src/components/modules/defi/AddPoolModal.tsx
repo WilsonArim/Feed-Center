@@ -5,6 +5,7 @@ import { resolvePoolFromUrl, fetchHistoricalPrice } from '@/services/defiLedgerS
 import { calcInitialPoolValue } from '@/services/defiMathService'
 import { VisionUploadButton } from './VisionUploadButton'
 import type { CreatePoolInput, DexScreenerPairResolved, VisionOcrResult } from '@/types'
+import { useLocaleText } from '@/i18n/useLocaleText'
 
 interface Props {
     isOpen: boolean
@@ -14,6 +15,7 @@ interface Props {
 }
 
 export function AddPoolModal({ isOpen, onClose, onSubmit, isLoading }: Props) {
+    const { txt } = useLocaleText()
     const [poolUrl, setPoolUrl] = useState('')
     const [resolving, setResolving] = useState(false)
     const [pair, setPair] = useState<DexScreenerPairResolved | null>(null)
@@ -43,7 +45,7 @@ export function AddPoolModal({ isOpen, onClose, onSubmit, isLoading }: Props) {
         if (result) {
             setPair(result)
         } else {
-            setResolveError('Não foi possível resolver o par. Verifica o URL do DexScreener.')
+            setResolveError(txt('Nao foi possivel resolver o par. Verifica o URL do DexScreener.', 'Could not resolve the pair. Check the DexScreener URL.'))
         }
         setResolving(false)
     }
@@ -153,8 +155,8 @@ export function AddPoolModal({ isOpen, onClose, onSubmit, isLoading }: Props) {
                     >
                         {/* Header */}
                         <div className="flex items-center justify-between mb-5">
-                            <h2 id="add-pool-modal-title" className="text-h3">Adicionar Pool</h2>
-                            <button type="button" onClick={onClose} className="btn-ghost w-8 h-8 rounded-full flex items-center justify-center" aria-label="Fechar modal">
+                            <h2 id="add-pool-modal-title" className="text-h3">{txt('Adicionar Pool', 'Add Pool')}</h2>
+                            <button type="button" onClick={onClose} className="btn-ghost w-8 h-8 rounded-full flex items-center justify-center" aria-label={txt('Fechar modal', 'Close modal')}>
                                 <X size={16} />
                             </button>
                         </div>
@@ -162,7 +164,7 @@ export function AddPoolModal({ isOpen, onClose, onSubmit, isLoading }: Props) {
                         {/* Step 1: Pool URL */}
                         <div className="mb-4">
                             <label className="text-xs font-medium text-[var(--color-text-muted)] mb-1.5 block uppercase tracking-wider">
-                                Link DexScreener
+                                {txt('Link DexScreener', 'DexScreener Link')}
                             </label>
                             <div className="flex gap-2">
                                 <div className="relative flex-1">
@@ -204,7 +206,7 @@ export function AddPoolModal({ isOpen, onClose, onSubmit, isLoading }: Props) {
                                         </span>
                                     </div>
                                     <span className="text-xs text-[var(--color-text-muted)]">
-                                        Atual: ${pair.priceUsd.toFixed(pair.priceUsd < 1 ? 6 : 2)}
+                                        {txt('Atual', 'Current')}: ${pair.priceUsd.toFixed(pair.priceUsd < 1 ? 6 : 2)}
                                     </span>
                                 </div>
                             </div>
@@ -216,7 +218,7 @@ export function AddPoolModal({ isOpen, onClose, onSubmit, isLoading }: Props) {
                                 {/* Date FIRST — drives the historical price lookup */}
                                 <div className="mb-4">
                                     <label className="text-xs font-medium text-[var(--color-text-muted)] mb-1 flex items-center gap-1.5">
-                                        <Calendar size={12} /> Data de entrada
+                                        <Calendar size={12} /> {txt('Data de entrada', 'Entry date')}
                                     </label>
                                     <input
                                         type="datetime-local"
@@ -232,11 +234,11 @@ export function AddPoolModal({ isOpen, onClose, onSubmit, isLoading }: Props) {
                                     <div className="flex items-center justify-between text-xs">
                                         <span className="text-[var(--color-text-muted)] flex items-center gap-1.5">
                                             <DollarSign size={12} />
-                                            Preço {pair.baseSymbol} à data
+                                            {txt('Preco', 'Price')} {pair.baseSymbol} {txt('a data', 'at date')}
                                         </span>
                                         {fetchingPrice ? (
                                             <span className="flex items-center gap-1 text-[var(--color-text-muted)]">
-                                                <Loader2 size={10} className="animate-spin" /> A buscar...
+                                                <Loader2 size={10} className="animate-spin" /> {txt('A buscar...', 'Fetching...')}
                                             </span>
                                         ) : histBasePrice ? (
                                             <span className="font-mono font-bold text-[var(--color-text-primary)]">
@@ -244,7 +246,7 @@ export function AddPoolModal({ isOpen, onClose, onSubmit, isLoading }: Props) {
                                             </span>
                                         ) : (
                                             <span className="text-amber-400 text-[10px]">
-                                                Preço histórico indisponível — usa preço atual
+                                                {txt('Preco historico indisponivel — usa preco atual', 'Historical price unavailable — using current price')}
                                             </span>
                                         )}
                                     </div>
@@ -253,7 +255,7 @@ export function AddPoolModal({ isOpen, onClose, onSubmit, isLoading }: Props) {
                                 {/* Tick range */}
                                 <div className="grid grid-cols-2 gap-3 mb-4">
                                     <div>
-                                        <label className="text-xs font-medium text-[var(--color-text-muted)] mb-1 block">Tick Min</label>
+                                        <label className="text-xs font-medium text-[var(--color-text-muted)] mb-1 block">{txt('Tick Min', 'Tick Min')}</label>
                                         <input
                                             type="number" step="any" value={tickLower}
                                             onChange={e => setTickLower(e.target.value)}
@@ -263,7 +265,7 @@ export function AddPoolModal({ isOpen, onClose, onSubmit, isLoading }: Props) {
                                         />
                                     </div>
                                     <div>
-                                        <label className="text-xs font-medium text-[var(--color-text-muted)] mb-1 block">Tick Max</label>
+                                        <label className="text-xs font-medium text-[var(--color-text-muted)] mb-1 block">{txt('Tick Max', 'Tick Max')}</label>
                                         <input
                                             type="number" step="any" value={tickUpper}
                                             onChange={e => setTickUpper(e.target.value)}
@@ -308,6 +310,7 @@ export function AddPoolModal({ isOpen, onClose, onSubmit, isLoading }: Props) {
                                         <Info size={14} className="text-[var(--color-accent)] flex-shrink-0" />
                                         <div className="flex-1">
                                             <span className="text-xs text-[var(--color-accent)]">Valor inicial calculado</span>
+                                            
                                             <p className="text-lg font-mono font-bold text-[var(--color-text-primary)]">
                                                 ${initialValue.toFixed(2)}
                                             </p>
@@ -317,7 +320,7 @@ export function AddPoolModal({ isOpen, onClose, onSubmit, isLoading }: Props) {
                                 )}
 
                                 <div className="mb-4">
-                                    <label className="text-xs font-medium text-[var(--color-text-muted)] mb-1 block">Notas (opcional)</label>
+                                    <label className="text-xs font-medium text-[var(--color-text-muted)] mb-1 block">{txt('Notas (opcional)', 'Notes (optional)')}</label>
                                     <textarea
                                         value={notes}
                                         onChange={e => setNotes(e.target.value)}
@@ -331,15 +334,15 @@ export function AddPoolModal({ isOpen, onClose, onSubmit, isLoading }: Props) {
 
                         {/* Footer */}
                         <div className="flex items-center justify-between pt-2 border-t border-[var(--color-border)]">
-                            <VisionUploadButton onResult={handleVisionResult} label="Importar print" />
+                            <VisionUploadButton onResult={handleVisionResult} label={txt('Importar print', 'Import screenshot')} />
                             <div className="flex gap-2">
-                                <button type="button" onClick={onClose} className="btn btn-ghost">Cancelar</button>
+                                <button type="button" onClick={onClose} className="btn btn-ghost">{txt('Cancelar', 'Cancel')}</button>
                                 <button
                                     type="submit"
                                     disabled={!isValid || isLoading || fetchingPrice}
                                     className="btn btn-primary"
                                 >
-                                    {isLoading ? <Loader2 size={14} className="animate-spin" /> : 'Guardar'}
+                                    {isLoading ? <Loader2 size={14} className="animate-spin" /> : txt('Guardar', 'Save')}
                                 </button>
                             </div>
                         </div>

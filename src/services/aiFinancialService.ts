@@ -10,7 +10,7 @@ interface KeywordRule {
 
 const KEYWORD_RULES: KeywordRule[] = [
     // Expenses
-    { keywords: ['continente', 'pingo doce', 'lidl', 'aldi', 'mercadona', 'supermercado', 'mercearia', 'minipreço'], category: 'Alimentação', type: 'expense' },
+    { keywords: ['continente', 'pingo doce', 'lidl', 'aldi', 'mercadona', 'supermercado', 'hipermercado', 'mercearia', 'minipreço'], category: 'Alimentação', type: 'expense' },
     { keywords: ['mcdonalds', 'burger king', 'pizza', 'sushi', 'restaurante', 'café', 'padaria', 'pastelaria', 'jantar', 'almoço', 'snack'], category: 'Alimentação', type: 'expense' },
     { keywords: ['uber', 'bolt', 'taxi', 'gasolina', 'gasóleo', 'combustível', 'portagem', 'estacionamento', 'metro', 'comboio', 'autocarro', 'cp', 'galp', 'bp', 'repsol'], category: 'Transporte', type: 'expense' },
     { keywords: ['farmácia', 'hospital', 'médico', 'dentista', 'consulta', 'clínica', 'saúde', 'ótica', 'óculos'], category: 'Saúde', type: 'expense' },
@@ -20,7 +20,7 @@ const KEYWORD_RULES: KeywordRule[] = [
     { keywords: ['amazon prime', 'icloud', 'google one', 'chatgpt', 'github', 'subscription', 'assinatura', 'subscrição', 'mensalidade'], category: 'Subscriptions', type: 'expense' },
 
     // Income
-    { keywords: ['salário', 'vencimento', 'ordenado', 'pagamento empresa', 'nómina'], category: 'Salário', type: 'income' },
+    { keywords: ['salário', 'vencimento', 'ordenado', 'pagamento empresa', 'nómina', 'receita'], category: 'Salário', type: 'income' },
     { keywords: ['freelance', 'projeto', 'fatura emitida', 'recibo verde', 'trabalho independente'], category: 'Freelance', type: 'income' },
     { keywords: ['dividendo', 'juro', 'rendimento', 'etf', 'ação', 'crypto gain', 'staking'], category: 'Investimentos', type: 'income' },
     { keywords: ['reembolso', 'devolução', 'cashback', 'refund'], category: 'Reembolso', type: 'income' },
@@ -28,11 +28,20 @@ const KEYWORD_RULES: KeywordRule[] = [
     // Bills
     { keywords: ['renda', 'aluguer', 'hipoteca', 'prestação casa'], category: 'Renda', type: 'bill' },
     { keywords: ['edp', 'eletricidade', 'luz', 'energia'], category: 'Eletricidade', type: 'bill' },
+    { keywords: ['gás', 'gas', 'gás natural', 'gas natural', 'galp energia', 'goldenergy'], category: 'Gás', type: 'bill' },
     { keywords: ['água', 'epal', 'saneamento'], category: 'Água', type: 'bill' },
     { keywords: ['internet', 'fibra', 'router', 'wi-fi', 'meo', 'nos', 'vodafone'], category: 'Internet', type: 'bill' },
     { keywords: ['seguro', 'allianz', 'fidelidade', 'tranquilidade', 'ageas', 'ocidental'], category: 'Seguro', type: 'bill' },
     { keywords: ['telecomunicações', 'telemóvel', 'telefone', 'plano móvel'], category: 'Telecomunicações', type: 'bill' },
 ]
+
+function normalizeForMatch(value: string): string {
+    return value
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .trim()
+}
 
 /**
  * Suggest a category based on description text using local heuristics.
@@ -41,13 +50,13 @@ const KEYWORD_RULES: KeywordRule[] = [
 export function suggestCategory(description: string, entryType: EntryType): CategorySuggestion | null {
     if (!description || description.trim().length < 2) return null
 
-    const lower = description.toLowerCase().trim()
+    const normalizedDescription = normalizeForMatch(description)
 
     for (const rule of KEYWORD_RULES) {
         if (rule.type !== entryType) continue
 
         for (const keyword of rule.keywords) {
-            if (lower.includes(keyword)) {
+            if (normalizedDescription.includes(normalizeForMatch(keyword))) {
                 return {
                     category: rule.category,
                     confidence: keyword.length >= 5 ? 0.9 : 0.7,
@@ -58,6 +67,28 @@ export function suggestCategory(description: string, entryType: EntryType): Cate
     }
 
     return null
+}
+
+export function inferEntryFromText(text: string): { type: EntryType; category: string; confidence: number } | null {
+    if (!text || text.trim().length < 2) return null
+
+    const types: EntryType[] = ['expense', 'bill', 'income']
+    let best: { type: EntryType; category: string; confidence: number } | null = null
+
+    for (const type of types) {
+        const suggestion = suggestCategory(text, type)
+        if (!suggestion) continue
+
+        if (!best || suggestion.confidence > best.confidence) {
+            best = {
+                type,
+                category: suggestion.category,
+                confidence: suggestion.confidence,
+            }
+        }
+    }
+
+    return best
 }
 
 /**
@@ -199,4 +230,3 @@ export function getProactiveInsights(
 
     return insights
 }
-

@@ -1,6 +1,7 @@
 import { Moon, Sun, Monitor } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useThemeStore } from '@/stores/themeStore'
+import { useLocaleText } from '@/i18n/useLocaleText'
 
 interface ThemeToggleProps {
     compact?: boolean
@@ -8,6 +9,7 @@ interface ThemeToggleProps {
 }
 
 export function ThemeToggle({ compact = false, className }: ThemeToggleProps) {
+    const { txt } = useLocaleText()
     const { mode, setMode } = useThemeStore()
 
     const cycle = () => {
@@ -16,7 +18,7 @@ export function ThemeToggle({ compact = false, className }: ThemeToggleProps) {
     }
 
     const Icon = mode === 'dark' ? Moon : mode === 'light' ? Sun : Monitor
-    const label = mode === 'dark' ? 'Dark' : mode === 'light' ? 'Light' : 'Auto'
+    const label = mode === 'dark' ? txt('Escuro', 'Dark') : mode === 'light' ? txt('Claro', 'Light') : txt('Auto', 'Auto')
 
     return (
         <button
@@ -24,8 +26,8 @@ export function ThemeToggle({ compact = false, className }: ThemeToggleProps) {
             className={`flex items-center gap-2.5 h-10 rounded-xl transition-all duration-200 cursor-pointer
                 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]
                 ${compact ? 'justify-center w-10' : 'px-3 w-full'} ${className ?? ''}`}
-            aria-label={`Theme: ${label}`}
-            title={`Theme: ${label}`}
+            aria-label={`${txt('Tema', 'Theme')}: ${label}`}
+            title={`${txt('Tema', 'Theme')}: ${label}`}
         >
             <AnimatePresence mode="wait" initial={false}>
                 <motion.div
@@ -45,19 +47,20 @@ export function ThemeToggle({ compact = false, className }: ThemeToggleProps) {
 
 /** Full three-option segmented control for Settings page */
 export function ThemeSelector({ className }: { className?: string }) {
+    const { txt } = useLocaleText()
     const { mode, setMode } = useThemeStore()
 
     const options: { value: 'light' | 'dark' | 'system'; icon: typeof Sun; label: string }[] = [
-        { value: 'light', icon: Sun, label: 'Light' },
-        { value: 'dark', icon: Moon, label: 'Dark' },
-        { value: 'system', icon: Monitor, label: 'Auto' },
+        { value: 'light', icon: Sun, label: txt('Claro', 'Light') },
+        { value: 'dark', icon: Moon, label: txt('Escuro', 'Dark') },
+        { value: 'system', icon: Monitor, label: txt('Auto', 'Auto') },
     ]
 
     return (
         <div
             className={`inline-flex items-center gap-1 p-1 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] ${className ?? ''}`}
             role="radiogroup"
-            aria-label="Theme selection"
+            aria-label={txt('Selecao de tema', 'Theme selection')}
         >
             {options.map(opt => {
                 const isActive = mode === opt.value

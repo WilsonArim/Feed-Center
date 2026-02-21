@@ -1,20 +1,37 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router'
+import { Loader2 } from 'lucide-react'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClient } from '@/lib/queryClient'
 import { AuthProvider } from '@/components/core/AuthProvider'
 import { ProtectedRoute } from '@/components/core/ProtectedRoute'
 import { isSupabaseConfigured, supabaseConfigError } from '@/lib/supabase'
 import { AppLayout } from '@/components/core/AppLayout'
-import { LoginPage } from '@/pages/LoginPage'
-import { RegisterPage } from '@/pages/RegisterPage'
-import { DashboardPage } from '@/pages/DashboardPage'
-import { FinanceiroPage } from '@/pages/FinanceiroPage'
-import { LinksPage } from '@/pages/LinksPage'
-import { TodoPage } from '@/pages/TodoPage'
-import { CryptoPage } from '@/pages/CryptoPage'
-import { CryptoDeFiPage } from '@/pages/CryptoDeFiPage'
-import { SettingsPage } from '@/pages/SettingsPage'
-import { NewsPage } from '@/pages/NewsPage'
+
+const LoginPage = lazy(async () => ({ default: (await import('@/pages/LoginPage')).LoginPage }))
+const RegisterPage = lazy(async () => ({ default: (await import('@/pages/RegisterPage')).RegisterPage }))
+const DashboardPage = lazy(async () => ({ default: (await import('@/pages/DashboardPage')).DashboardPage }))
+const TodayPage = lazy(async () => ({ default: (await import('@/pages/TodayPage')).TodayPage }))
+const StartGuidePage = lazy(async () => ({ default: (await import('@/pages/StartGuidePage')).StartGuidePage }))
+const HomeRedirectPage = lazy(async () => ({ default: (await import('@/pages/HomeRedirectPage')).HomeRedirectPage }))
+const FinanceiroPage = lazy(async () => ({ default: (await import('@/pages/FinanceiroPage')).FinanceiroPage }))
+const LinksPage = lazy(async () => ({ default: (await import('@/pages/LinksPage')).LinksPage }))
+const TodoPage = lazy(async () => ({ default: (await import('@/pages/TodoPage')).TodoPage }))
+const CryptoPage = lazy(async () => ({ default: (await import('@/pages/CryptoPage')).CryptoPage }))
+const CryptoDeFiPage = lazy(async () => ({ default: (await import('@/pages/CryptoDeFiPage')).CryptoDeFiPage }))
+const SettingsPage = lazy(async () => ({ default: (await import('@/pages/SettingsPage')).SettingsPage }))
+const NewsPage = lazy(async () => ({ default: (await import('@/pages/NewsPage')).NewsPage }))
+
+function RouteLoadingFallback() {
+    return (
+        <div className="min-h-dvh flex items-center justify-center p-6 bg-[var(--bg-deep)] text-[var(--text-primary)]">
+            <div className="inline-flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+                <Loader2 size={16} className="animate-spin" />
+                A carregar modulo...
+            </div>
+        </div>
+    )
+}
 
 export default function App() {
     if (!isSupabaseConfigured) {
@@ -39,31 +56,36 @@ export default function App() {
         <QueryClientProvider client={queryClient}>
             <AuthProvider>
                 <BrowserRouter>
-                    <Routes>
-                        {/* Public */}
-                        <Route path="/login" element={<LoginPage />} />
-                        <Route path="/register" element={<RegisterPage />} />
+                    <Suspense fallback={<RouteLoadingFallback />}>
+                        <Routes>
+                            {/* Public */}
+                            <Route path="/login" element={<LoginPage />} />
+                            <Route path="/register" element={<RegisterPage />} />
 
-                        {/* Protected */}
-                        <Route
-                            element={
-                                <ProtectedRoute>
-                                    <AppLayout />
-                                </ProtectedRoute>
-                            }
-                        >
-                            <Route index element={<DashboardPage />} />
-                            <Route path="financeiro" element={<FinanceiroPage />} />
-                            <Route path="todo" element={<TodoPage />} />
-                            <Route path="links" element={<LinksPage />} />
-                            <Route path="crypto">
-                                <Route index element={<CryptoPage />} />
-                                <Route path="defi" element={<CryptoDeFiPage />} />
+                            {/* Protected */}
+                            <Route
+                                element={
+                                    <ProtectedRoute>
+                                        <AppLayout />
+                                    </ProtectedRoute>
+                                }
+                            >
+                                <Route index element={<HomeRedirectPage />} />
+                                <Route path="start" element={<StartGuidePage />} />
+                                <Route path="today" element={<TodayPage />} />
+                                <Route path="dashboard" element={<DashboardPage />} />
+                                <Route path="financeiro" element={<FinanceiroPage />} />
+                                <Route path="todo" element={<TodoPage />} />
+                                <Route path="links" element={<LinksPage />} />
+                                <Route path="crypto">
+                                    <Route index element={<CryptoPage />} />
+                                    <Route path="defi" element={<CryptoDeFiPage />} />
+                                </Route>
+                                <Route path="settings" element={<SettingsPage />} />
+                                <Route path="news" element={<NewsPage />} />
                             </Route>
-                            <Route path="settings" element={<SettingsPage />} />
-                            <Route path="news" element={<NewsPage />} />
-                        </Route>
-                    </Routes>
+                        </Routes>
+                    </Suspense>
                 </BrowserRouter>
             </AuthProvider>
         </QueryClientProvider>

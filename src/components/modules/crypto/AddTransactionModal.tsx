@@ -4,6 +4,7 @@ import { X, Search, Loader2, Hash, PenLine, Coins, ArrowDownUp, Repeat2, Gift, A
 import { StardustButton } from '@/components/ui/StardustButton'
 import { coinGeckoService, type CoinGeckoToken } from '@/services/coinGeckoService'
 import type { CreateTransactionInput, CryptoWallet, TransactionType, TransactionSource } from '@/types'
+import { useLocaleText } from '@/i18n/useLocaleText'
 
 interface Props {
     isOpen: boolean
@@ -13,18 +14,19 @@ interface Props {
     wallets: CryptoWallet[]
 }
 
-const txTypes: { value: TransactionType; label: string; icon: React.ReactNode }[] = [
-    { value: 'buy', label: 'Compra', icon: <Coins size={13} /> },
-    { value: 'sell', label: 'Venda', icon: <ArrowDownUp size={13} /> },
-    { value: 'swap', label: 'Swap', icon: <Repeat2 size={13} /> },
-    { value: 'airdrop', label: 'Airdrop', icon: <Gift size={13} /> },
-    { value: 'transfer_in', label: 'Transfer', icon: <ArrowDownToLine size={13} /> },
+const txTypes: { value: TransactionType; icon: React.ReactNode }[] = [
+    { value: 'buy', icon: <Coins size={13} /> },
+    { value: 'sell', icon: <ArrowDownUp size={13} /> },
+    { value: 'swap', icon: <Repeat2 size={13} /> },
+    { value: 'airdrop', icon: <Gift size={13} /> },
+    { value: 'transfer_in', icon: <ArrowDownToLine size={13} /> },
 ]
 
 const exchanges = ['Binance', 'Kraken', 'Coinbase', 'Phantom', 'MetaMask', 'Raydium', 'Jupiter', 'Uniswap', 'Outro']
 const pairs = ['EUR', 'USD', 'USDT', 'USDC', 'BTC', 'ETH', 'SOL']
 
 export function AddTransactionModal({ isOpen, onClose, onSubmit, isLoading, wallets }: Props) {
+    const { txt } = useLocaleText()
     // Dual-path tab
     const [tab, setTab] = useState<'manual' | 'hash'>('manual')
 
@@ -55,6 +57,14 @@ export function AddTransactionModal({ isOpen, onClose, onSubmit, isLoading, wall
     const [analyzing, setAnalyzing] = useState(false)
     const [analysisResult, setAnalysisResult] = useState<{ summary: string; confidence: string } | null>(null)
 
+    const getTxTypeLabel = (type: TransactionType) => {
+        if (type === 'buy') return txt('Compra', 'Buy')
+        if (type === 'sell') return txt('Venda', 'Sell')
+        if (type === 'swap') return 'Swap'
+        if (type === 'airdrop') return 'Airdrop'
+        return txt('Transfer', 'Transfer')
+    }
+
     const handleAnalyzeHash = async () => {
         if (!txHash.trim()) return
         setAnalyzing(true)
@@ -62,13 +72,14 @@ export function AddTransactionModal({ isOpen, onClose, onSubmit, isLoading, wall
 
         // Inline hash format analysis (v1)
         const hash = txHash.trim()
-        let chain = 'desconhecida'
-        if (hash.startsWith('0x') && hash.length === 66) chain = 'ethereum'
-        else if (hash.length >= 80 && hash.length <= 100) chain = 'solana'
+        let detected: 'unknown' | 'ethereum' | 'solana' = 'unknown'
+        if (hash.startsWith('0x') && hash.length === 66) detected = 'ethereum'
+        else if (hash.length >= 80 && hash.length <= 100) detected = 'solana'
+        const chain = detected === 'unknown' ? txt('desconhecida', 'unknown') : detected
 
         setAnalysisResult({
-            summary: `Hash detectado como ${chain}. Preenche os campos abaixo manualmente. Auto-parse via Solscan/Etherscan em breve.`,
-            confidence: chain !== 'desconhecida' ? 'medium' : 'low',
+            summary: txt(`Hash detectado como ${chain}. Preenche os campos abaixo manualmente. Auto-parse via Solscan/Etherscan em breve.`, `Hash detected as ${chain}. Fill in the fields below manually. Auto-parse via Solscan/Etherscan coming soon.`),
+            confidence: detected !== 'unknown' ? 'medium' : 'low',
         })
         setAnalyzing(false)
     }
@@ -170,9 +181,9 @@ export function AddTransactionModal({ isOpen, onClose, onSubmit, isLoading, wall
                         {/* Header */}
                         <div className="flex items-center justify-between mb-5">
                             <h2 id="add-transaction-modal-title" className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                                📝 Nova Transação
+                                📝 {txt('Nova Transacao', 'New Transaction')}
                             </h2>
-                            <button onClick={onClose} className="p-1 hover:bg-white/5 rounded transition-colors cursor-pointer" aria-label="Fechar modal">
+                            <button onClick={onClose} className="p-1 hover:bg-white/5 rounded transition-colors cursor-pointer" aria-label={txt('Fechar modal', 'Close modal')}>
                                 <X size={18} style={{ color: 'var(--color-text-muted)' }} />
                             </button>
                         </div>
@@ -187,7 +198,7 @@ export function AddTransactionModal({ isOpen, onClose, onSubmit, isLoading, wall
                                     : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]'
                                     }`}
                             >
-                                <PenLine size={14} /> ✍️ Manual
+                                <PenLine size={14} /> ✍️ {txt('Manual', 'Manual')}
                             </button>
                             <button
                                 type="button"
@@ -197,7 +208,7 @@ export function AddTransactionModal({ isOpen, onClose, onSubmit, isLoading, wall
                                     : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]'
                                     }`}
                             >
-                                <Hash size={14} /> 🔗 Colar Hash
+                                <Hash size={14} /> 🔗 {txt('Colar Hash', 'Paste Hash')}
                             </button>
                         </div>
 
@@ -207,14 +218,14 @@ export function AddTransactionModal({ isOpen, onClose, onSubmit, isLoading, wall
                             {tab === 'hash' && (
                                 <div className="p-4 rounded-[var(--radius-lg)] border border-dashed border-[var(--color-accent)]/30 bg-[var(--color-accent)]/5 space-y-3">
                                     <label className={labelCls} style={{ color: 'var(--color-accent)' }}>
-                                        🔗 Transaction Hash
+                                        🔗 {txt('Transaction Hash', 'Transaction Hash')}
                                     </label>
                                     <div className="flex gap-2">
                                         <input
                                             type="text"
                                             value={txHash}
                                             onChange={e => { setTxHash(e.target.value); setAnalysisResult(null) }}
-                                            placeholder="Cole o hash da transação aqui..."
+                                            placeholder={txt('Cole o hash da transacao aqui...', 'Paste the transaction hash here...')}
                                             className={`${inputCls} flex-1`}
                                             style={{ color: 'var(--color-text-primary)' }}
                                             autoFocus
@@ -226,7 +237,7 @@ export function AddTransactionModal({ isOpen, onClose, onSubmit, isLoading, wall
                                             disabled={!txHash.trim() || analyzing}
                                             icon={analyzing ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
                                         >
-                                            {analyzing ? 'A analisar...' : 'Analisar'}
+                                            {analyzing ? txt('A analisar...', 'Analyzing...') : txt('Analisar', 'Analyze')}
                                         </StardustButton>
                                     </div>
 
@@ -235,7 +246,7 @@ export function AddTransactionModal({ isOpen, onClose, onSubmit, isLoading, wall
                                         <div className="p-3 rounded-[var(--radius-md)] bg-white/5 border border-white/10">
                                             <div className="flex items-center gap-2 mb-1.5">
                                                 <Sparkles size={12} className="text-amber-400" />
-                                                <span className="text-xs font-bold opacity-70">Copilot Buggy</span>
+                                                <span className="text-xs font-bold opacity-70">{txt('Copilot Buggy', 'Buggy Copilot')}</span>
                                                 <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${analysisResult.confidence === 'high' ? 'bg-green-500/10 text-green-400'
                                                     : analysisResult.confidence === 'medium' ? 'bg-yellow-500/10 text-yellow-400'
                                                         : 'bg-red-500/10 text-red-400'
@@ -263,7 +274,7 @@ export function AddTransactionModal({ isOpen, onClose, onSubmit, isLoading, wall
                                             : 'bg-white/5 text-[var(--color-text-muted)] hover:bg-white/10'
                                             }`}
                                     >
-                                        {t.icon} {t.label}
+                                        {t.icon} {getTxTypeLabel(t.value)}
                                     </button>
                                 ))}
                             </div>
@@ -271,7 +282,7 @@ export function AddTransactionModal({ isOpen, onClose, onSubmit, isLoading, wall
                             {/* Wallet Selector (if multiple) */}
                             {wallets.length > 1 && (
                                 <div>
-                                    <label className={labelCls} style={{ color: 'var(--color-text-secondary)' }}>Carteira</label>
+                                    <label className={labelCls} style={{ color: 'var(--color-text-secondary)' }}>{txt('Carteira', 'Wallet')}</label>
                                     <select value={walletId} onChange={e => setWalletId(e.target.value)}
                                         className={`${inputCls} cursor-pointer`} style={{ color: 'var(--color-text-primary)' }}>
                                         {wallets.map(w => (
@@ -283,7 +294,7 @@ export function AddTransactionModal({ isOpen, onClose, onSubmit, isLoading, wall
 
                             {/* Token Search */}
                             <div className="relative">
-                                <label className={labelCls} style={{ color: 'var(--color-text-secondary)' }}>Token *</label>
+                                <label className={labelCls} style={{ color: 'var(--color-text-secondary)' }}>{txt('Token', 'Token')} *</label>
                                 <div className="relative">
                                     <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
                                     {searching && <Loader2 size={14} className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-[var(--color-text-muted)]" />}
@@ -291,7 +302,7 @@ export function AddTransactionModal({ isOpen, onClose, onSubmit, isLoading, wall
                                         type="text" value={query}
                                         onChange={e => { setQuery(e.target.value); setSelected(null) }}
                                         onFocus={() => results.length > 0 && setShowDropdown(true)}
-                                        placeholder="Pesquisar token (ex: SOL, Ethereum...)"
+                                        placeholder={txt('Pesquisar token (ex: SOL, Ethereum...)', 'Search token (ex: SOL, Ethereum...)')}
                                         className={`${inputCls} pl-9`}
                                         style={{ color: 'var(--color-text-primary)' }}
                                         autoComplete="off"
@@ -329,12 +340,12 @@ export function AddTransactionModal({ isOpen, onClose, onSubmit, isLoading, wall
                             {/* Row: Quantity + Price */}
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className={labelCls} style={{ color: 'var(--color-text-secondary)' }}>Quantidade *</label>
+                                    <label className={labelCls} style={{ color: 'var(--color-text-secondary)' }}>{txt('Quantidade', 'Quantity')} *</label>
                                     <input type="number" step="any" value={quantity} onChange={e => setQuantity(e.target.value)}
                                         placeholder="0.00" className={inputCls} style={{ color: 'var(--color-text-primary)' }} />
                                 </div>
                                 <div>
-                                    <label className={labelCls} style={{ color: 'var(--color-text-secondary)' }}>Preço Unitário (€)</label>
+                                    <label className={labelCls} style={{ color: 'var(--color-text-secondary)' }}>{txt('Preco Unitario (€)', 'Unit Price (€)')}</label>
                                     <input type="number" step="any" value={pricePerUnit} onChange={e => setPricePerUnit(e.target.value)}
                                         placeholder="148.50" className={inputCls} style={{ color: 'var(--color-text-primary)' }} />
                                 </div>
@@ -343,7 +354,7 @@ export function AddTransactionModal({ isOpen, onClose, onSubmit, isLoading, wall
                             {/* Row: Date + Exchange */}
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className={labelCls} style={{ color: 'var(--color-text-secondary)' }}>Data *</label>
+                                    <label className={labelCls} style={{ color: 'var(--color-text-secondary)' }}>{txt('Data', 'Date')} *</label>
                                     <input type="date" value={executedAt} onChange={e => setExecutedAt(e.target.value)}
                                         className={`${inputCls} cursor-pointer`} style={{ color: 'var(--color-text-primary)' }} />
                                 </div>
@@ -351,7 +362,7 @@ export function AddTransactionModal({ isOpen, onClose, onSubmit, isLoading, wall
                                     <label className={labelCls} style={{ color: 'var(--color-text-secondary)' }}>Exchange</label>
                                     <select value={exchange} onChange={e => setExchange(e.target.value)}
                                         className={`${inputCls} cursor-pointer`} style={{ color: 'var(--color-text-primary)' }}>
-                                        <option value="">Selecionar...</option>
+                                        <option value="">{txt('Selecionar...', 'Select...')}</option>
                                         {exchanges.map(ex => <option key={ex} value={ex}>{ex}</option>)}
                                     </select>
                                 </div>
@@ -360,7 +371,7 @@ export function AddTransactionModal({ isOpen, onClose, onSubmit, isLoading, wall
                             {/* Row: Pair + Fee */}
                             <div className="grid grid-cols-3 gap-3">
                                 <div>
-                                    <label className={labelCls} style={{ color: 'var(--color-text-secondary)' }}>Par</label>
+                                    <label className={labelCls} style={{ color: 'var(--color-text-secondary)' }}>{txt('Par', 'Pair')}</label>
                                     <select value={pair} onChange={e => setPair(e.target.value)}
                                         className={`${inputCls} cursor-pointer`} style={{ color: 'var(--color-text-primary)' }}>
                                         {pairs.map(p => <option key={p} value={p}>{p}</option>)}
@@ -380,9 +391,9 @@ export function AddTransactionModal({ isOpen, onClose, onSubmit, isLoading, wall
 
                             {/* Notes */}
                             <div>
-                                <label className={labelCls} style={{ color: 'var(--color-text-secondary)' }}>Notas</label>
+                                <label className={labelCls} style={{ color: 'var(--color-text-secondary)' }}>{txt('Notas', 'Notes')}</label>
                                 <input type="text" value={notes} onChange={e => setNotes(e.target.value)}
-                                    placeholder="Ex: DCA semanal" className={inputCls} style={{ color: 'var(--color-text-primary)' }} />
+                                    placeholder={txt('Ex: DCA semanal', 'Ex: Weekly DCA')} className={inputCls} style={{ color: 'var(--color-text-primary)' }} />
                             </div>
 
                             {/* Source Badge Preview */}
@@ -391,19 +402,19 @@ export function AddTransactionModal({ isOpen, onClose, onSubmit, isLoading, wall
                                     ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                                     : 'bg-white/5 text-white/40 border border-white/10'
                                     }`}>
-                                    {source === 'hash_verified' ? '🔗 Hash Verified' : '✍️ Manual'}
+                                    {source === 'hash_verified' ? '🔗 Hash Verified' : `✍️ ${txt('Manual', 'Manual')}`}
                                 </span>
                                 <span className="text-[10px] opacity-30">
-                                    Esta transação será marcada como {source === 'hash_verified' ? 'verificada por hash' : 'inserida manualmente'}
+                                    {txt('Esta transacao sera marcada como', 'This transaction will be marked as')} {source === 'hash_verified' ? txt('verificada por hash', 'hash-verified') : txt('inserida manualmente', 'manually inserted')}
                                 </span>
                             </div>
 
                             {/* Actions */}
                             <div className="flex justify-end gap-3 pt-2">
-                                <StardustButton type="button" variant="ghost" size="sm" onClick={onClose}>Cancelar</StardustButton>
+                                <StardustButton type="button" variant="ghost" size="sm" onClick={onClose}>{txt('Cancelar', 'Cancel')}</StardustButton>
                                 <StardustButton type="submit" size="sm" disabled={isLoading || !isValid}
                                     icon={isLoading ? <Loader2 size={14} className="animate-spin" /> : undefined}>
-                                    Registar
+                                    {txt('Registar', 'Submit')}
                                 </StardustButton>
                             </div>
                         </form>

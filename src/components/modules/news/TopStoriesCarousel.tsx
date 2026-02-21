@@ -1,8 +1,10 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight, Flame } from 'lucide-react'
 import type { NewsItem } from '@/services/newsService'
 import { timeAgo } from '@/services/newsService'
+import { useLocaleText } from '@/i18n/useLocaleText'
+import { Magnetic } from '@/components/ui/Magnetic'
 
 const TOPIC_COLORS: Record<string, string> = {
     AI: '#3b82f6',
@@ -19,6 +21,7 @@ interface Props {
 }
 
 export function TopStoriesCarousel({ items, isLoading }: Props) {
+    const { txt } = useLocaleText()
     const [current, setCurrent] = useState(0)
     const total = items.length
 
@@ -47,12 +50,11 @@ export function TopStoriesCarousel({ items, isLoading }: Props) {
 
     if (isLoading) {
         return (
-            <div className="mb-8">
-                <h2 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: 'var(--color-text-primary)' }}>
-                    <Flame size={18} style={{ color: '#f59e0b' }} /> Top Stories
+            <div className="mb-10">
+                <h2 className="text-xl md:text-2xl font-black tracking-tight mb-6 flex items-center gap-3 text-white drop-shadow-md">
+                    <Flame size={24} className="text-rose-500 drop-shadow-[0_0_12px_rgba(244,63,94,0.6)]" /> {txt('Top Stories', 'Top Stories')}
                 </h2>
-                <div className="rounded-2xl p-6 animate-pulse h-44"
-                    style={{ background: 'var(--color-bg-glass)', border: '1px solid var(--color-border)' }} />
+                <div className="rounded-3xl p-6 animate-pulse h-56 bg-white/5 border border-transparent shadow-[0_4px_30px_rgba(0,0,0,0.2)]" />
             </div>
         )
     }
@@ -63,9 +65,9 @@ export function TopStoriesCarousel({ items, isLoading }: Props) {
     const topicColor = TOPIC_COLORS[item.topic_primary] || '#64748b'
 
     return (
-        <section className="mb-8" role="region" aria-label="Top Stories" aria-roledescription="carousel">
-            <h2 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: 'var(--color-text-primary)' }}>
-                <Flame size={18} style={{ color: '#f59e0b' }} /> Top Stories
+        <section className="mb-12" role="region" aria-label={txt('Top Stories', 'Top Stories')} aria-roledescription="carousel">
+            <h2 className="text-xl md:text-2xl font-black tracking-tight mb-6 flex items-center gap-3 text-white drop-shadow-md">
+                <Flame size={24} className="text-rose-500 drop-shadow-[0_0_12px_rgba(244,63,94,0.6)]" /> {txt('Top Stories', 'Top Stories')}
             </h2>
 
             <div className="relative"
@@ -73,86 +75,103 @@ export function TopStoriesCarousel({ items, isLoading }: Props) {
                 onTouchEnd={handleTouchEnd}
             >
                 {/* Card */}
-                <motion.a
-                    key={current}
-                    href={item.source_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.25 }}
-                    className="block rounded-2xl p-5 md:p-6 cursor-pointer group"
-                    style={{
-                        background: `linear-gradient(135deg, ${topicColor}15, var(--color-bg-glass))`,
-                        border: `1px solid ${topicColor}30`,
-                    }}
-                >
-                    <div className="flex items-center gap-2 mb-3">
-                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
-                            style={{ background: `${topicColor}25`, color: topicColor }}>
-                            {item.topic_primary}
-                        </span>
-                        <span className="text-[10px] font-mono" style={{ color: topicColor }}>
-                            {item.score.toFixed(2)}
-                        </span>
-                        <span className="text-[10px]" style={{ color: 'var(--color-text-muted)' }}>
-                            · {item.source_name} · {timeAgo(item.published_at)}
-                        </span>
-                    </div>
+                <AnimatePresence mode="wait">
+                    <motion.a
+                        key={current}
+                        href={item.source_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        initial={{ opacity: 0, scale: 0.98, x: 20 }}
+                        animate={{ opacity: 1, scale: 1, x: 0 }}
+                        exit={{ opacity: 0, scale: 0.98, x: -20 }}
+                        transition={{ duration: 0.3, ease: 'easeOut' }}
+                        className="block rounded-3xl p-6 md:p-8 cursor-pointer group shadow-[0_10px_40px_rgba(0,0,0,0.3)] hover:shadow-[0_15px_50px_rgba(0,0,0,0.4)] transition-all duration-300 relative overflow-hidden"
+                        style={{
+                            background: `linear-gradient(135deg, ${topicColor}20, rgba(255,255,255,0.03))`,
+                            border: `1px solid ${topicColor}30`,
+                        }}
+                    >
+                        {/* Glow effect */}
+                        <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-[100px] opacity-20 pointer-events-none" style={{ background: topicColor }} />
 
-                    <h3 className="text-xl md:text-2xl font-bold leading-tight mb-2 group-hover:underline underline-offset-2"
-                        style={{ color: 'var(--color-text-primary)' }}>
-                        {item.title}
-                    </h3>
+                        <div className="relative z-10">
+                            <div className="flex items-center gap-3 mb-4 flex-wrap">
+                                <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-[0_0_15px_currentColor]"
+                                    style={{ background: `${topicColor}25`, color: topicColor }}>
+                                    {item.topic_primary}
+                                </span>
+                                <span className="text-xs font-mono font-bold" style={{ color: topicColor }}>
+                                    {item.score.toFixed(2)}
+                                </span>
+                                <span className="opacity-40 text-white">·</span>
+                                <span className="text-xs font-bold tracking-wide uppercase text-[var(--color-text-muted)] drop-shadow-sm">
+                                    {item.source_name}
+                                </span>
+                                <span className="opacity-40 text-white">·</span>
+                                <span className="text-xs font-bold tracking-wide uppercase text-[var(--color-text-muted)] drop-shadow-sm">
+                                    {timeAgo(item.published_at)}
+                                </span>
+                            </div>
 
-                    <p className="text-sm leading-relaxed line-clamp-2 mb-3"
-                        style={{ color: 'var(--color-text-secondary)' }}>
-                        {item.summary}
-                    </p>
+                            <h3 className="text-2xl md:text-3xl font-black leading-tight tracking-tight mb-4 text-white drop-shadow-md group-hover:drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-all">
+                                {item.title}
+                            </h3>
 
-                    {item.why && (
-                        <p className="text-[11px] opacity-50" style={{ color: 'var(--color-text-muted)' }}>
-                            💡 {item.why}
-                        </p>
-                    )}
-                </motion.a>
+                            <p className="text-sm md:text-base leading-relaxed line-clamp-2 md:line-clamp-3 mb-4 text-[var(--color-text-secondary)] font-medium">
+                                {item.summary}
+                            </p>
+
+                            {item.why && (
+                                <p className="text-xs font-bold text-white/50 tracking-wide">
+                                    <span className="opacity-70 mr-1">💡</span> {item.why}
+                                </p>
+                            )}
+                        </div>
+                    </motion.a>
+                </AnimatePresence>
 
                 {/* Navigation arrows */}
                 {total > 1 && (
                     <>
-                        <button
-                            onClick={() => goTo(current - 1)}
-                            disabled={current === 0}
-                            className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center transition-all disabled:opacity-20 cursor-pointer hover:bg-white/10"
-                            style={{ background: 'var(--color-bg-primary)', border: '1px solid var(--color-border)' }}
-                            aria-label="Story anterior"
-                        >
-                            <ChevronLeft size={16} />
-                        </button>
-                        <button
-                            onClick={() => goTo(current + 1)}
-                            disabled={current === total - 1}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center transition-all disabled:opacity-20 cursor-pointer hover:bg-white/10"
-                            style={{ background: 'var(--color-bg-primary)', border: '1px solid var(--color-border)' }}
-                            aria-label="Próxima story"
-                        >
-                            <ChevronRight size={16} />
-                        </button>
+                        <div className="absolute -left-4 top-1/2 -translate-y-1/2 z-20">
+                            <Magnetic strength={0.4}>
+                                <button
+                                    onClick={() => goTo(current - 1)}
+                                    disabled={current === 0}
+                                    className="w-10 h-10 rounded-full flex items-center justify-center transition-all disabled:opacity-20 disabled:scale-95 cursor-pointer bg-black/60 hover:bg-black/80 text-white backdrop-blur-md border border-white/10 shadow-[0_0_15px_rgba(0,0,0,0.5)]"
+                                    aria-label={txt('Story anterior', 'Previous story')}
+                                >
+                                    <ChevronLeft size={20} strokeWidth={2.5} />
+                                </button>
+                            </Magnetic>
+                        </div>
+                        <div className="absolute -right-4 top-1/2 -translate-y-1/2 z-20">
+                            <Magnetic strength={0.4}>
+                                <button
+                                    onClick={() => goTo(current + 1)}
+                                    disabled={current === total - 1}
+                                    className="w-10 h-10 rounded-full flex items-center justify-center transition-all disabled:opacity-20 disabled:scale-95 cursor-pointer bg-black/60 hover:bg-black/80 text-white backdrop-blur-md border border-white/10 shadow-[0_0_15px_rgba(0,0,0,0.5)]"
+                                    aria-label={txt('Proxima story', 'Next story')}
+                                >
+                                    <ChevronRight size={20} strokeWidth={2.5} />
+                                </button>
+                            </Magnetic>
+                        </div>
                     </>
                 )}
             </div>
 
             {/* Dots indicator */}
             {total > 1 && (
-                <div className="flex items-center justify-center gap-1.5 mt-3" role="tablist">
+                <div className="flex items-center justify-center gap-2 mt-5" role="tablist">
                     {items.map((_, i) => (
                         <button
                             key={i}
                             role="tab"
                             aria-selected={i === current}
                             onClick={() => goTo(i)}
-                            className={`rounded-full transition-all duration-200 cursor-pointer ${i === current ? 'w-6 h-2' : 'w-2 h-2 opacity-30'}`}
-                            style={{ background: i === current ? topicColor : 'var(--color-text-muted)' }}
+                            className={`rounded-full transition-all duration-300 cursor-pointer ${i === current ? 'w-8 h-1.5' : 'w-1.5 h-1.5 opacity-30 hover:opacity-100 hover:scale-125'}`}
+                            style={{ background: i === current ? topicColor : '#ffffff' }}
                         />
                     ))}
                 </div>

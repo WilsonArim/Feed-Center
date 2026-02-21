@@ -3,6 +3,8 @@ import { CSS } from '@dnd-kit/utilities'
 import { motion } from 'framer-motion'
 import { GripVertical, Clock, MoreHorizontal } from 'lucide-react'
 import type { Todo } from '@/types'
+import { useLocaleText } from '@/i18n/useLocaleText'
+import { Magnetic } from '@/components/ui/Magnetic'
 
 interface TaskCardProps {
     todo: Todo
@@ -17,6 +19,7 @@ const PRIORITY_COLORS = {
 }
 
 export function TaskCard({ todo, onEdit, isOverlay }: TaskCardProps) {
+    const { txt, isEnglish } = useLocaleText()
     const {
         setNodeRef,
         attributes,
@@ -34,6 +37,12 @@ export function TaskCard({ todo, onEdit, isOverlay }: TaskCardProps) {
         transition,
     }
 
+    const priorityLabel = todo.priority === 'high'
+        ? txt('Alta', 'High')
+        : todo.priority === 'medium'
+            ? txt('Media', 'Medium')
+            : txt('Baixa', 'Low')
+
     if (isDragging) {
         return (
             <div
@@ -50,51 +59,55 @@ export function TaskCard({ todo, onEdit, isOverlay }: TaskCardProps) {
             style={style}
             layoutId={isOverlay ? undefined : todo.id}
             className={`
-                group relative p-4 rounded-xl
-                border border-[var(--color-border)] bg-[var(--color-surface)]
-                hover:border-[var(--color-accent)]/30 hover:shadow-lg hover:shadow-[var(--color-accent)]/[0.03]
-                transition-all duration-200 cursor-default
-                ${isOverlay ? 'shadow-2xl shadow-black/40 scale-[1.03] rotate-[2deg] cursor-grabbing ring-1 ring-[var(--color-accent)]/30' : ''}
+                group relative p-5 rounded-2xl
+                bg-transparent border border-transparent
+                hover:bg-white/[0.03] hover:border-white/10 hover:shadow-[0_4px_30px_rgba(0,0,0,0.5)]
+                transition-all duration-300 cursor-default
+                ${isOverlay ? 'shadow-2xl shadow-black/80 scale-[1.05] rotate-[3deg] cursor-grabbing ring-1 ring-[var(--accent)]/50 bg-[#121212]/90 backdrop-blur-xl' : ''}
             `}
         >
             {/* Header: Priority & Actions */}
             <div className="flex items-center justify-between mb-2.5">
-                <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full border ${PRIORITY_COLORS[todo.priority]}`}>
-                    {todo.priority}
+                <span className={`text-[10px] uppercase font-bold tracking-[0.15em] px-2.5 py-1 rounded-full border ${PRIORITY_COLORS[todo.priority]} backdrop-blur-sm`}>
+                    {priorityLabel}
                 </span>
 
-                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
-                        {...attributes}
-                        {...listeners}
-                        className="p-1 hover:bg-[var(--color-bg-tertiary)] rounded-md cursor-grab active:cursor-grabbing"
-                        aria-label="Arrastar tarefa"
-                    >
-                        <GripVertical size={14} className="text-[var(--color-text-muted)]" />
-                    </button>
-                    {onEdit && (
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <Magnetic strength={0.3}>
                         <button
-                            onClick={() => onEdit(todo)}
-                            className="p-1 hover:bg-[var(--color-bg-tertiary)] rounded-md"
-                            aria-label="Editar tarefa"
+                            {...attributes}
+                            {...listeners}
+                            className="p-1.5 hover:bg-white/10 rounded-lg cursor-grab active:cursor-grabbing transition-colors"
+                            aria-label={txt('Arrastar tarefa', 'Drag task')}
                         >
-                            <MoreHorizontal size={14} className="text-[var(--color-text-muted)]" />
+                            <GripVertical size={16} className="text-[var(--color-text-muted)] group-hover:text-white transition-colors" />
                         </button>
+                    </Magnetic>
+                    {onEdit && (
+                        <Magnetic strength={0.3}>
+                            <button
+                                onClick={() => onEdit(todo)}
+                                className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
+                                aria-label={txt('Editar tarefa', 'Edit task')}
+                            >
+                                <MoreHorizontal size={16} className="text-[var(--color-text-muted)] group-hover:text-white transition-colors" />
+                            </button>
+                        </Magnetic>
                     )}
                 </div>
             </div>
 
             {/* Content */}
-            <h4 className="text-sm font-medium text-[var(--color-text-primary)] mb-1 line-clamp-2 leading-relaxed">
+            <h4 className="text-base font-bold text-white mb-2 line-clamp-2 leading-snug drop-shadow-md group-hover:text-[var(--accent)] transition-colors duration-300">
                 {todo.title}
             </h4>
 
             {/* Footer: Due Date */}
             {todo.due_date && (
-                <div className="flex items-center gap-1.5 mt-3 pt-2.5 border-t border-[var(--color-border)]">
-                    <Clock size={11} className="text-[var(--color-text-muted)]" />
-                    <span className="text-[10px] text-[var(--color-text-muted)] font-medium">
-                        {new Date(todo.due_date).toLocaleDateString('pt-BR')}
+                <div className="flex items-center gap-2 mt-4 pt-3 border-t border-white/5">
+                    <Clock size={12} className="text-[var(--accent)]" />
+                    <span className="text-[11px] text-[var(--color-text-secondary)] font-semibold tracking-wider uppercase">
+                        {new Date(todo.due_date).toLocaleDateString(isEnglish ? 'en-US' : 'pt-PT')}
                     </span>
                 </div>
             )}

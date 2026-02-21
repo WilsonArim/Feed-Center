@@ -6,8 +6,10 @@ import type { FinancialPocket } from '@/types'
 import { StardustButton } from '@/components/ui/StardustButton'
 import { AddPocketModal } from './AddPocketModal'
 import { formatCurrency } from '@/utils/format'
+import { useLocaleText } from '@/i18n/useLocaleText'
 
 export function PocketsGrid() {
+    const { txt } = useLocaleText()
     const pockets = usePockets()
     const deletePocket = useDeletePocket()
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -15,7 +17,7 @@ export function PocketsGrid() {
     const [menuOpenId, setMenuOpenId] = useState<string | null>(null)
 
     const handleDelete = async (id: string) => {
-        if (confirm('Tens a certeza que queres eliminar este envelope? O saldo sera movido para o saldo geral.')) {
+        if (confirm(txt('Tens a certeza que queres eliminar este envelope? O saldo sera movido para o saldo geral.', 'Are you sure you want to delete this pocket? The balance will move to the general balance.'))) {
             await deletePocket.mutateAsync(id)
         }
     }
@@ -24,14 +26,14 @@ export function PocketsGrid() {
         <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">
-                    Envelopes Digitais
+                    {txt('Envelopes Digitais', 'Digital Pockets')}
                 </h2>
                 <StardustButton
                     size="sm"
                     icon={<Plus size={16} />}
                     onClick={() => { setEditingPocket(null); setIsModalOpen(true) }}
                 >
-                    Novo Envelope
+                    {txt('Novo Envelope', 'New Pocket')}
                 </StardustButton>
             </div>
 
@@ -42,16 +44,16 @@ export function PocketsGrid() {
                     ))}
                 </div>
             ) : pockets.data?.length === 0 ? (
-                <div className="rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] p-8 text-center flex flex-col items-center gap-3">
+                <div className="py-12 text-center flex flex-col items-center gap-3">
                     <Wallet size={32} className="text-[var(--color-text-muted)]" />
                     <p className="text-sm text-[var(--color-text-muted)]">
-                        Organiza o teu dinheiro em envelopes digitais (ex: Epoca Festiva, Ferias).
+                        {txt('Organiza o teu dinheiro em envelopes digitais (ex: Epoca Festiva, Ferias).', 'Organize your money into digital pockets (ex: Holidays, Vacations).')}
                     </p>
                     <button
                         onClick={() => setIsModalOpen(true)}
                         className="text-sm font-medium text-[var(--color-accent)] hover:underline"
                     >
-                        Criar primeiro envelope
+                        {txt('Criar primeiro envelope', 'Create first pocket')}
                     </button>
                 </div>
             ) : (
@@ -89,6 +91,7 @@ function PocketCard({
     isMenuOpen: boolean
     onToggleMenu: () => void
 }) {
+    const { txt } = useLocaleText()
     const percentage = pocket.budget_limit && pocket.budget_limit > 0
         ? Math.min((pocket.current_balance / pocket.budget_limit) * 100, 100)
         : 0
@@ -99,8 +102,8 @@ function PocketCard({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="p-5 rounded-2xl relative group overflow-hidden bg-[var(--color-surface)] border border-[var(--color-border)] hover:border-[var(--color-accent)]/20 transition-colors"
-            style={{ borderLeft: `4px solid ${pocket.color}` }}
+            className="p-5 relative group overflow-hidden hover:bg-white/5 transition-colors border-l-4"
+            style={{ borderLeftColor: pocket.color }}
         >
             <div className="flex justify-between items-start mb-2">
                 <div className="flex items-center gap-3">
@@ -115,7 +118,7 @@ function PocketCard({
                             {pocket.name}
                         </h3>
                         <p className="text-xs text-[var(--color-text-muted)]">
-                            {pocket.budget_limit ? `Meta: ${formatCurrency(pocket.budget_limit)}` : 'Sem limite'}
+                            {pocket.budget_limit ? `${txt('Meta', 'Goal')}: ${formatCurrency(pocket.budget_limit)}` : txt('Sem limite', 'No limit')}
                         </p>
                     </div>
                 </div>
@@ -140,13 +143,13 @@ function PocketCard({
                                     onClick={() => onEdit(pocket)}
                                     className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)] transition-colors"
                                 >
-                                    <Edit2 size={12} /> Editar
+                                    <Edit2 size={12} /> {txt('Editar', 'Edit')}
                                 </button>
                                 <button
                                     onClick={() => onDelete(pocket.id)}
                                     className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 hover:bg-rose-500/10 text-rose-400 transition-colors"
                                 >
-                                    <Trash2 size={12} /> Eliminar
+                                    <Trash2 size={12} /> {txt('Eliminar', 'Delete')}
                                 </button>
                             </motion.div>
                         )}

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { X, List, FolderOpen } from 'lucide-react'
 import { LiquidButton } from '@/components/ui/LiquidButton'
 import type { CreateListInput, ListType } from '@/types'
+import { useLocaleText } from '@/i18n/useLocaleText'
 
 interface CreateListModalProps {
     isOpen: boolean
@@ -17,6 +18,7 @@ const COLORS = [
 ]
 
 export function CreateListModal({ isOpen, onClose, onSubmit, isLoading }: CreateListModalProps) {
+    const { txt } = useLocaleText()
     const [title, setTitle] = useState('')
     const [type, setType] = useState<ListType>('list')
     const [color, setColor] = useState(COLORS[5])
@@ -64,12 +66,12 @@ export function CreateListModal({ isOpen, onClose, onSubmit, isLoading }: Create
                         <div className="p-6">
                             <div className="flex items-center justify-between mb-6">
                                 <h2 id="create-list-modal-title" className="text-lg font-bold text-[var(--color-text-primary)] font-sans">
-                                    Nova Colecao
+                                    {txt('Nova Colecao', 'New Collection')}
                                 </h2>
                                 <button
                                     onClick={onClose}
                                     className="p-2 hover:bg-[var(--color-bg-tertiary)] rounded-xl transition-colors"
-                                    aria-label="Fechar"
+                                    aria-label={txt('Fechar', 'Close')}
                                 >
                                     <X size={18} className="text-[var(--color-text-muted)]" />
                                 </button>
@@ -88,7 +90,7 @@ export function CreateListModal({ isOpen, onClose, onSubmit, isLoading }: Create
                                         }`}
                                     >
                                         <List size={16} />
-                                        Lista
+                                        {txt('Lista', 'List')}
                                     </button>
                                     <button
                                         type="button"
@@ -100,18 +102,18 @@ export function CreateListModal({ isOpen, onClose, onSubmit, isLoading }: Create
                                         }`}
                                     >
                                         <FolderOpen size={16} />
-                                        Projeto
+                                        {txt('Projeto', 'Project')}
                                     </button>
                                 </div>
 
                                 {/* Title */}
                                 <div>
-                                    <label className="block text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">Nome</label>
+                                    <label className="block text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">{txt('Nome', 'Name')}</label>
                                     <input
                                         type="text"
                                         value={title}
                                         onChange={(e) => setTitle(e.target.value)}
-                                        placeholder={type === 'list' ? "Ex: Compras" : "Ex: Redesign Site"}
+                                        placeholder={type === 'list' ? txt('Ex: Compras', 'Ex: Grocery') : txt('Ex: Redesign Site', 'Ex: Website Redesign')}
                                         className="w-full bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-xl px-4 py-3 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)]/50 focus:ring-1 focus:ring-[var(--color-accent)]/20 transition-all"
                                         autoFocus
                                     />
@@ -119,7 +121,7 @@ export function CreateListModal({ isOpen, onClose, onSubmit, isLoading }: Create
 
                                 {/* Color Picker */}
                                 <div>
-                                    <label className="block text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-2.5">Cor</label>
+                                    <label className="block text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider mb-2.5">{txt('Cor', 'Color')}</label>
                                     <div className="flex flex-wrap gap-3">
                                         {COLORS.map((c) => (
                                             <button
@@ -132,7 +134,7 @@ export function CreateListModal({ isOpen, onClose, onSubmit, isLoading }: Create
                                                         : 'hover:scale-105 opacity-70 hover:opacity-100'
                                                 }`}
                                                 style={{ backgroundColor: c }}
-                                                aria-label={`Cor ${c}`}
+                                                aria-label={`${txt('Cor', 'Color')} ${c}`}
                                             />
                                         ))}
                                     </div>
@@ -143,7 +145,7 @@ export function CreateListModal({ isOpen, onClose, onSubmit, isLoading }: Create
                                     className="w-full mt-1"
                                     disabled={isLoading || !title.trim()}
                                 >
-                                    {isLoading ? 'Criando...' : 'Criar'}
+                                    {isLoading ? txt('Criando...', 'Creating...') : txt('Criar', 'Create')}
                                 </LiquidButton>
                             </form>
                         </div>

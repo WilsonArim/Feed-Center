@@ -1,9 +1,5 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-
-const MONTHS = [
-    'Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho',
-    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
-]
+import { useLocaleText } from '@/i18n/useLocaleText'
 
 interface Props {
     month: string
@@ -20,7 +16,12 @@ function format(year: number, month: number) {
 }
 
 export function MonthPicker({ month, onChange }: Props) {
+    const { isEnglish, txt } = useLocaleText()
     const { year, month: m } = parse(month)
+    const label = new Date(year, m - 1, 1).toLocaleDateString(isEnglish ? 'en-US' : 'pt-PT', {
+        month: 'long',
+        year: 'numeric',
+    })
 
     const prev = () => {
         if (m === 1) onChange(format(year - 1, 12))
@@ -37,19 +38,19 @@ export function MonthPicker({ month, onChange }: Props) {
             <button
                 onClick={prev}
                 className="p-1.5 rounded-lg hover:bg-[var(--color-bg-secondary)] transition-colors cursor-pointer"
-                aria-label="Mes anterior"
+                aria-label={txt('Mes anterior', 'Previous month')}
             >
                 <ChevronLeft size={16} className="text-[var(--color-text-secondary)]" />
             </button>
 
             <span className="text-sm font-semibold min-w-[140px] text-center text-[var(--color-text-primary)]">
-                {MONTHS[m - 1]} {year}
+                {label}
             </span>
 
             <button
                 onClick={next}
                 className="p-1.5 rounded-lg hover:bg-[var(--color-bg-secondary)] transition-colors cursor-pointer"
-                aria-label="Proximo mes"
+                aria-label={txt('Proximo mes', 'Next month')}
             >
                 <ChevronRight size={16} className="text-[var(--color-text-secondary)]" />
             </button>

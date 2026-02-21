@@ -4,8 +4,10 @@ import { motion } from 'framer-motion'
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react'
 import { useAuth } from '@/components/core/AuthProvider'
 import { StardustButton } from '@/components/ui/StardustButton'
+import { useLocaleText } from '@/i18n/useLocaleText'
 
 export function LoginPage() {
+    const { txt } = useLocaleText()
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
@@ -60,10 +62,10 @@ export function LoginPage() {
                             <span className="text-white font-black text-lg font-[Orbitron,sans-serif]">FC</span>
                         </motion.div>
                         <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]">
-                            Bem-vindo de volta
+                            {txt('Bem-vindo de volta', 'Welcome back')}
                         </h1>
                         <p className="text-sm mt-2 text-[var(--color-text-secondary)]">
-                            Entra na tua central de comando pessoal
+                            {txt('Entra na tua central de comando pessoal', 'Enter your personal command center')}
                         </p>
                     </div>
 
@@ -71,14 +73,14 @@ export function LoginPage() {
                         {/* Email */}
                         <div>
                             <label htmlFor="login-email" className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 ml-1">
-                                Email
+                                {txt('Email', 'Email')}
                             </label>
                             <div className="relative">
                                 <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
                                 <input
                                     id="login-email"
                                     type="email"
-                                    placeholder="nome@exemplo.com"
+                                    placeholder={txt('nome@exemplo.com', 'name@example.com')}
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
@@ -93,14 +95,14 @@ export function LoginPage() {
                         {/* Password */}
                         <div>
                             <label htmlFor="login-password" className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 ml-1">
-                                Palavra-passe
+                                {txt('Palavra-passe', 'Password')}
                             </label>
                             <div className="relative">
                                 <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
                                 <input
                                     id="login-password"
                                     type={showPassword ? 'text' : 'password'}
-                                    placeholder="A tua password"
+                                    placeholder={txt('A tua password', 'Your password')}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
@@ -113,7 +115,7 @@ export function LoginPage() {
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
                                     className="absolute right-3.5 top-1/2 -translate-y-1/2 p-0.5 text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors cursor-pointer"
-                                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                    aria-label={showPassword ? txt('Ocultar palavra-passe', 'Hide password') : txt('Mostrar palavra-passe', 'Show password')}
                                 >
                                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                                 </button>
@@ -140,14 +142,14 @@ export function LoginPage() {
                             fullWidth
                             icon={loading ? <Loader2 size={16} className="animate-spin" /> : <ArrowRight size={16} />}
                         >
-                            {loading ? 'A entrar...' : 'Entrar'}
+                            {loading ? txt('A entrar...', 'Signing in...') : txt('Entrar', 'Sign in')}
                         </StardustButton>
                     </form>
 
                     {/* Divider */}
                     <div className="flex items-center gap-4 my-6">
                         <div className="flex-1 h-px bg-[var(--color-border)]" />
-                        <span className="text-xs text-[var(--color-text-muted)] font-medium">ou</span>
+                        <span className="text-xs text-[var(--color-text-muted)] font-medium">{txt('ou', 'or')}</span>
                         <div className="flex-1 h-px bg-[var(--color-border)]" />
                     </div>
 
@@ -167,14 +169,14 @@ export function LoginPage() {
                             </svg>
                         }
                     >
-                        Continuar com Google
+                        {txt('Continuar com Google', 'Continue with Google')}
                     </StardustButton>
 
                     {/* Register link */}
                     <p className="text-center text-sm mt-6 text-[var(--color-text-secondary)]">
-                        Sem conta?{' '}
+                        {txt('Sem conta?', 'No account?')}{' '}
                         <Link to="/register" className="font-semibold text-[var(--color-accent)] hover:underline">
-                            Criar conta
+                            {txt('Criar conta', 'Create account')}
                         </Link>
                     </p>
                 </div>

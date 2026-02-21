@@ -1,7 +1,9 @@
 import { useLinks } from '@/hooks/useLinks'
 import { ExternalLink, BookOpen } from 'lucide-react'
+import { useLocaleText } from '@/i18n/useLocaleText'
 
 export function LinksWidget() {
+    const { txt } = useLocaleText()
     const { data: links, isLoading } = useLinks()
 
     if (isLoading) {
@@ -14,10 +16,10 @@ export function LinksWidget() {
         <div className="flex flex-col h-full justify-between">
             <div>
                 <div className="text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider mb-1.5">
-                    Leitura Pendente
+                    {txt('Leitura Pendente', 'Pending Reading')}
                 </div>
                 <div className="text-2xl font-bold text-[var(--color-text-primary)] mb-4">
-                    {links?.length || 0} <span className="text-sm font-normal text-[var(--color-text-muted)]">artigos</span>
+                    {links?.length || 0} <span className="text-sm font-normal text-[var(--color-text-muted)]">{txt('artigos', 'articles')}</span>
                 </div>
             </div>
 
@@ -37,7 +39,7 @@ export function LinksWidget() {
                 {recentLinks.length === 0 && (
                     <div className="flex flex-col items-center justify-center py-4 text-[var(--color-text-muted)]">
                         <BookOpen size={18} className="opacity-30 mb-1" />
-                        <span className="text-xs">Nenhum link salvo.</span>
+                        <span className="text-xs">{txt('Nenhum link salvo.', 'No saved links.')}</span>
                     </div>
                 )}
             </div>

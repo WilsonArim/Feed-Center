@@ -1,4 +1,5 @@
 import { TrendingUp, Droplets, Flame } from 'lucide-react'
+import { useLocaleText } from '@/i18n/useLocaleText'
 
 interface DexPair {
     baseToken: { symbol: string }
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export function DeFiStatsBar({ pairs, isLoading }: Props) {
+    const { txt } = useLocaleText()
     if (isLoading || pairs.length === 0) {
         return (
             <div className="grid grid-cols-3 gap-3 mb-6">
@@ -32,19 +34,19 @@ export function DeFiStatsBar({ pairs, isLoading }: Props) {
 
     const stats = [
         {
-            label: 'Top Gainer 24h',
+            label: txt('Top valorizacao 24h', 'Top Gainer 24h'),
             value: topGainer ? `${topGainer.baseToken.symbol} +${topGainer.priceChange.h24.toFixed(1)}%` : '—',
             icon: <TrendingUp size={16} />,
             color: '#22c55e',
         },
         {
-            label: 'Liquidez Total',
+            label: txt('Liquidez Total', 'Total Liquidity'),
             value: fmtM(totalLiquidity),
             icon: <Droplets size={16} />,
             color: '#3b82f6',
         },
         {
-            label: 'Mais Volume',
+            label: txt('Mais Volume', 'Highest Volume'),
             value: topVolume ? `${topVolume.baseToken.symbol} ${fmtM(topVolume.volume.h24)}` : '—',
             icon: <Flame size={16} />,
             color: '#f59e0b',

@@ -4,13 +4,15 @@ import { motion } from 'framer-motion'
 import { Mail, Lock, Eye, EyeOff, Check, X, ArrowRight, Loader2 } from 'lucide-react'
 import { useAuth } from '@/components/core/AuthProvider'
 import { StardustButton } from '@/components/ui/StardustButton'
+import { useLocaleText } from '@/i18n/useLocaleText'
 
 function PasswordStrength({ password }: { password: string }) {
+    const { txt } = useLocaleText()
     const checks = [
-        { label: 'Min. 8 caracteres', met: password.length >= 8 },
-        { label: 'Letra maiuscula', met: /[A-Z]/.test(password) },
-        { label: 'Numero', met: /\d/.test(password) },
-        { label: 'Caracter especial', met: /[^A-Za-z0-9]/.test(password) },
+        { label: txt('Min. 8 caracteres', 'Min. 8 characters'), met: password.length >= 8 },
+        { label: txt('Letra maiuscula', 'Uppercase letter'), met: /[A-Z]/.test(password) },
+        { label: txt('Numero', 'Number'), met: /\d/.test(password) },
+        { label: txt('Caracter especial', 'Special character'), met: /[^A-Za-z0-9]/.test(password) },
     ]
 
     if (!password) return null
@@ -60,6 +62,7 @@ function PasswordStrength({ password }: { password: string }) {
 }
 
 export function RegisterPage() {
+    const { txt } = useLocaleText()
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [showPassword, setShowPassword] = useState(false)
@@ -107,11 +110,11 @@ export function RegisterPage() {
                         <Check size={28} className="text-[var(--color-success)]" />
                     </motion.div>
                     <h2 className="text-xl font-bold mb-2 text-[var(--color-text-primary)]">
-                        Verifica o teu email
+                        {txt('Verifica o teu email', 'Check your email')}
                     </h2>
                     <p className="text-sm mb-6 text-[var(--color-text-secondary)] leading-relaxed">
-                        Enviamos um link de confirmacao para <strong className="text-[var(--color-text-primary)]">{email}</strong>.
-                        Clica no link para ativar a tua conta.
+                        {txt('Enviamos um link de confirmacao para', 'We sent a confirmation link to')} <strong className="text-[var(--color-text-primary)]">{email}</strong>.
+                        {' '}{txt('Clica no link para ativar a tua conta.', 'Click the link to activate your account.')}
                     </p>
                     <Link
                         to="/login"
@@ -119,7 +122,7 @@ export function RegisterPage() {
                             bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)] transition-colors"
                     >
                         <ArrowRight size={16} />
-                        Voltar ao Login
+                        {txt('Voltar ao Login', 'Back to Login')}
                     </Link>
                 </motion.div>
             </div>
@@ -151,24 +154,24 @@ export function RegisterPage() {
                             <span className="text-white font-black text-lg font-[Orbitron,sans-serif]">FC</span>
                         </motion.div>
                         <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]">
-                            Criar Conta
+                            {txt('Criar Conta', 'Create Account')}
                         </h1>
                         <p className="text-sm mt-2 text-[var(--color-text-secondary)]">
-                            Junta-te ao Feed-Center
+                            {txt('Junta-te ao Feed-Center', 'Join Feed-Center')}
                         </p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                         <div>
                             <label htmlFor="register-email" className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 ml-1">
-                                Email
+                                {txt('Email', 'Email')}
                             </label>
                             <div className="relative">
                                 <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
                                 <input
                                     id="register-email"
                                     type="email"
-                                    placeholder="nome@exemplo.com"
+                                    placeholder={txt('nome@exemplo.com', 'name@example.com')}
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
@@ -182,14 +185,14 @@ export function RegisterPage() {
 
                         <div>
                             <label htmlFor="register-password" className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5 ml-1">
-                                Palavra-passe
+                                {txt('Palavra-passe', 'Password')}
                             </label>
                             <div className="relative">
                                 <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
                                 <input
                                     id="register-password"
                                     type={showPassword ? 'text' : 'password'}
-                                    placeholder="Cria uma password forte"
+                                    placeholder={txt('Cria uma password forte', 'Create a strong password')}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
@@ -202,7 +205,7 @@ export function RegisterPage() {
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
                                     className="absolute right-3.5 top-1/2 -translate-y-1/2 p-0.5 text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] transition-colors cursor-pointer"
-                                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                    aria-label={showPassword ? txt('Ocultar palavra-passe', 'Hide password') : txt('Mostrar palavra-passe', 'Show password')}
                                 >
                                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                                 </button>
@@ -229,14 +232,14 @@ export function RegisterPage() {
                             fullWidth
                             icon={loading ? <Loader2 size={16} className="animate-spin" /> : <ArrowRight size={16} />}
                         >
-                            {loading ? 'A criar...' : 'Criar Conta'}
+                            {loading ? txt('A criar...', 'Creating...') : txt('Criar Conta', 'Create Account')}
                         </StardustButton>
                     </form>
 
                     <p className="text-center text-sm mt-6 text-[var(--color-text-secondary)]">
-                        Ja tens conta?{' '}
+                        {txt('Ja tens conta?', 'Already have an account?')}{' '}
                         <Link to="/login" className="font-semibold text-[var(--color-accent)] hover:underline">
-                            Entrar
+                            {txt('Entrar', 'Sign in')}
                         </Link>
                     </p>
                 </div>

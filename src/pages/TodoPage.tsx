@@ -16,8 +16,10 @@ import type { CreateTodoInput, UpdateTodoInput, Todo, CreateListInput } from '@/
 import { ProjectFinanceView } from '@/components/modules/project/ProjectFinanceView'
 import { TodoStatsBar } from '@/components/modules/todo/TodoStatsBar'
 import { NextActionsStrip, PageHeader } from '@/components/core/PagePrimitives'
+import { useLocaleText } from '@/i18n/useLocaleText'
 
 export function TodoPage() {
+    const { txt } = useLocaleText()
     const [activeListId, setActiveListId] = useState<string | null>(null)
     const [isListModalOpen, setIsListModalOpen] = useState(false)
     const [isTaskModalOpen, setIsTaskModalOpen] = useState(false)
@@ -35,10 +37,10 @@ export function TodoPage() {
     }, [activeListId])
 
     const activeList = activeListId ? lists.find(l => l.id === activeListId) : null
-    const pageTitle = activeList ? activeList.title : 'Inbox'
+    const pageTitle = activeList ? activeList.title : txt('Inbox', 'Inbox')
     const pageSubtitle = activeListId
-        ? 'Executa com foco: escolhe a proxima tarefa de maior impacto.'
-        : 'Captura prioridades e transforma intencao em entrega.'
+        ? txt('Executa com foco: escolhe a proxima tarefa de maior impacto.', 'Execute with focus: choose the next highest-impact task.')
+        : txt('Captura prioridades e transforma intencao em entrega.', 'Capture priorities and turn intent into delivery.')
 
     const handleCreateList = async (data: CreateListInput) => {
         await createList.mutateAsync(data)
@@ -67,7 +69,7 @@ export function TodoPage() {
     }
 
     return (
-        <div className="flex h-full">
+        <div className="flex w-full h-[100dvh] overflow-hidden bg-transparent">
             <TodoSidebar
                 lists={lists}
                 activeListId={activeListId}
@@ -76,9 +78,9 @@ export function TodoPage() {
                 onDeleteList={handleDeleteList}
             />
 
-            <div className="flex-1 flex flex-col min-w-0 bg-[var(--color-bg-primary)]">
-                {/* Header */}
-                <div className="px-6 md:px-8 py-5 border-b border-[var(--border-subtle)] bg-[var(--bg-deep)]/50 backdrop-blur-sm z-10">
+            <div className="flex-1 flex flex-col min-w-0 pr-6 pb-24 relative">
+                {/* Header - Typography First */}
+                <div className="px-6 md:px-8 py-5 bg-transparent z-10">
                     <PageHeader
                         icon={<CheckSquare size={18} />}
                         title={pageTitle}
@@ -91,7 +93,7 @@ export function TodoPage() {
                                 }}
                                 icon={<Plus size={16} />}
                             >
-                                Nova Tarefa
+                                {txt('Nova Tarefa', 'New Task')}
                             </StardustButton>
                         )}
                     />
@@ -100,42 +102,39 @@ export function TodoPage() {
                         <div className="flex items-center gap-1 mt-4 bg-[var(--color-bg-tertiary)] p-1 rounded-xl w-fit border border-[var(--color-border)]">
                             <button
                                 onClick={() => setActiveTab('tasks')}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 transition-all cursor-pointer ${
-                                    activeTab === 'tasks'
-                                        ? 'bg-[var(--color-accent)] text-white shadow-sm'
-                                        : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]'
-                                }`}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 transition-all cursor-pointer ${activeTab === 'tasks'
+                                    ? 'bg-[var(--color-accent)] text-white shadow-sm'
+                                    : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]'
+                                    }`}
                             >
                                 <CheckSquare size={14} />
-                                Tarefas
+                                {txt('Tarefas', 'Tasks')}
                             </button>
                             <button
                                 onClick={() => setActiveTab('finance')}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 transition-all cursor-pointer ${
-                                    activeTab === 'finance'
-                                        ? 'bg-[var(--color-accent)] text-white shadow-sm'
-                                        : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]'
-                                }`}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 transition-all cursor-pointer ${activeTab === 'finance'
+                                    ? 'bg-[var(--color-accent)] text-white shadow-sm'
+                                    : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]'
+                                    }`}
                             >
                                 <CircleDollarSign size={14} />
-                                Financas
+                                {txt('Financas', 'Finance')}
                             </button>
                         </div>
                     )}
                 </div>
 
-                {/* Stats Bar */}
-                <div className="px-6 md:px-8 py-4 border-b border-[var(--color-border)]">
+                <div className="px-6 md:px-8 py-4 mt-8">
                     <TodoStatsBar />
                 </div>
 
-                <div className="px-6 md:px-8 pt-5 pb-1">
+                <div className="px-6 md:px-8 pt-2 pb-1">
                     <NextActionsStrip
-                        title="Ritual recomendado: definir 1 tarefa critica, 1 de manutencao e 1 de crescimento."
+                        title={txt('Ritual recomendado: definir 1 tarefa critica, 1 de manutencao e 1 de crescimento.', 'Recommended ritual: define 1 critical task, 1 maintenance task, and 1 growth task.')}
                         actions={[
-                            { label: 'Criar tarefa', to: '/todo' },
-                            { label: 'Ligar a financeiro', to: '/financeiro' },
-                            { label: 'Voltar ao dashboard', to: '/' },
+                            { label: txt('Criar tarefa', 'Create task'), to: '/todo' },
+                            { label: txt('Ligar a financeiro', 'Link to finance'), to: '/financeiro' },
+                            { label: txt('Voltar ao dashboard', 'Back to dashboard'), to: '/dashboard' },
                         ]}
                     />
                 </div>

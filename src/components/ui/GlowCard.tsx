@@ -1,10 +1,10 @@
-import { type HTMLAttributes, type ReactNode, useRef, useCallback } from 'react'
+import { type ReactNode, useRef, useCallback, type ComponentPropsWithoutRef } from 'react'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
 type GlowVariant = 'default' | 'elevated' | 'accent' | 'subtle'
 
-interface GlowCardProps extends HTMLAttributes<HTMLDivElement> {
+interface GlowCardProps extends ComponentPropsWithoutRef<typeof motion.div> {
   children: ReactNode
   glow?: boolean
   variant?: GlowVariant

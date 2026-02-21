@@ -8,10 +8,12 @@ import { NewsCard, NewsCardSkeleton } from '@/components/modules/news/NewsCard'
 import { FiltersBar } from '@/components/modules/news/FiltersBar'
 import { NewsStatsBar } from '@/components/modules/news/NewsStatsBar'
 import { NextActionsStrip, PageHeader, PageSectionHeader, StateCard } from '@/components/core/PagePrimitives'
+import { useLocaleText } from '@/i18n/useLocaleText'
 
 const PAGE_SIZE = 20
 
 export function NewsPage() {
+    const { txt } = useLocaleText()
     const [search, setSearch] = useState('')
     const [activeTopic, setActiveTopic] = useState<string | null>(null)
     const [sort, setSort] = useState<NewsSortMode>('score')
@@ -54,7 +56,7 @@ export function NewsPage() {
     const totalPages = newsList?.totalPages || 1
 
     return (
-        <div className="pb-12">
+        <div className="w-full max-w-[1400px] mx-auto px-4 md:px-8 pt-8 pb-40">
             <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -64,16 +66,16 @@ export function NewsPage() {
                 {/* Header */}
                 <PageHeader
                     icon={<Newspaper size={18} />}
-                    title="Radar de Noticias"
-                    subtitle="Atualizacoes curadas para contexto, decisao e proximas acoes."
-                    meta={`${filteredItems.length} itens visiveis no feed atual`}
+                    title={txt('Radar de Noticias', 'News Radar')}
+                    subtitle={txt('Atualizacoes curadas para contexto, decisao e proximas acoes.', 'Curated updates for context, decisions, and next actions.')}
+                    meta={`${filteredItems.length} ${txt('itens visiveis no feed atual', 'visible items in current feed')}`}
                 />
 
                 <NewsStatsBar />
 
                 <PageSectionHeader
                     title="Top Stories"
-                    subtitle="Leitura rapida das noticias com maior impacto."
+                    subtitle={txt('Leitura rapida das noticias com maior impacto.', 'Quick read of highest-impact news.')}
                 />
 
                 <TopStoriesCarousel
@@ -84,13 +86,13 @@ export function NewsPage() {
                 {topError && (
                     <div className="rounded-xl border border-[var(--danger)]/25 bg-[var(--danger-soft)] px-4 py-3">
                         <p className="text-sm font-medium text-[var(--color-danger)]">
-                            Falha ao atualizar top stories.
+                            {txt('Falha ao atualizar top stories.', 'Failed to refresh top stories.')}
                         </p>
                         <button
                             onClick={() => { void retryTop() }}
                             className="mt-2 text-xs underline text-[var(--color-danger)] hover:opacity-90 cursor-pointer"
                         >
-                            Tentar novamente
+                            {txt('Tentar novamente', 'Try again')}
                         </button>
                     </div>
                 )}
@@ -108,13 +110,13 @@ export function NewsPage() {
                 {topicsError && (
                     <div className="rounded-xl border border-[var(--warning)]/25 bg-[var(--warning-soft)] px-4 py-3">
                         <p className="text-sm text-[var(--color-warning)]">
-                            Nao foi possivel carregar os topicos.
+                            {txt('Nao foi possivel carregar os topicos.', 'Could not load topics.')}
                         </p>
                         <button
                             onClick={() => { void retryTopics() }}
                             className="mt-2 text-xs underline text-[var(--color-warning)] hover:opacity-90 cursor-pointer"
                         >
-                            Recarregar topicos
+                            {txt('Recarregar topicos', 'Reload topics')}
                         </button>
                     </div>
                 )}
@@ -122,10 +124,10 @@ export function NewsPage() {
                 {/* News sections by priority */}
                 {listError ? (
                     <StateCard
-                        title="Feed temporariamente indisponivel"
-                        message="Nao foi possivel carregar noticias agora. Tenta novamente em alguns segundos."
+                        title={txt('Feed temporariamente indisponivel', 'Feed temporarily unavailable')}
+                        message={txt('Nao foi possivel carregar noticias agora. Tenta novamente em alguns segundos.', 'Could not load news right now. Try again in a few seconds.')}
                         icon={<AlertCircle size={18} />}
-                        actionLabel="Recarregar feed"
+                        actionLabel={txt('Recarregar feed', 'Reload feed')}
                         onAction={() => { void retryList() }}
                     />
                 ) : listLoading ? (
@@ -134,16 +136,16 @@ export function NewsPage() {
                     </div>
                 ) : filteredItems.length === 0 ? (
                     <StateCard
-                        title={search ? 'Sem resultados para esta pesquisa' : 'Sem noticias neste momento'}
-                        message={search ? `Nao encontramos noticias para "${search}".` : 'Volta em instantes para novas atualizacoes curadas.'}
+                        title={search ? txt('Sem resultados para esta pesquisa', 'No results for this search') : txt('Sem noticias neste momento', 'No news right now')}
+                        message={search ? txt(`Nao encontramos noticias para "${search}".`, `We could not find news for "${search}".`) : txt('Volta em instantes para novas atualizacoes curadas.', 'Check back shortly for new curated updates.')}
                         icon={<BookOpen size={18} />}
                     />
                 ) : (
-                    <div className="flex flex-col gap-8">
+                    <div className="flex flex-col gap-12 mt-6">
                         {grouped.high.length > 0 && (
                             <PrioritySection
-                                label="Alta Prioridade"
-                                dotColor="bg-rose-500"
+                                label={txt('Alta Prioridade', 'High Priority')}
+                                dotColor="text-rose-500 drop-shadow-[0_0_12px_rgba(244,63,94,0.6)]"
                                 items={grouped.high}
                                 bookmarks={bookmarks}
                                 onBookmark={handleBookmark}
@@ -152,8 +154,8 @@ export function NewsPage() {
                         )}
                         {grouped.medium.length > 0 && (
                             <PrioritySection
-                                label="Media"
-                                dotColor="bg-amber-500"
+                                label={txt('Media', 'Medium')}
+                                dotColor="text-amber-500 drop-shadow-[0_0_12px_rgba(245,158,11,0.6)]"
                                 items={grouped.medium}
                                 bookmarks={bookmarks}
                                 onBookmark={handleBookmark}
@@ -162,8 +164,8 @@ export function NewsPage() {
                         )}
                         {grouped.low.length > 0 && (
                             <PrioritySection
-                                label="Baixa"
-                                dotColor="bg-blue-500"
+                                label={txt('Baixa', 'Low')}
+                                dotColor="text-blue-500 drop-shadow-[0_0_12px_rgba(59,130,246,0.6)]"
                                 items={grouped.low}
                                 bookmarks={bookmarks}
                                 onBookmark={handleBookmark}
@@ -175,33 +177,33 @@ export function NewsPage() {
                 )}
 
                 <NextActionsStrip
-                    title="Queres tirar mais valor deste feed?"
+                    title={txt('Queres tirar mais valor deste feed?', 'Want to get more value from this feed?')}
                     actions={[
-                        { label: 'Refinar topico', to: '/news' },
-                        { label: 'Guardar fontes em links', to: '/links' },
-                        { label: 'Rever prioridades', to: '/todo' },
+                        { label: txt('Refinar topico', 'Refine topic'), to: '/news' },
+                        { label: txt('Guardar fontes em links', 'Save sources to links'), to: '/links' },
+                        { label: txt('Rever prioridades', 'Review priorities'), to: '/todo' },
                     ]}
                 />
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                    <div className="flex items-center justify-center gap-3 mt-4 pt-6 border-t border-[var(--color-border)]">
+                    <div className="flex items-center justify-center gap-6 mt-12 pt-8 border-t border-white/5">
                         <button
                             onClick={() => setPage(p => Math.max(1, p - 1))}
                             disabled={page <= 1}
-                            className="flex items-center gap-1 px-3 py-2 rounded-xl text-sm transition-colors disabled:opacity-20 cursor-pointer hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] border border-[var(--color-border)]"
+                            className="flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold transition-all disabled:opacity-20 cursor-pointer hover:bg-white/10 text-white border border-white/10 hover:border-white/20 shadow-[0_4px_20px_rgba(0,0,0,0.2)]"
                         >
-                            <ChevronLeft size={14} /> Anterior
+                            <ChevronLeft size={16} strokeWidth={2.5} /> {txt('Anterior', 'Previous')}
                         </button>
-                        <span className="text-xs font-mono text-[var(--color-text-muted)]">
-                            {page} / {totalPages}
+                        <span className="text-xl font-black text-white drop-shadow-md tabular-nums tracking-widest">
+                            {page} <span className="text-[var(--color-text-muted)] font-normal text-sm">/ {totalPages}</span>
                         </span>
                         <button
                             onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                             disabled={page >= totalPages}
-                            className="flex items-center gap-1 px-3 py-2 rounded-xl text-sm transition-colors disabled:opacity-20 cursor-pointer hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] border border-[var(--color-border)]"
+                            className="flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold transition-all disabled:opacity-20 cursor-pointer hover:bg-white/10 text-white border border-white/10 hover:border-white/20 shadow-[0_4px_20px_rgba(0,0,0,0.2)]"
                         >
-                            Proximo <ChevronRight size={14} />
+                            {txt('Proximo', 'Next')} <ChevronRight size={16} strokeWidth={2.5} />
                         </button>
                     </div>
                 )}
@@ -221,14 +223,15 @@ function PrioritySection({ label, dotColor, items, bookmarks, onBookmark, onHide
 }) {
     return (
         <section>
-            <h3 className="text-sm font-bold mb-3 flex items-center gap-2 text-[var(--color-text-primary)]">
-                <span className={`w-2 h-2 rounded-full ${dotColor}`} />
-                {label}
-                <span className="text-[10px] font-normal px-1.5 py-0.5 rounded-full bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)]">
-                    {items.length}
+            <div className="flex items-baseline gap-4 mb-6">
+                <h3 className={`text-2xl md:text-3xl font-black tracking-tight ${dotColor}`}>
+                    {label}
+                </h3>
+                <span className="text-sm font-bold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
+                    {items.length} {items.length === 1 ? 'Item' : 'Items'}
                 </span>
-            </h3>
-            <div className={`grid gap-3 ${compact ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
+            </div>
+            <div className={`grid gap-4 ${compact ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
                 {items.map((item, i) => (
                     <NewsCard
                         key={item.id}

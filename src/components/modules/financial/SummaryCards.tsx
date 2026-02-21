@@ -3,6 +3,7 @@ import { TrendingUp, TrendingDown, Scale, ShieldCheck } from 'lucide-react'
 import type { MonthSummary } from '@/services/financialService'
 import type { AffordabilityScore } from '@/types'
 import { formatCurrency } from '@/utils/format'
+import { useLocaleText } from '@/i18n/useLocaleText'
 
 interface Props {
     summary: MonthSummary | undefined
@@ -10,50 +11,50 @@ interface Props {
     isLoading: boolean
 }
 
-const AFFORDABILITY_CONFIG = {
-    safe: { color: 'var(--color-success)', label: 'Seguro' },
-    caution: { color: 'var(--color-warning)', label: 'Cuidado' },
-    danger: { color: 'var(--color-danger)', label: 'Perigo' },
-} as const
-
 export function SummaryCards({ summary, affordability, isLoading }: Props) {
+    const { txt } = useLocaleText()
     const cards = [
         {
             key: 'income',
-            label: 'Receitas',
+            label: txt('Receitas', 'Income'),
             icon: TrendingUp,
             color: 'var(--color-success)',
             value: summary?.income ?? 0,
         },
         {
             key: 'expenses',
-            label: 'Despesas',
+            label: txt('Despesas', 'Expenses'),
             icon: TrendingDown,
             color: 'var(--color-danger)',
             value: summary?.expenses ?? 0,
         },
         {
             key: 'balance',
-            label: 'Saldo',
+            label: txt('Saldo', 'Balance'),
             icon: Scale,
             color: 'var(--color-accent)',
             value: summary?.balance ?? 0,
         },
     ]
 
-    const affConfig = affordability ? AFFORDABILITY_CONFIG[affordability.level] : null
+    const affordabilityConfig = {
+        safe: { color: 'var(--color-success)', label: txt('Seguro', 'Safe') },
+        caution: { color: 'var(--color-warning)', label: txt('Cuidado', 'Caution') },
+        danger: { color: 'var(--color-danger)', label: txt('Perigo', 'Risk') },
+    } as const
+
+    const affConfig = affordability ? affordabilityConfig[affordability.level] : null
 
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {cards.map((card, i) => (
                 <motion.div
                     key={card.key}
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.08, duration: 0.35 }}
-                    className="bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-2xl p-5 relative overflow-hidden"
+                    className="relative flex flex-col group/stat"
                 >
-                    {/* Glow accent */}
                     <div
                         className="absolute -top-8 -right-8 w-24 h-24 rounded-full blur-2xl opacity-[0.12]"
                         style={{ background: card.color }}
@@ -84,7 +85,7 @@ export function SummaryCards({ summary, affordability, isLoading }: Props) {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.24, duration: 0.35 }}
-                className="bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-2xl p-5 relative overflow-hidden"
+                className="relative flex flex-col group/stat"
             >
                 <motion.div
                     animate={{ opacity: [0.08, 0.16, 0.08] }}
@@ -99,7 +100,7 @@ export function SummaryCards({ summary, affordability, isLoading }: Props) {
                         <ShieldCheck size={16} style={{ color: affConfig?.color ?? 'var(--color-accent)' }} />
                     </div>
                     <span className="text-xs font-medium uppercase tracking-wider text-[var(--color-text-muted)]">
-                        Saldo Seguro
+                        {txt('Saldo Seguro', 'Safe Balance')}
                     </span>
                 </div>
 
@@ -124,8 +125,8 @@ export function SummaryCards({ summary, affordability, isLoading }: Props) {
                             {affordability.daysUntilZero !== null && (
                                 <span className="text-[10px] text-[var(--color-text-muted)]">
                                     {affordability.daysUntilZero > 90
-                                        ? '90+ dias'
-                                        : `${affordability.daysUntilZero} dias restantes`}
+                                        ? txt('90+ dias', '90+ days')
+                                        : txt(`${affordability.daysUntilZero} dias restantes`, `${affordability.daysUntilZero} days left`)}
                                 </span>
                             )}
                         </div>

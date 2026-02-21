@@ -2,10 +2,26 @@ import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/components/core/AuthProvider'
 import { useTranslation } from 'react-i18next'
-import { Globe, User, LogOut, Check, Palette, Moon, Sun, Monitor } from 'lucide-react'
+import { Globe, User, LogOut, Check, Palette, Moon, Sun, Monitor, House, Bot, Sparkles, Eye } from 'lucide-react'
 import { NextActionsStrip, PageHeader } from '@/components/core/PagePrimitives'
 import { StardustButton } from '@/components/ui/StardustButton'
 import { useThemeStore } from '@/stores/themeStore'
+import {
+    useCopilotAvatarUrl,
+    useCopilotName,
+    useHomePagePreference,
+    useSetCopilotAvatarUrl,
+    useSetCopilotName,
+    useSetHomePagePreference,
+    useSetShowMerchantInsights,
+    useShowMerchantInsights,
+} from '@/hooks/useUserSettings'
+import {
+    DEFAULT_COPILOT_AVATAR_URL,
+    DEFAULT_COPILOT_NAME,
+    DEFAULT_HOME_PAGE,
+    type HomePageOption,
+} from '@/services/userSettingsService'
 
 type AppLanguage = 'pt' | 'en'
 type ThemeMode = 'dark' | 'light' | 'system'
@@ -24,6 +40,17 @@ const themeOptions: { value: ThemeMode; icon: typeof Sun; labelKey: string }[] =
     { value: 'system', icon: Monitor, labelKey: 'settings.theme_system' },
 ]
 
+const homePageOptions: { value: HomePageOption; labelKey: string }[] = [
+    { value: '/start', labelKey: 'settings.home_page_start' },
+    { value: '/today', labelKey: 'settings.home_page_today' },
+    { value: '/dashboard', labelKey: 'settings.home_page_dashboard' },
+    { value: '/financeiro', labelKey: 'settings.home_page_financial' },
+    { value: '/todo', labelKey: 'settings.home_page_todo' },
+    { value: '/links', labelKey: 'settings.home_page_links' },
+    { value: '/news', labelKey: 'settings.home_page_news' },
+    { value: '/crypto', labelKey: 'settings.home_page_crypto' },
+]
+
 function normalizeLanguage(raw: string | undefined): AppLanguage {
     return raw?.startsWith('pt') ? 'pt' : 'en'
 }
@@ -32,11 +59,27 @@ export function SettingsPage() {
     const { user, signOut } = useAuth()
     const { i18n, t } = useTranslation()
     const { mode, setMode } = useThemeStore()
+    const homePageQuery = useHomePagePreference()
+    const setHomePagePreference = useSetHomePagePreference()
+    const copilotNameQuery = useCopilotName()
+    const setCopilotName = useSetCopilotName()
+    const copilotAvatarQuery = useCopilotAvatarUrl()
+    const setCopilotAvatar = useSetCopilotAvatarUrl()
+    const showMerchantInsightsQuery = useShowMerchantInsights()
+    const setShowMerchantInsights = useSetShowMerchantInsights()
 
     const appliedLanguage = normalizeLanguage(i18n.resolvedLanguage || i18n.language)
+    const appliedHomePage = homePageQuery.data ?? DEFAULT_HOME_PAGE
+    const appliedCopilotName = copilotNameQuery.data ?? DEFAULT_COPILOT_NAME
+    const appliedCopilotAvatar = copilotAvatarQuery.data ?? DEFAULT_COPILOT_AVATAR_URL
+    const appliedShowMerchantInsights = showMerchantInsightsQuery.data ?? false
 
     const [draftLanguage, setDraftLanguage] = useState<AppLanguage>(appliedLanguage)
     const [draftTheme, setDraftTheme] = useState<ThemeMode>(mode)
+    const [draftHomePage, setDraftHomePage] = useState<HomePageOption>(appliedHomePage)
+    const [draftCopilotName, setDraftCopilotName] = useState(appliedCopilotName)
+    const [draftCopilotAvatar, setDraftCopilotAvatar] = useState(appliedCopilotAvatar)
+    const [draftShowMerchantInsights, setDraftShowMerchantInsights] = useState(appliedShowMerchantInsights)
     const [savedFeedback, setSavedFeedback] = useState(false)
 
     useEffect(() => {
@@ -47,7 +90,28 @@ export function SettingsPage() {
         setDraftTheme(mode)
     }, [mode])
 
-    const hasChanges = draftLanguage !== appliedLanguage || draftTheme !== mode
+    useEffect(() => {
+        setDraftHomePage(appliedHomePage)
+    }, [appliedHomePage])
+
+    useEffect(() => {
+        setDraftCopilotName(appliedCopilotName)
+    }, [appliedCopilotName])
+
+    useEffect(() => {
+        setDraftCopilotAvatar(appliedCopilotAvatar)
+    }, [appliedCopilotAvatar])
+
+    useEffect(() => {
+        setDraftShowMerchantInsights(appliedShowMerchantInsights)
+    }, [appliedShowMerchantInsights])
+
+    const hasChanges = draftLanguage !== appliedLanguage
+        || draftTheme !== mode
+        || draftHomePage !== appliedHomePage
+        || draftCopilotName.trim() !== appliedCopilotName.trim()
+        || draftCopilotAvatar.trim() !== appliedCopilotAvatar.trim()
+        || draftShowMerchantInsights !== appliedShowMerchantInsights
 
     const handleApply = async () => {
         setSavedFeedback(false)
@@ -60,6 +124,26 @@ export function SettingsPage() {
             setMode(draftTheme)
         }
 
+        if (draftHomePage !== appliedHomePage) {
+            await setHomePagePreference.mutateAsync(draftHomePage)
+        }
+
+        const normalizedDraftName = draftCopilotName.trim() || DEFAULT_COPILOT_NAME
+        if (normalizedDraftName !== appliedCopilotName.trim()) {
+            await setCopilotName.mutateAsync(normalizedDraftName)
+            setDraftCopilotName(normalizedDraftName)
+        }
+
+        const normalizedAvatar = draftCopilotAvatar.trim() || DEFAULT_COPILOT_AVATAR_URL
+        if (normalizedAvatar !== appliedCopilotAvatar.trim()) {
+            await setCopilotAvatar.mutateAsync(normalizedAvatar)
+            setDraftCopilotAvatar(normalizedAvatar)
+        }
+
+        if (draftShowMerchantInsights !== appliedShowMerchantInsights) {
+            await setShowMerchantInsights.mutateAsync(draftShowMerchantInsights)
+        }
+
         setSavedFeedback(true)
         window.setTimeout(() => setSavedFeedback(false), 2000)
     }
@@ -68,6 +152,10 @@ export function SettingsPage() {
         setSavedFeedback(false)
         setDraftLanguage(DEFAULT_LANGUAGE)
         setDraftTheme(DEFAULT_THEME)
+        setDraftHomePage(DEFAULT_HOME_PAGE)
+        setDraftCopilotName(DEFAULT_COPILOT_NAME)
+        setDraftCopilotAvatar(DEFAULT_COPILOT_AVATAR_URL)
+        setDraftShowMerchantInsights(false)
     }
 
     const settingsStateText = useMemo(() => {
@@ -136,6 +224,62 @@ export function SettingsPage() {
                 </div>
             </Section>
 
+            {/* Copilot Section */}
+            <Section title={appliedLanguage === 'en' ? 'Copilot' : 'Copiloto'} icon={<Bot size={18} />}>
+                <div className="p-4 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)]">
+                    <p className="text-sm font-medium text-[var(--color-text-primary)]">
+                        {appliedLanguage === 'en' ? 'Copilot name' : 'Nome do copiloto'}
+                    </p>
+                    <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
+                        {appliedLanguage === 'en'
+                            ? 'Use a short name to make interactions feel natural.'
+                            : 'Usa um nome curto para tornar as interações mais naturais.'}
+                    </p>
+                    <input
+                        type="text"
+                        maxLength={32}
+                        value={draftCopilotName}
+                        onChange={(e) => setDraftCopilotName(e.target.value)}
+                        placeholder={DEFAULT_COPILOT_NAME}
+                        className="mt-3 w-full px-4 py-2.5 rounded-[var(--radius-md)] text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border)] outline-none focus:border-[var(--color-accent)]"
+                    />
+                </div>
+                <div className="mt-3 p-4 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)]">
+                    <p className="text-sm font-medium text-[var(--color-text-primary)]">
+                        {appliedLanguage === 'en' ? 'Copilot image (Free)' : 'Imagem do copiloto (Free)'}
+                    </p>
+                    <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
+                        {appliedLanguage === 'en'
+                            ? 'Set an image URL or keep default mascot.'
+                            : 'Define URL de imagem ou mantém o mascote padrão.'}
+                    </p>
+                    <div className="mt-3 flex items-center gap-3">
+                        <img
+                            src={draftCopilotAvatar || DEFAULT_COPILOT_AVATAR_URL}
+                            alt="Copilot avatar preview"
+                            className="w-12 h-12 rounded-xl object-cover bg-[var(--color-bg-secondary)] border border-[var(--color-border)]"
+                            onError={(e) => { e.currentTarget.src = DEFAULT_COPILOT_AVATAR_URL }}
+                        />
+                        <input
+                            type="text"
+                            value={draftCopilotAvatar}
+                            onChange={(e) => setDraftCopilotAvatar(e.target.value)}
+                            placeholder={DEFAULT_COPILOT_AVATAR_URL}
+                            className="flex-1 px-4 py-2.5 rounded-[var(--radius-md)] text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border)] outline-none focus:border-[var(--color-accent)]"
+                        />
+                    </div>
+                    <div className="mt-2 flex gap-2">
+                        <button
+                            type="button"
+                            onClick={() => setDraftCopilotAvatar(DEFAULT_COPILOT_AVATAR_URL)}
+                            className="text-xs px-2.5 py-1 rounded-lg border border-[var(--color-border)] hover:border-[var(--color-accent)]/40 cursor-pointer"
+                        >
+                            {appliedLanguage === 'en' ? 'Use default' : 'Usar padrão'}
+                        </button>
+                    </div>
+                </div>
+            </Section>
+
             {/* Language Section */}
             <Section title={t('settings.language')} icon={<Globe size={18} />}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -161,6 +305,69 @@ export function SettingsPage() {
                 </div>
             </Section>
 
+            {/* Home Page Section */}
+            <Section title={t('settings.home_page')} icon={<House size={18} />}>
+                <div className="p-4 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)]">
+                    <p className="text-sm font-medium text-[var(--color-text-primary)]">{t('settings.home_page')}</p>
+                    <p className="text-xs text-[var(--color-text-muted)] mt-0.5">{t('settings.home_page_help')}</p>
+
+                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {homePageOptions.map((opt) => (
+                            <button
+                                key={opt.value}
+                                onClick={() => setDraftHomePage(opt.value)}
+                                className={`relative flex items-center justify-between gap-2 p-3 rounded-xl border text-sm transition-all cursor-pointer ${
+                                    draftHomePage === opt.value
+                                        ? 'bg-[var(--color-accent)]/10 border-[var(--color-accent)]/30 text-[var(--color-accent)]'
+                                        : 'bg-[var(--color-surface)] border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:border-[var(--color-accent)]/20'
+                                }`}
+                            >
+                                <span className="font-medium">{t(opt.labelKey)}</span>
+                                <span className="text-xs opacity-70">{opt.value}</span>
+                                {draftHomePage === opt.value && (
+                                    <div className="absolute top-2 right-2">
+                                        <Check size={14} className="text-[var(--color-accent)]" />
+                                    </div>
+                                )}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </Section>
+
+            <Section title={appliedLanguage === 'en' ? 'Merchant intelligence' : 'Inteligência por comerciante'} icon={<Eye size={18} />}>
+                <div className="p-4 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)]">
+                    <div className="flex items-start justify-between gap-4">
+                        <div>
+                            <p className="text-sm font-medium text-[var(--color-text-primary)]">
+                                {appliedLanguage === 'en'
+                                    ? 'Show store and item inflation insights'
+                                    : 'Mostrar insights de inflação por loja e item'}
+                            </p>
+                            <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
+                                {appliedLanguage === 'en'
+                                    ? 'Data is always saved (NIF, merchant, and OCR line items). This switch only controls visibility in Finance.'
+                                    : 'Os dados são sempre guardados (NIF, comerciante e linhas OCR dos talões). Este switch só controla a visibilidade em Finanças.'}
+                            </p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setDraftShowMerchantInsights((v) => !v)}
+                            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-medium transition-colors cursor-pointer ${
+                                draftShowMerchantInsights
+                                    ? 'bg-[var(--color-accent)]/15 text-[var(--color-accent)] border-[var(--color-accent)]/35'
+                                    : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] border-[var(--color-border)]'
+                            }`}
+                        >
+                            <Sparkles size={12} />
+                            {draftShowMerchantInsights
+                                ? (appliedLanguage === 'en' ? 'Visible' : 'Visível')
+                                : (appliedLanguage === 'en' ? 'Hidden' : 'Oculto')}
+                        </button>
+                    </div>
+                </div>
+            </Section>
+
             {/* Apply/Default Section */}
             <Section title={t('settings.actions_title')} icon={<Check size={18} />}>
                 <div className="p-4 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)]">
@@ -180,7 +387,17 @@ export function SettingsPage() {
                         <StardustButton
                             size="sm"
                             onClick={() => { void handleApply() }}
-                            disabled={!hasChanges}
+                            disabled={
+                                !hasChanges
+                                || homePageQuery.isLoading
+                                || copilotNameQuery.isLoading
+                                || copilotAvatarQuery.isLoading
+                                || showMerchantInsightsQuery.isLoading
+                                || setHomePagePreference.isPending
+                                || setCopilotName.isPending
+                                || setCopilotAvatar.isPending
+                                || setShowMerchantInsights.isPending
+                            }
                         >
                             {t('common.apply')}
                         </StardustButton>
@@ -202,7 +419,7 @@ export function SettingsPage() {
             <NextActionsStrip
                 title={t('settings.next_title')}
                 actions={[
-                    { label: t('settings.next_dashboard'), to: '/' },
+                    { label: t('settings.next_dashboard'), to: '/dashboard' },
                     { label: t('settings.next_tasks'), to: '/todo' },
                     { label: t('settings.next_links'), to: '/links' },
                 ]}

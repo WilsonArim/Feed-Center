@@ -2,6 +2,7 @@ import { useTopStories } from '@/hooks/useNews'
 import { timeAgo } from '@/services/newsService'
 import { Newspaper } from 'lucide-react'
 import { NavLink } from 'react-router'
+import { useLocaleText } from '@/i18n/useLocaleText'
 
 const TOPIC_COLORS: Record<string, string> = {
     AI: 'var(--color-accent)', Crypto: 'var(--color-warning)', Geopolitics: 'var(--color-danger)',
@@ -9,6 +10,7 @@ const TOPIC_COLORS: Record<string, string> = {
 }
 
 export function NewsWidget() {
+    const { txt } = useLocaleText()
     const { data: items = [], isLoading } = useTopStories(3)
 
     if (isLoading) {
@@ -27,7 +29,7 @@ export function NewsWidget() {
                 <div className="w-10 h-10 rounded-xl bg-[var(--color-bg-tertiary)] flex items-center justify-center mb-2">
                     <Newspaper size={18} className="opacity-40" />
                 </div>
-                Sem noticias ainda
+                {txt('Sem noticias ainda', 'No news yet')}
             </div>
         )
     }
@@ -63,7 +65,7 @@ export function NewsWidget() {
                 to="/news"
                 className="text-[11px] text-center text-[var(--color-accent)] hover:underline mt-2 block font-medium"
             >
-                Ver todas
+                {txt('Ver todas', 'View all')}
             </NavLink>
         </div>
     )

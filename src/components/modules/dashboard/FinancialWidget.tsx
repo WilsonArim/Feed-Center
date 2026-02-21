@@ -2,6 +2,7 @@ import { useMonthSummary } from '@/hooks/useFinancial'
 import { formatCurrency } from '@/utils/format'
 import { TrendingUp, TrendingDown } from 'lucide-react'
 import { AreaChart, Area, ResponsiveContainer } from 'recharts'
+import { useLocaleText } from '@/i18n/useLocaleText'
 
 function generateSparkline(income: number, expenses: number) {
     const days = 7
@@ -18,6 +19,7 @@ function generateSparkline(income: number, expenses: number) {
 }
 
 export function FinancialWidget() {
+    const { txt, isEnglish } = useLocaleText()
     const currentMonth = new Date().toISOString().slice(0, 7)
     const { data: summary, isLoading, error } = useMonthSummary(currentMonth)
 
@@ -31,7 +33,7 @@ export function FinancialWidget() {
     }
 
     if (error) {
-        return <div className="text-[var(--color-danger)] text-xs">Erro ao carregar dados financeiros.</div>
+        return <div className="text-[var(--color-danger)] text-xs">{txt('Erro ao carregar dados financeiros.', 'Error loading financial data.')}</div>
     }
 
     const { income = 0, expenses = 0, balance = 0 } = summary || {}
@@ -41,7 +43,7 @@ export function FinancialWidget() {
         <div className="flex flex-col h-full justify-between">
             <div>
                 <div className="text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider mb-1">
-                    Saldo ({new Date().toLocaleDateString('pt-PT', { month: 'long' })})
+                    {txt('Saldo', 'Balance')} ({new Date().toLocaleDateString(isEnglish ? 'en-US' : 'pt-PT', { month: 'long' })})
                 </div>
                 <div className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]">
                     {formatCurrency(balance)}
@@ -72,7 +74,7 @@ export function FinancialWidget() {
                 <div className="bg-[var(--color-success)]/8 rounded-xl p-2.5 border border-[var(--color-success)]/10">
                     <div className="flex items-center gap-1.5 text-xs text-[var(--color-success)] mb-1">
                         <TrendingUp size={12} />
-                        <span className="font-medium">Receitas</span>
+                        <span className="font-medium">{txt('Receitas', 'Income')}</span>
                     </div>
                     <div className="font-semibold text-[var(--color-text-primary)]">
                         {formatCurrency(income)}
@@ -81,7 +83,7 @@ export function FinancialWidget() {
                 <div className="bg-[var(--color-danger)]/8 rounded-xl p-2.5 border border-[var(--color-danger)]/10">
                     <div className="flex items-center gap-1.5 text-xs text-[var(--color-danger)] mb-1">
                         <TrendingDown size={12} />
-                        <span className="font-medium">Despesas</span>
+                        <span className="font-medium">{txt('Despesas', 'Expenses')}</span>
                     </div>
                     <div className="font-semibold text-[var(--color-text-primary)]">
                         {formatCurrency(expenses)}

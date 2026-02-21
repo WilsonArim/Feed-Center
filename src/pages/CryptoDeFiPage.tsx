@@ -9,6 +9,8 @@ import { PoolPositionCard } from '@/components/modules/defi/PoolPositionCard'
 import { TokenPositionCard } from '@/components/modules/defi/TokenPositionCard'
 import type { DefiPositionType } from '@/types'
 import { NextActionsStrip, PageHeader, PageSectionHeader, StateCard } from '@/components/core/PagePrimitives'
+import { useLocaleText } from '@/i18n/useLocaleText'
+import { Magnetic } from '@/components/ui/Magnetic'
 
 type Tab = 'pool' | 'stake' | 'borrow-lend'
 
@@ -19,6 +21,7 @@ const TABS: { id: Tab; label: string; icon: typeof Droplets; types: DefiPosition
 ]
 
 export function CryptoDeFiPage() {
+    const { txt } = useLocaleText()
     const [tab, setTab] = useState<Tab>('pool')
     const [showPoolModal, setShowPoolModal] = useState(false)
     const [showStakeModal, setShowStakeModal] = useState(false)
@@ -58,7 +61,7 @@ export function CryptoDeFiPage() {
     }
 
     return (
-        <div className="w-full flex flex-col gap-6 pb-12">
+        <div className="w-full max-w-[1400px] mx-auto px-4 md:px-8 pt-8 pb-40 flex flex-col gap-6">
             <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -68,32 +71,33 @@ export function CryptoDeFiPage() {
                 {/* Header */}
                 <PageHeader
                     icon={<Droplets size={18} />}
-                    title="Ledger DeFi"
-                    subtitle="Monitora pools, staking e borrow/lend num unico cockpit."
-                    meta={`${active.length} posicoes ativas | ${closed.length} no historico`}
+                    title={txt('Ledger DeFi', 'DeFi Ledger')}
+                    subtitle={txt('Monitora pools, staking e borrow/lend num unico cockpit.', 'Monitor pools, staking, and borrow/lend in a single cockpit.')}
+                    meta={`${active.length} ${txt('posicoes ativas', 'active positions')} | ${closed.length} ${txt('no historico', 'in history')}`}
                     actions={(
-                        <button
-                            onClick={handleOpenModal}
-                            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-[var(--color-accent)] text-[var(--color-bg-primary)] hover:opacity-90 transition-opacity"
-                        >
-                            <Plus size={16} /> Adicionar
-                        </button>
+                        <Magnetic strength={0.2}>
+                            <button
+                                onClick={handleOpenModal}
+                                className="flex items-center gap-2 px-5 py-3 rounded-full text-sm font-black bg-[var(--accent)] text-[var(--accent-text)] shadow-[0_0_20px_rgba(255,90,0,0.3)] hover:shadow-[0_0_30px_rgba(255,90,0,0.5)] active:scale-95 transition-all"
+                            >
+                                <Plus size={18} strokeWidth={3} /> {txt('Adicionar', 'Add')}
+                            </button>
+                        </Magnetic>
                     )}
                 />
 
                 {/* Tabs */}
-                <div className="flex gap-1 p-1 rounded-xl bg-[var(--color-bg-tertiary)] border border-[var(--color-border)]">
+                <div className="flex gap-2 p-1 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 w-fit">
                     {TABS.map(t => (
                         <button
                             key={t.id}
                             onClick={() => setTab(t.id)}
-                            className={`flex items-center gap-2 flex-1 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer justify-center ${
-                                tab === t.id
-                                    ? 'bg-[var(--color-accent)] text-[var(--color-bg-primary)] shadow-md'
-                                    : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]'
-                            }`}
+                            className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all cursor-pointer justify-center ${tab === t.id
+                                ? 'bg-white text-black shadow-lg scale-105'
+                                : 'text-[var(--color-text-secondary)] hover:text-white hover:bg-white/5'
+                                }`}
                         >
-                            <t.icon size={14} />
+                            <t.icon size={16} strokeWidth={tab === t.id ? 2.5 : 2} />
                             <span className="hidden md:inline">{t.label}</span>
                         </button>
                     ))}
@@ -101,23 +105,24 @@ export function CryptoDeFiPage() {
 
                 {/* Summary stats */}
                 <PageSectionHeader
-                    title="Resumo de Exposicao"
-                    subtitle="Volume ativo e historico das tuas operacoes DeFi."
+                    title={txt('Resumo de Exposicao', 'Exposure Summary')}
+                    subtitle={txt('Volume ativo e historico das tuas operacoes DeFi.', 'Active volume and history of your DeFi operations.')}
                 />
-                <div className="grid grid-cols-3 gap-4">
-                    <div className="p-4 text-center rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)]">
-                        <p className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-wider mb-1">Posicoes Ativas</p>
-                        <p className="text-xl font-bold text-[var(--color-text-primary)]">{active.length}</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 mt-4 mb-8">
+                    <div className="flex flex-col justify-center min-h-[120px]">
+                        <p className="text-xs font-bold uppercase tracking-[0.2em] mb-2 text-[var(--color-text-muted)] drop-shadow-sm">{txt('Posicoes Ativas', 'Active Positions')}</p>
+                        <p className="text-5xl font-black text-white drop-shadow-md tabular-nums">{active.length}</p>
                     </div>
-                    <div className="p-4 text-center rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)]">
-                        <p className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-wider mb-1">Valor Total (Entrada)</p>
-                        <p className="text-xl font-bold font-mono text-[var(--color-text-primary)]">
+                    <div className="relative flex flex-col justify-center min-h-[120px]">
+                        <div className="absolute top-1/2 left-0 w-24 h-24 bg-[var(--accent)]/10 rounded-full blur-[30px] -translate-y-1/2" />
+                        <p className="text-xs font-bold uppercase tracking-[0.2em] mb-2 text-[var(--color-text-muted)] drop-shadow-sm z-10">{txt('Valor Total (Entrada)', 'Total Value (Entry)')}</p>
+                        <p className="text-5xl md:text-6xl font-black text-[var(--accent)] tracking-tighter drop-shadow-md z-10 tabular-nums">
                             ${totalValue.toFixed(2)}
                         </p>
                     </div>
-                    <div className="p-4 text-center rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)]">
-                        <p className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-wider mb-1">Historico</p>
-                        <p className="text-xl font-bold text-[var(--color-text-primary)]">{closed.length}</p>
+                    <div className="flex flex-col justify-center min-h-[120px]">
+                        <p className="text-xs font-bold uppercase tracking-[0.2em] mb-2 text-[var(--color-text-muted)] drop-shadow-sm">{txt('Historico', 'History')}</p>
+                        <p className="text-5xl font-black text-[var(--color-text-secondary)] drop-shadow-md tabular-nums">{closed.length}</p>
                     </div>
                 </div>
 
@@ -132,7 +137,7 @@ export function CryptoDeFiPage() {
                 {!positions.isLoading && active.length > 0 && (
                     <div className="flex flex-col gap-3">
                         <h2 className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)]">
-                            Posicoes Ativas
+                            {txt('Posicoes Ativas', 'Active Positions')}
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {active.map((pos, i) => (
@@ -152,7 +157,7 @@ export function CryptoDeFiPage() {
                 {!positions.isLoading && closed.length > 0 && (
                     <div className="flex flex-col gap-3">
                         <h2 className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)]">
-                            Historico
+                            {txt('Historico', 'History')}
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {closed.map((pos, i) => (
@@ -171,20 +176,20 @@ export function CryptoDeFiPage() {
                 {/* Empty state */}
                 {!positions.isLoading && filtered.length === 0 && (
                     <StateCard
-                        title={`Sem posicoes de ${tabConfig.label.toLowerCase()} registadas`}
-                        message="Adiciona a primeira posicao para acompanhar performance e risco desde o inicio."
+                        title={txt(`Sem posicoes de ${tabConfig.label.toLowerCase()} registadas`, `No ${tabConfig.label.toLowerCase()} positions recorded`)}
+                        message={txt('Adiciona a primeira posicao para acompanhar performance e risco desde o inicio.', 'Add your first position to track performance and risk from day one.')}
                         icon={<tabConfig.icon size={18} />}
-                        actionLabel="Adicionar primeira posicao"
+                        actionLabel={txt('Adicionar primeira posicao', 'Add first position')}
                         onAction={handleOpenModal}
                     />
                 )}
 
                 <NextActionsStrip
-                    title="Proximo passo sugerido em DeFi"
+                    title={txt('Proximo passo sugerido em DeFi', 'Suggested next step in DeFi')}
                     actions={[
-                        { label: 'Adicionar posicao', to: '/crypto/defi' },
-                        { label: 'Rever carteira spot', to: '/crypto' },
-                        { label: 'Atualizar tarefas', to: '/todo' },
+                        { label: txt('Adicionar posicao', 'Add position'), to: '/crypto/defi' },
+                        { label: txt('Rever carteira spot', 'Review spot portfolio'), to: '/crypto' },
+                        { label: txt('Atualizar tarefas', 'Update tasks'), to: '/todo' },
                     ]}
                 />
             </motion.div>

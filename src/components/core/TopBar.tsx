@@ -5,10 +5,12 @@ import { useNotifications } from '@/hooks/useNotifications'
 import { UserDropdown } from './UserDropdown'
 import { NotificationPanel } from './NotificationPanel'
 import { useTranslation } from 'react-i18next'
+import { useLocaleText } from '@/i18n/useLocaleText'
 
 export function TopBar() {
     const { notifications, hasNotifications } = useNotifications()
     const { t } = useTranslation()
+    const { txt } = useLocaleText()
     const [notifOpen, setNotifOpen] = useState(false)
 
     return (
@@ -30,7 +32,7 @@ export function TopBar() {
                     window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true }))
                 }}
                 className="relative flex items-center cursor-pointer group"
-                aria-label="Pesquisar"
+                aria-label={txt('Pesquisar', 'Search')}
             >
                 <Search size={15} className="absolute left-3 text-[var(--text-tertiary)] pointer-events-none
                     group-hover:text-[var(--accent)] transition-colors" />
@@ -54,7 +56,7 @@ export function TopBar() {
                         onClick={() => setNotifOpen(!notifOpen)}
                         className="relative p-2.5 rounded-xl cursor-pointer
                             text-[var(--text-secondary)] hover:bg-[var(--bg-surface)] hover:text-[var(--text-primary)] transition-all"
-                        aria-label="Notificacoes"
+                        aria-label={txt('Notificacoes', 'Notifications')}
                     >
                         <Bell size={18} />
                         {hasNotifications && (

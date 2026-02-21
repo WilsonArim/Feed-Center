@@ -1,5 +1,5 @@
 import { type ReactNode, useRef, useCallback } from 'react'
-import { motion, useInView } from 'framer-motion'
+import { motion, useInView, Variants } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
 export interface BentoItem {
@@ -18,7 +18,7 @@ interface BentoGridProps {
   className?: string
 }
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 20, scale: 0.97 },
   visible: (i: number) => ({
     opacity: 1,

@@ -4,6 +4,7 @@ import { X } from 'lucide-react'
 import { LiquidButton } from '@/components/ui/LiquidButton'
 import { VoiceInput } from '@/components/ui/VoiceInput'
 import type { CreateTodoInput, UpdateTodoInput, Todo, TodoPriority, TodoStatus } from '@/types'
+import { useLocaleText } from '@/i18n/useLocaleText'
 
 interface AddTodoModalProps {
     isOpen: boolean
@@ -14,13 +15,14 @@ interface AddTodoModalProps {
     initialData?: Partial<CreateTodoInput>
 }
 
-const PRIORITIES: { value: TodoPriority; label: string; color: string }[] = [
-    { value: 'low', label: 'Low', color: 'bg-emerald-500/20 text-emerald-500 border-emerald-500/30' },
-    { value: 'medium', label: 'Medium', color: 'bg-amber-500/20 text-amber-500 border-amber-500/30' },
-    { value: 'high', label: 'High', color: 'bg-rose-500/20 text-rose-500 border-rose-500/30' },
+const PRIORITIES: { value: TodoPriority; color: string }[] = [
+    { value: 'low', color: 'bg-emerald-500/20 text-emerald-500 border-emerald-500/30' },
+    { value: 'medium', color: 'bg-amber-500/20 text-amber-500 border-amber-500/30' },
+    { value: 'high', color: 'bg-rose-500/20 text-rose-500 border-rose-500/30' },
 ]
 
 export function AddTodoModal({ isOpen, onClose, onSubmit, isLoading, editingTodo, initialData }: AddTodoModalProps) {
+    const { txt } = useLocaleText()
     const [title, setTitle] = useState('')
     const [description, setDescription] = useState('')
     const [priority, setPriority] = useState<TodoPriority>('medium')
@@ -103,12 +105,12 @@ export function AddTodoModal({ isOpen, onClose, onSubmit, isLoading, editingTodo
                             <div className="p-6 md:p-7">
                                 <div className="flex items-center justify-between mb-6">
                                     <h2 id="add-task-modal-title" className="text-2xl font-bold text-white">
-                                        {editingTodo ? 'Editar tarefa' : 'Nova tarefa'}
+                                        {editingTodo ? txt('Editar tarefa', 'Edit task') : txt('Nova tarefa', 'New task')}
                                     </h2>
                                     <button
                                         onClick={onClose}
                                         className="p-2 hover:bg-white/10 rounded-full transition-colors"
-                                        aria-label="Fechar modal"
+                                        aria-label={txt('Fechar modal', 'Close modal')}
                                     >
                                         <X size={20} className="text-white/70" />
                                     </button>
@@ -118,7 +120,7 @@ export function AddTodoModal({ isOpen, onClose, onSubmit, isLoading, editingTodo
                                     {/* Title & Voice */}
                                     <div>
                                         <div className="flex justify-between items-center mb-2">
-                                            <label className="text-sm font-medium text-white/65 uppercase tracking-wide">Titulo</label>
+                                            <label className="text-sm font-medium text-white/65 uppercase tracking-wide">{txt('Titulo', 'Title')}</label>
                                             <VoiceInput
                                                 onTranscript={(text) => {
                                                     // Smartly append or replace
@@ -131,7 +133,7 @@ export function AddTodoModal({ isOpen, onClose, onSubmit, isLoading, editingTodo
                                             type="text"
                                             value={title}
                                             onChange={(e) => setTitle(e.target.value)}
-                                            placeholder="Qual e a proxima acao?"
+                                            placeholder={txt('Qual e a proxima acao?', 'What is the next action?')}
                                             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-[var(--color-accent)] transition-colors"
                                             autoFocus
                                         />
@@ -139,11 +141,11 @@ export function AddTodoModal({ isOpen, onClose, onSubmit, isLoading, editingTodo
 
                                     {/* Description */}
                                     <div>
-                                        <label className="block text-sm font-medium text-white/65 uppercase tracking-wide mb-2">Descricao (Opcional)</label>
+                                        <label className="block text-sm font-medium text-white/65 uppercase tracking-wide mb-2">{txt('Descricao (Opcional)', 'Description (Optional)')}</label>
                                         <textarea
                                             value={description}
                                             onChange={(e) => setDescription(e.target.value)}
-                                            placeholder="Adiciona contexto..."
+                                            placeholder={txt('Adiciona contexto...', 'Add context...')}
                                             rows={3}
                                             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-[var(--color-accent)] transition-colors resize-none"
                                         />
@@ -151,7 +153,7 @@ export function AddTodoModal({ isOpen, onClose, onSubmit, isLoading, editingTodo
 
                                     {/* Priority */}
                                     <div>
-                                        <label className="block text-sm font-medium text-white/65 uppercase tracking-wide mb-2">Prioridade</label>
+                                        <label className="block text-sm font-medium text-white/65 uppercase tracking-wide mb-2">{txt('Prioridade', 'Priority')}</label>
                                         <div className="flex gap-2">
                                             {PRIORITIES.map((p) => (
                                                 <button
@@ -163,7 +165,7 @@ export function AddTodoModal({ isOpen, onClose, onSubmit, isLoading, editingTodo
                                                         ${priority === p.value ? p.color : 'bg-transparent border-white/10 text-white/50 hover:bg-white/5'}
                                                     `}
                                                 >
-                                                    {p.label}
+                                                    {p.value === 'low' ? txt('Baixa', 'Low') : p.value === 'medium' ? txt('Media', 'Medium') : txt('Alta', 'High')}
                                                 </button>
                                             ))}
                                         </div>
@@ -176,14 +178,14 @@ export function AddTodoModal({ isOpen, onClose, onSubmit, isLoading, editingTodo
                                             onClick={onClose}
                                             className="px-4 py-2.5 text-white/70 hover:text-white transition-colors text-sm font-medium"
                                         >
-                                            Cancelar
+                                            {txt('Cancelar', 'Cancel')}
                                         </button>
                                         <LiquidButton
                                             type="submit"
                                             className="flex-1 bg-[var(--color-accent)] text-black"
                                             disabled={isLoading || !title.trim()}
                                         >
-                                            {isLoading ? 'A guardar...' : (editingTodo ? 'Guardar alteracoes' : 'Criar tarefa')}
+                                            {isLoading ? txt('A guardar...', 'Saving...') : (editingTodo ? txt('Guardar alteracoes', 'Save changes') : txt('Criar tarefa', 'Create task'))}
                                         </LiquidButton>
                                     </div>
                                 </form>

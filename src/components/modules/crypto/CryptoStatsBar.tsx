@@ -1,8 +1,10 @@
 import { TrendingUp, TrendingDown, Coins } from 'lucide-react'
 import { useWeb3 } from '@/hooks/useWeb3'
 import { formatCurrency } from '@/utils/format'
+import { useLocaleText } from '@/i18n/useLocaleText'
 
 export function CryptoStatsBar() {
+    const { txt } = useLocaleText()
     const { portfolio, isLoadingPortfolio } = useWeb3()
 
     if (isLoadingPortfolio) {
@@ -25,19 +27,19 @@ export function CryptoStatsBar() {
 
     const stats = [
         {
-            label: 'Portfolio Total',
+            label: txt('Portfolio Total', 'Portfolio Total'),
             value: formatCurrency(totalValue),
             icon: <Coins size={16} />,
             color: 'var(--color-accent)',
         },
         {
-            label: 'Variação 24h',
+            label: txt('Variacao 24h', '24h Change'),
             value: `${weightedChange >= 0 ? '+' : ''}${weightedChange.toFixed(2)}%`,
             icon: weightedChange >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />,
             color: weightedChange >= 0 ? '#22c55e' : '#ef4444',
         },
         {
-            label: 'Ativos',
+            label: txt('Ativos', 'Assets'),
             value: String(totalAssets),
             icon: <Coins size={16} />,
             color: '#8b5cf6',

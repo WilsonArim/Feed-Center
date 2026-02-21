@@ -16,12 +16,9 @@ import { TaskCard } from './TaskCard'
 import { KanbanColumn } from './KanbanColumn'
 import { useTodos, useBatchUpdateTodos } from '@/hooks/useTodos'
 import type { Todo, TodoStatus } from '@/types'
+import { useLocaleText } from '@/i18n/useLocaleText'
 
-const COLUMNS: { id: TodoStatus; title: string }[] = [
-    { id: 'todo', title: 'To Do' },
-    { id: 'in_progress', title: 'Em Progresso' },
-    { id: 'done', title: 'Concluido' },
-]
+const COLUMN_IDS: TodoStatus[] = ['todo', 'in_progress', 'done']
 
 interface KanbanBoardProps {
     listId: string | null
@@ -29,6 +26,7 @@ interface KanbanBoardProps {
 }
 
 export function KanbanBoard({ listId, onEditTask }: KanbanBoardProps) {
+    const { txt } = useLocaleText()
     const { data: todos = [] } = useTodos(listId)
     const updateBatch = useBatchUpdateTodos()
 
@@ -44,6 +42,11 @@ export function KanbanBoard({ listId, onEditTask }: KanbanBoardProps) {
     )
 
     const validTodos = useMemo(() => Array.isArray(todos) ? todos : [], [todos])
+    const columnsConfig = useMemo(() => ([
+        { id: 'todo' as const, title: txt('Por Fazer', 'To Do') },
+        { id: 'in_progress' as const, title: txt('Em Progresso', 'In Progress') },
+        { id: 'done' as const, title: txt('Concluido', 'Done') },
+    ]), [txt])
 
     const columns = useMemo(() => {
         const cols: Record<TodoStatus, Todo[]> = {
@@ -90,7 +93,7 @@ export function KanbanBoard({ listId, onEditTask }: KanbanBoardProps) {
             return
         }
 
-        const isOverColumn = COLUMNS.some((c) => c.id === overId)
+        const isOverColumn = COLUMN_IDS.some((id) => id === overId)
         if (isOverColumn) {
             const newStatus = overId as TodoStatus
             if (activeTask.status !== newStatus) {
@@ -142,7 +145,7 @@ export function KanbanBoard({ listId, onEditTask }: KanbanBoardProps) {
             onDragEnd={handleDragEnd}
         >
             <div className="flex h-full gap-5 overflow-x-auto pb-4 px-1">
-                {COLUMNS.map((col) => (
+                {columnsConfig.map((col) => (
                     <KanbanColumn
                         key={col.id}
                         id={col.id}

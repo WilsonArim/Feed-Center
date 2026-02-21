@@ -9,8 +9,10 @@ import type { Link } from '@/services/linksService'
 import type { CreateLinkInput } from '@/services/linksService'
 import { LinksStatsBar } from '@/components/modules/links/LinksStatsBar'
 import { NextActionsStrip, PageHeader, PageSectionHeader, StateCard } from '@/components/core/PagePrimitives'
+import { useLocaleText } from '@/i18n/useLocaleText'
 
 export function LinksPage() {
+    const { txt } = useLocaleText()
     const [search, setSearch] = useState('')
     const [activeTag, setActiveTag] = useState<string | null>(null)
     const [modalOpen, setModalOpen] = useState(false)
@@ -57,7 +59,7 @@ export function LinksPage() {
     }
 
     return (
-        <div className="pb-12">
+        <div className="w-full max-w-[1400px] mx-auto px-4 md:px-8 pt-8 pb-40">
             <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -67,12 +69,12 @@ export function LinksPage() {
                 {/* Header */}
                 <PageHeader
                     icon={<Link2 size={18} />}
-                    title="Gestor de Links"
-                    subtitle="Guarda, organiza e recupera referencias sem perder contexto."
-                    meta={`${links.length} link${links.length !== 1 ? 's' : ''} guardado${links.length !== 1 ? 's' : ''}`}
+                    title={txt('Gestor de Links', 'Link Manager')}
+                    subtitle={txt('Guarda, organiza e recupera referencias sem perder contexto.', 'Save, organize, and retrieve references without losing context.')}
+                    meta={`${links.length} ${txt('link', 'link')}${links.length !== 1 ? 's' : ''} ${txt('guardado', 'saved')}${links.length !== 1 ? 's' : ''}`}
                     actions={(
                         <StardustButton onClick={openNewModal} size="sm" icon={<Plus size={16} />}>
-                            Novo Link
+                            {txt('Novo Link', 'New Link')}
                         </StardustButton>
                     )}
                 />
@@ -81,8 +83,8 @@ export function LinksPage() {
                 <LinksStatsBar />
 
                 <PageSectionHeader
-                    title="Explorar e Filtrar"
-                    subtitle="Pesquisa por titulo, URL, descricao e tags para chegar mais rapido ao que precisas."
+                    title={txt('Explorar e Filtrar', 'Explore and Filter')}
+                    subtitle={txt('Pesquisa por titulo, URL, descricao e tags para chegar mais rapido ao que precisas.', 'Search by title, URL, description, and tags to get what you need faster.')}
                 />
 
                 {/* Search Bar */}
@@ -95,8 +97,8 @@ export function LinksPage() {
                         type="text"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Pesquisar links por titulo, URL ou descricao..."
-                        className="w-full pl-11 pr-4 py-3.5 rounded-xl text-base bg-[var(--color-surface)] border border-[var(--color-border)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] outline-none transition-all duration-200 focus:ring-2 focus:ring-[var(--color-accent)]/30 focus:border-[var(--color-accent)]/50"
+                        placeholder={txt('Pesquisar links por titulo, URL ou descricao...', 'Search links by title, URL, or description...')}
+                        className="w-full pl-12 pr-4 py-3.5 rounded-2xl text-sm font-bold bg-white/5 border border-transparent text-white placeholder-[var(--color-text-muted)] outline-none transition-all duration-300 focus:ring-2 focus:ring-[var(--accent)]/40 hover:bg-white/10 hover:border-white/10"
                     />
                 </div>
 
@@ -105,23 +107,21 @@ export function LinksPage() {
                     <div className="flex flex-wrap gap-2">
                         <button
                             onClick={() => setActiveTag(null)}
-                            className={`text-xs px-3 py-1.5 rounded-full transition-all duration-200 border ${
-                                !activeTag
-                                    ? 'bg-[var(--color-accent)] text-[var(--color-bg-primary)] border-[var(--color-accent)]'
-                                    : 'bg-[var(--color-surface)] text-[var(--color-text-secondary)] border-[var(--color-border)] hover:border-[var(--color-accent)]/30'
-                            }`}
+                            className={`text-xs font-bold tracking-wide px-4 py-2 rounded-full whitespace-nowrap transition-all duration-300 cursor-pointer ${!activeTag
+                                    ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)]'
+                                    : 'bg-white/5 text-[var(--color-text-secondary)] hover:bg-white/15'
+                                }`}
                         >
-                            Todos
+                            {txt('Todos', 'All')}
                         </button>
                         {allTags.map((tag) => (
                             <button
                                 key={tag}
                                 onClick={() => setActiveTag(activeTag === tag ? null : tag)}
-                                className={`text-xs px-3 py-1.5 rounded-full transition-all duration-200 border ${
-                                    activeTag === tag
-                                        ? 'bg-[var(--color-accent)] text-[var(--color-bg-primary)] border-[var(--color-accent)]'
-                                        : 'bg-[var(--color-surface)] text-[var(--color-text-secondary)] border-[var(--color-border)] hover:border-[var(--color-accent)]/30'
-                                }`}
+                                className={`text-xs font-bold tracking-wide px-4 py-2 rounded-full whitespace-nowrap transition-all duration-300 cursor-pointer ${activeTag === tag
+                                        ? 'bg-[var(--accent)] text-white shadow-[0_0_15px_var(--accent)]'
+                                        : 'bg-white/5 text-[var(--color-text-secondary)] hover:bg-white/15'
+                                    }`}
                             >
                                 {tag}
                             </button>
@@ -132,10 +132,10 @@ export function LinksPage() {
                 {/* Links Grid */}
                 {isError ? (
                     <StateCard
-                        title="Nao foi possivel carregar os links"
-                        message="A tua biblioteca esta temporariamente indisponivel."
+                        title={txt('Nao foi possivel carregar os links', 'Could not load links')}
+                        message={txt('A tua biblioteca esta temporariamente indisponivel.', 'Your library is temporarily unavailable.')}
                         icon={<AlertCircle size={18} />}
-                        actionLabel="Tentar novamente"
+                        actionLabel={txt('Tentar novamente', 'Try again')}
                         onAction={() => { void refetch() }}
                     />
                 ) : isLoading ? (
@@ -146,22 +146,22 @@ export function LinksPage() {
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="flex flex-col items-center justify-center py-20 text-center"
+                        className="flex flex-col items-center justify-center py-24 text-center"
                     >
-                        <div className="w-20 h-20 rounded-2xl flex items-center justify-center mb-6 bg-[var(--color-surface)] border border-[var(--color-border)]">
-                            <Link2 size={32} className="text-[var(--color-text-muted)]" />
+                        <div className="w-24 h-24 rounded-full flex items-center justify-center mb-8 bg-white/5 shadow-[0_10px_30px_rgba(0,0,0,0.3)] border border-white/5">
+                            <Link2 size={40} className="text-white opacity-60" strokeWidth={1.5} />
                         </div>
-                        <h3 className="text-lg font-semibold mb-2 text-[var(--color-text-primary)]">
-                            {search ? 'Nenhum resultado' : 'Nenhum link guardado'}
+                        <h3 className="text-2xl font-black tracking-tight mb-3 text-white drop-shadow-md">
+                            {search ? txt('Nenhum resultado', 'No results') : txt('Nenhum link guardado', 'No saved links')}
                         </h3>
-                        <p className="text-sm mb-6 max-w-sm text-[var(--color-text-muted)]">
+                        <p className="text-base mb-8 max-w-md text-[var(--color-text-muted)] font-medium leading-relaxed">
                             {search
-                                ? `Nao encontramos links para "${search}".`
-                                : 'Comeca por adicionar o teu primeiro link. Podes organizar com tags e notas.'}
+                                ? txt(`Nao encontramos links para "${search}".`, `We could not find links for "${search}".`)
+                                : txt('Comeca por adicionar o teu primeiro link. Podes organizar com tags e notas.', 'Start by adding your first link. You can organize it with tags and notes.')}
                         </p>
                         {!search && (
                             <StardustButton onClick={openNewModal} size="sm" icon={<Plus size={16} />}>
-                                Adicionar primeiro link
+                                {txt('Adicionar primeiro link', 'Add first link')}
                             </StardustButton>
                         )}
                     </motion.div>
@@ -183,11 +183,11 @@ export function LinksPage() {
                 )}
 
                 <NextActionsStrip
-                    title="Proximo passo sugerido"
+                    title={txt('Proximo passo sugerido', 'Suggested next step')}
                     actions={[
-                        { label: 'Guardar novo recurso', to: '/links' },
-                        { label: 'Transformar em tarefa', to: '/todo' },
-                        { label: 'Abrir radar de noticias', to: '/news' },
+                        { label: txt('Guardar novo recurso', 'Save new resource'), to: '/links' },
+                        { label: txt('Transformar em tarefa', 'Turn into task'), to: '/todo' },
+                        { label: txt('Abrir radar de noticias', 'Open news radar'), to: '/news' },
                     ]}
                 />
             </motion.div>

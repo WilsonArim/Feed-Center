@@ -2,6 +2,8 @@ import { useProjectFinancials } from '@/hooks/useFinancial'
 import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/utils/format'
 import { DollarSign, Receipt, AlertCircle, Loader2, TrendingDown } from 'lucide-react'
+import { useLocaleText } from '@/i18n/useLocaleText'
+import { localizeFinancialCategory } from '@/i18n/financialCategoryLabel'
 
 interface ProjectFinanceViewProps {
     projectId: string
@@ -9,6 +11,7 @@ interface ProjectFinanceViewProps {
 }
 
 export function ProjectFinanceView({ projectId, budget = 0 }: ProjectFinanceViewProps) {
+    const { txt, isEnglish } = useLocaleText()
     const { data, isLoading } = useProjectFinancials(projectId)
 
     if (isLoading) {
@@ -31,7 +34,7 @@ export function ProjectFinanceView({ projectId, budget = 0 }: ProjectFinanceView
                         <DollarSign size={24} />
                     </div>
                     <div>
-                        <p className="text-xs font-medium text-white/50 uppercase tracking-wider">Orçamento</p>
+                        <p className="text-xs font-medium text-white/50 uppercase tracking-wider">{txt('Orcamento', 'Budget')}</p>
                         <p className="text-2xl font-bold text-white tracking-tight">{formatCurrency(budget)}</p>
                     </div>
                 </Card>
@@ -43,7 +46,7 @@ export function ProjectFinanceView({ projectId, budget = 0 }: ProjectFinanceView
                         <TrendingDown size={24} />
                     </div>
                     <div>
-                        <p className="text-xs font-medium text-white/50 uppercase tracking-wider">Gasto Total</p>
+                        <p className="text-xs font-medium text-white/50 uppercase tracking-wider">{txt('Gasto Total', 'Total Spent')}</p>
                         <p className="text-2xl font-bold text-white tracking-tight">{formatCurrency(totalSpent)}</p>
                     </div>
                 </Card>
@@ -56,7 +59,7 @@ export function ProjectFinanceView({ projectId, budget = 0 }: ProjectFinanceView
                     </div>
                     <div>
                         <p className="text-xs font-medium text-white/50 uppercase tracking-wider">
-                            {isOverBudget ? 'Excedido' : 'Restante'}
+                            {isOverBudget ? txt('Excedido', 'Exceeded') : txt('Restante', 'Remaining')}
                         </p>
                         <p className={`text-2xl font-bold tracking-tight ${isOverBudget ? 'text-red-400' : 'text-green-400'}`}>
                             {formatCurrency(isOverBudget ? totalSpent - budget : remaining)}
@@ -69,12 +72,12 @@ export function ProjectFinanceView({ projectId, budget = 0 }: ProjectFinanceView
             <div className="space-y-4">
                 <h3 className="text-lg font-bold text-white flex items-center gap-2">
                     <Receipt size={18} className="text-[var(--color-accent)]" />
-                    Despesas do Projeto
+                    {txt('Despesas do Projeto', 'Project Expenses')}
                 </h3>
 
                 {entries.length === 0 ? (
                     <div className="text-center py-12 bg-white/5 rounded-2xl border border-white/5 border-dashed">
-                        <p className="text-white/30 text-sm">Nenhuma despesa associada a este projeto ainda.</p>
+                        <p className="text-white/30 text-sm">{txt('Nenhuma despesa associada a este projeto ainda.', 'No expenses linked to this project yet.')}</p>
                     </div>
                 ) : (
                     <div className="space-y-2">
@@ -86,8 +89,8 @@ export function ProjectFinanceView({ projectId, budget = 0 }: ProjectFinanceView
                                         <div className="text-xl">🧾</div>
                                     </div>
                                     <div>
-                                        <p className="font-medium text-white">{entry.description || entry.category}</p>
-                                        <p className="text-xs text-white/50">{new Date(entry.date).toLocaleDateString('pt-PT')} • {entry.category}</p>
+                                        <p className="font-medium text-white">{entry.description || localizeFinancialCategory(entry.category, isEnglish)}</p>
+                                        <p className="text-xs text-white/50">{new Date(entry.date).toLocaleDateString(isEnglish ? 'en-US' : 'pt-PT')} • {localizeFinancialCategory(entry.category, isEnglish)}</p>
                                     </div>
                                 </div>
                                 <span className="font-bold text-white">

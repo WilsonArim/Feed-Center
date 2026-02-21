@@ -15,6 +15,10 @@ export interface UserSettings {
     theme: 'dark' | 'light' | 'auto'
     currency: string
     language: string
+    home_page: string
+    copilot_name: string
+    copilot_avatar_url: string
+    show_merchant_insights: boolean
     notifications_email: boolean
     notifications_push: boolean
 }
@@ -45,6 +49,7 @@ export const CATEGORIES_BY_TYPE: Record<EntryType, readonly string[]> = {
     bill: [
         'Renda',
         'Eletricidade',
+        'Gás',
         'Água',
         'Internet',
         'Seguro',
@@ -103,6 +108,8 @@ export interface FinancialEntry {
     buggy_alert: boolean
     buggy_alert_days: number | null
     receipt_url: string | null
+    receipt_merchant: string | null
+    receipt_nif: string | null
     pocket_id: string | null
     project_id: string | null
     ai_suggested_category: boolean
@@ -125,6 +132,8 @@ export interface CreateEntryInput {
     periodicity?: Periodicity
     buggy_alert?: boolean
     buggy_alert_days?: number
+    receipt_merchant?: string
+    receipt_nif?: string
     pocket_id?: string
     project_id?: string
 }

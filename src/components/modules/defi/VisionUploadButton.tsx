@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { Camera, Loader2, Check, AlertCircle } from 'lucide-react'
 import { extractTextFromImage, isVisionAvailable } from '@/services/visionOcrService'
 import type { VisionOcrResult } from '@/types'
+import { useLocaleText } from '@/i18n/useLocaleText'
 
 interface Props {
     onResult: (result: VisionOcrResult) => void
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export function VisionUploadButton({ onResult, label = 'Importar screenshot' }: Props) {
+    const { txt } = useLocaleText()
     const fileRef = useRef<HTMLInputElement>(null)
     const [status, setStatus] = useState<'idle' | 'processing' | 'done' | 'error'>('idle')
     const [error, setError] = useState('')
@@ -29,7 +31,7 @@ export function VisionUploadButton({ onResult, label = 'Importar screenshot' }: 
             setTimeout(() => setStatus('idle'), 2000)
         } catch (err) {
             setStatus('error')
-            setError(err instanceof Error ? err.message : 'Erro ao processar imagem')
+            setError(err instanceof Error ? err.message : txt('Erro ao processar imagem', 'Error processing image'))
             setTimeout(() => setStatus('idle'), 3000)
         }
 
@@ -63,7 +65,7 @@ export function VisionUploadButton({ onResult, label = 'Importar screenshot' }: 
                 {status === 'done' && <Check size={14} />}
                 {status === 'error' && <AlertCircle size={14} />}
                 {status === 'idle' && <Camera size={14} />}
-                {status === 'processing' ? 'A processar...' : status === 'done' ? 'Importado!' : label}
+                {status === 'processing' ? txt('A processar...', 'Processing...') : status === 'done' ? txt('Importado!', 'Imported!') : label}
             </button>
             {status === 'error' && error && (
                 <p className="text-[10px] text-red-400 mt-1">{error}</p>

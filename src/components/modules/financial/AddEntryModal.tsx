@@ -5,6 +5,8 @@ import { StardustButton } from '@/components/ui/StardustButton'
 import { CATEGORIES_BY_TYPE } from '@/types'
 import type { FinancialEntry, EntryType, PaymentMethod, CreateEntryInput, Periodicity } from '@/types'
 import { useTodoLists } from '@/hooks/useTodos'
+import { useLocaleText } from '@/i18n/useLocaleText'
+import { localizeFinancialCategory } from '@/i18n/financialCategoryLabel'
 
 interface Props {
     isOpen: boolean
@@ -14,47 +16,12 @@ interface Props {
     editingEntry?: FinancialEntry | null
 }
 
-const ENTRY_TYPES: { value: EntryType; label: string }[] = [
-    { value: 'expense', label: 'Despesa Pontual' },
-    { value: 'income', label: 'Receita' },
-    { value: 'bill', label: 'Despesa Fixa' },
-]
-
-const PAYMENT_METHODS: { value: PaymentMethod; label: string }[] = [
-    { value: 'cash', label: 'Dinheiro' },
-    { value: 'cartao', label: 'Cartão' },
-    { value: 'mbway', label: 'MB Way' },
-    { value: 'transferencia', label: 'Transferência' },
-    { value: 'outro', label: 'Outro' },
-]
-
-const PERIODICITY_OPTIONS: { value: Periodicity; label: string }[] = [
-    { value: 'mensal', label: 'Mensal' },
-    { value: 'bimestral', label: 'Bimestral (2 meses)' },
-    { value: 'trimestral', label: 'Trimestral (3 meses)' },
-    { value: 'semestral', label: 'Semestral (6 meses)' },
-    { value: 'anual', label: 'Anual' },
-]
-
-const TYPE_CONTEXT: Record<EntryType, { descPlaceholder: string; valorLabel: string; title: string }> = {
-    expense: {
-        descPlaceholder: 'Ex: Supermercado Continente',
-        valorLabel: 'Valor gasto (€) *',
-        title: 'Nova Despesa Pontual',
-    },
-    income: {
-        descPlaceholder: 'Ex: Empresa XYZ — Salário Janeiro',
-        valorLabel: 'Valor recebido (€) *',
-        title: 'Nova Receita',
-    },
-    bill: {
-        descPlaceholder: 'Ex: EDP Comercial — Fatura Fevereiro',
-        valorLabel: 'Valor a pagar (€) *',
-        title: 'Nova Despesa Fixa',
-    },
-}
+const ENTRY_TYPES: EntryType[] = ['expense', 'income', 'bill']
+const PAYMENT_METHODS: PaymentMethod[] = ['cash', 'cartao', 'mbway', 'transferencia', 'outro']
+const PERIODICITY_OPTIONS: Periodicity[] = ['mensal', 'bimestral', 'trimestral', 'semestral', 'anual']
 
 export function AddEntryModal({ isOpen, onClose, onSubmit, isLoading, editingEntry }: Props) {
+    const { txt, isEnglish } = useLocaleText()
     const { data: allLists } = useTodoLists()
     const projects = useMemo(() => allLists?.filter(l => l.type === 'project') ?? [], [allLists])
 
@@ -80,6 +47,46 @@ export function AddEntryModal({ isOpen, onClose, onSubmit, isLoading, editingEnt
     // Buggy Alert Fields
     const [buggyAlert, setBuggyAlert] = useState(false)
     const [buggyAlertDays, setBuggyAlertDays] = useState(3)
+
+    const getEntryTypeLabel = (entryType: EntryType) => {
+        if (entryType === 'expense') return txt('Despesa Pontual', 'One-time Expense')
+        if (entryType === 'income') return txt('Receita', 'Income')
+        return txt('Despesa Fixa', 'Recurring Bill')
+    }
+
+    const getPaymentMethodLabel = (paymentMethodValue: PaymentMethod) => {
+        if (paymentMethodValue === 'cash') return txt('Dinheiro', 'Cash')
+        if (paymentMethodValue === 'cartao') return txt('Cartao', 'Card')
+        if (paymentMethodValue === 'mbway') return 'MB Way'
+        if (paymentMethodValue === 'transferencia') return txt('Transferencia', 'Transfer')
+        return txt('Outro', 'Other')
+    }
+
+    const getPeriodicityLabel = (periodicityValue: Periodicity) => {
+        if (periodicityValue === 'mensal') return txt('Mensal', 'Monthly')
+        if (periodicityValue === 'bimestral') return txt('Bimestral (2 meses)', 'Bi-monthly (2 months)')
+        if (periodicityValue === 'trimestral') return txt('Trimestral (3 meses)', 'Quarterly (3 months)')
+        if (periodicityValue === 'semestral') return txt('Semestral (6 meses)', 'Semi-annual (6 months)')
+        return txt('Anual', 'Annual')
+    }
+
+    const typeContext = useMemo<Record<EntryType, { descPlaceholder: string; valorLabel: string; title: string }>>(() => ({
+        expense: {
+            descPlaceholder: txt('Ex: Supermercado Continente', 'Ex: Grocery Store'),
+            valorLabel: txt('Valor gasto (€) *', 'Amount spent (€) *'),
+            title: txt('Nova Despesa Pontual', 'New One-time Expense'),
+        },
+        income: {
+            descPlaceholder: txt('Ex: Empresa XYZ — Salario Janeiro', 'Ex: Company XYZ — January Salary'),
+            valorLabel: txt('Valor recebido (€) *', 'Amount received (€) *'),
+            title: txt('Nova Receita', 'New Income'),
+        },
+        bill: {
+            descPlaceholder: txt('Ex: EDP Comercial — Fatura Fevereiro', 'Ex: Utility Bill — February'),
+            valorLabel: txt('Valor a pagar (€) *', 'Amount due (€) *'),
+            title: txt('Nova Despesa Fixa', 'New Recurring Bill'),
+        },
+    }), [txt])
 
     // Categories filtered by selected type
     const categories = CATEGORIES_BY_TYPE[type]
@@ -196,12 +203,12 @@ export function AddEntryModal({ isOpen, onClose, onSubmit, isLoading, editingEnt
                         {/* Header */}
                         <div className="flex items-center justify-between mb-5">
                             <h2 id="add-entry-modal-title" className="text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                                {editingEntry ? 'Editar Entrada' : TYPE_CONTEXT[type].title}
+                                {editingEntry ? txt('Editar Entrada', 'Edit Entry') : typeContext[type].title}
                             </h2>
                             <button
                                 onClick={onClose}
                                 className="p-1.5 rounded-lg hover:bg-[var(--color-bg-tertiary)] cursor-pointer"
-                                aria-label="Fechar modal"
+                                aria-label={txt('Fechar modal', 'Close modal')}
                             >
                                 <X size={18} style={{ color: 'var(--color-text-muted)' }} />
                             </button>
@@ -211,20 +218,20 @@ export function AddEntryModal({ isOpen, onClose, onSubmit, isLoading, editingEnt
                             {/* Type selector */}
                             <div>
                                 <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--color-text-secondary)' }}>
-                                    Tipo
+                                    {txt('Tipo', 'Type')}
                                 </label>
                                 <div className="flex gap-2">
-                                    {ENTRY_TYPES.map((t) => (
+                                    {ENTRY_TYPES.map((entryType) => (
                                         <button
-                                            key={t.value}
+                                            key={entryType}
                                             type="button"
-                                            onClick={() => setType(t.value)}
-                                            className={`flex-1 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer whitespace-nowrap px-1 ${type === t.value
+                                            onClick={() => setType(entryType)}
+                                            className={`flex-1 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all cursor-pointer whitespace-nowrap px-1 ${type === entryType
                                                 ? 'bg-[var(--color-accent)] text-[var(--color-bg-primary)]'
                                                 : 'hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)] border border-[var(--color-border)]'
                                                 }`}
                                         >
-                                            {t.label}
+                                            {getEntryTypeLabel(entryType)}
                                         </button>
                                     ))}
                                 </div>
@@ -233,7 +240,7 @@ export function AddEntryModal({ isOpen, onClose, onSubmit, isLoading, editingEnt
                             {/* Amount */}
                             <div>
                                 <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--color-text-secondary)' }}>
-                                    {TYPE_CONTEXT[type].valorLabel}
+                                    {typeContext[type].valorLabel}
                                 </label>
                                 <input
                                     type="number"
@@ -252,7 +259,7 @@ export function AddEntryModal({ isOpen, onClose, onSubmit, isLoading, editingEnt
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--color-text-secondary)' }}>
-                                        Categoria
+                                        {txt('Categoria', 'Category')}
                                     </label>
                                     <select
                                         value={category}
@@ -261,13 +268,13 @@ export function AddEntryModal({ isOpen, onClose, onSubmit, isLoading, editingEnt
                                         style={inputStyle}
                                     >
                                         {categories.map((c) => (
-                                            <option key={c} value={c}>{c}</option>
+                                            <option key={c} value={c}>{localizeFinancialCategory(c, isEnglish)}</option>
                                         ))}
                                     </select>
                                 </div>
                                 <div>
                                     <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--color-text-secondary)' }}>
-                                        Pagamento
+                                        {txt('Pagamento', 'Payment')}
                                     </label>
                                     <select
                                         value={paymentMethod}
@@ -275,8 +282,8 @@ export function AddEntryModal({ isOpen, onClose, onSubmit, isLoading, editingEnt
                                         className="w-full px-4 py-2.5 rounded-[var(--radius-md)] text-sm cursor-pointer"
                                         style={inputStyle}
                                     >
-                                        {PAYMENT_METHODS.map((p) => (
-                                            <option key={p.value} value={p.value}>{p.label}</option>
+                                        {PAYMENT_METHODS.map((paymentMethodValue) => (
+                                            <option key={paymentMethodValue} value={paymentMethodValue}>{getPaymentMethodLabel(paymentMethodValue)}</option>
                                         ))}
                                     </select>
                                 </div>
@@ -286,17 +293,17 @@ export function AddEntryModal({ isOpen, onClose, onSubmit, isLoading, editingEnt
                             {projects.length > 0 && (
                                 <div>
                                     <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--color-text-secondary)' }}>
-                                        Associar a Projeto (Opcional)
+                                        {txt('Associar a Projeto (Opcional)', 'Link to Project (Optional)')}
                                     </label>
                                     <div className="relative">
                                         <Briefcase size={16} className="absolute left-3 top-2.5 opacity-50" />
                                         <select
                                             value={projectId}
                                             onChange={(e) => setProjectId(e.target.value)}
-                                            className="w-full pl-10 pr-4 py-2.5 rounded-[var(--radius-md)] text-sm cursor-pointer"
-                                            style={inputStyle}
-                                        >
-                                            <option value="">Sem Projeto</option>
+                                        className="w-full pl-10 pr-4 py-2.5 rounded-[var(--radius-md)] text-sm cursor-pointer"
+                                        style={inputStyle}
+                                    >
+                                            <option value="">{txt('Sem Projeto', 'No Project')}</option>
                                             {projects.map((p) => (
                                                 <option key={p.id} value={p.id}>{p.title}</option>
                                             ))}
@@ -308,11 +315,11 @@ export function AddEntryModal({ isOpen, onClose, onSubmit, isLoading, editingEnt
                             {/* Description */}
                             <div>
                                 <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--color-text-secondary)' }}>
-                                    Descrição
+                                    {txt('Descricao', 'Description')}
                                 </label>
                                 <input
                                     type="text"
-                                    placeholder={TYPE_CONTEXT[type].descPlaceholder}
+                                    placeholder={typeContext[type].descPlaceholder}
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
                                     className="w-full px-4 py-2.5 rounded-[var(--radius-md)] text-sm"
@@ -323,7 +330,7 @@ export function AddEntryModal({ isOpen, onClose, onSubmit, isLoading, editingEnt
                             {/* Date (Switch label based on Despesa Fixa) */}
                             <div>
                                 <label className="text-xs font-medium mb-1.5 block" style={{ color: 'var(--color-text-secondary)' }}>
-                                    {type === 'bill' ? 'Data de Início' : 'Data'}
+                                    {type === 'bill' ? txt('Data de Inicio', 'Start Date') : txt('Data', 'Date')}
                                 </label>
                                 <input
                                     type="date"
@@ -347,7 +354,7 @@ export function AddEntryModal({ isOpen, onClose, onSubmit, isLoading, editingEnt
                                             {/* Periodicity */}
                                             <div>
                                                 <label className="text-xs font-medium mb-1.5 block text-[var(--color-accent)]">
-                                                    Periodicidade *
+                                                    {txt('Periodicidade *', 'Recurrence *')}
                                                 </label>
                                                 <select
                                                     value={periodicity}
@@ -355,8 +362,8 @@ export function AddEntryModal({ isOpen, onClose, onSubmit, isLoading, editingEnt
                                                     className="w-full px-4 py-2.5 rounded-[var(--radius-md)] text-sm cursor-pointer"
                                                     style={inputStyle}
                                                 >
-                                                    {PERIODICITY_OPTIONS.map((p) => (
-                                                        <option key={p.value} value={p.value}>{p.label}</option>
+                                                    {PERIODICITY_OPTIONS.map((periodicityValue) => (
+                                                        <option key={periodicityValue} value={periodicityValue}>{getPeriodicityLabel(periodicityValue)}</option>
                                                     ))}
                                                 </select>
                                             </div>
@@ -364,7 +371,7 @@ export function AddEntryModal({ isOpen, onClose, onSubmit, isLoading, editingEnt
                                             {/* Day of Month */}
                                             <div>
                                                 <label className="text-xs font-medium mb-1.5 block text-[var(--color-accent)]">
-                                                    Dia de vencimento *
+                                                    {txt('Dia de vencimento *', 'Due day *')}
                                                 </label>
                                                 <div className="relative">
                                                     <CalendarClock size={16} className="absolute left-3 top-2.5 opacity-50" />
@@ -372,7 +379,7 @@ export function AddEntryModal({ isOpen, onClose, onSubmit, isLoading, editingEnt
                                                         type="number"
                                                         min="1"
                                                         max="31"
-                                                        placeholder="Ex: 5"
+                                                        placeholder={txt('Ex: 5', 'Ex: 5')}
                                                         value={recurringDay}
                                                         onChange={(e) => setRecurringDay(e.target.value)}
                                                         className="w-full pl-10 pr-4 py-2.5 rounded-[var(--radius-md)] text-sm"
@@ -394,7 +401,7 @@ export function AddEntryModal({ isOpen, onClose, onSubmit, isLoading, editingEnt
                                                 <div className="flex items-center gap-2">
                                                     <BellRing size={14} className={buggyAlert ? 'text-[var(--color-accent)]' : 'text-[var(--color-text-muted)]'} />
                                                     <span className="text-sm font-medium" style={{ color: buggyAlert ? 'var(--color-text-primary)' : 'var(--color-text-secondary)' }}>
-                                                        Receber alerta do Buggy
+                                                        {txt('Receber alerta do Buggy', 'Receive Buggy alert')}
                                                     </span>
                                                 </div>
                                             </label>
@@ -407,7 +414,7 @@ export function AddEntryModal({ isOpen, onClose, onSubmit, isLoading, editingEnt
                                                     className="pl-7"
                                                 >
                                                     <label className="text-xs block mb-1.5" style={{ color: 'var(--color-text-secondary)' }}>
-                                                        Avisar com dias de antecedência
+                                                        {txt('Avisar com dias de antecedencia', 'Alert days in advance')}
                                                     </label>
                                                     <input
                                                         type="number"
@@ -435,7 +442,7 @@ export function AddEntryModal({ isOpen, onClose, onSubmit, isLoading, editingEnt
                                         className="w-4 h-4 accent-[var(--color-accent)] cursor-pointer"
                                     />
                                     <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                                        Entrada recorrente (mensal)
+                                        {txt('Entrada recorrente (mensal)', 'Recurring entry (monthly)')}
                                     </span>
                                 </label>
                             )}
@@ -448,7 +455,7 @@ export function AddEntryModal({ isOpen, onClose, onSubmit, isLoading, editingEnt
                                     variant="ghost"
                                     size="sm"
                                 >
-                                    Cancelar
+                                    {txt('Cancelar', 'Cancel')}
                                 </StardustButton>
                                 <StardustButton
                                     type="submit"
@@ -456,7 +463,7 @@ export function AddEntryModal({ isOpen, onClose, onSubmit, isLoading, editingEnt
                                     size="sm"
                                     icon={isLoading ? <Loader2 size={14} className="animate-spin" /> : undefined}
                                 >
-                                    {editingEntry ? '✧ Guardar' : '✧ Adicionar'}
+                                    {editingEntry ? `✧ ${txt('Guardar', 'Save')}` : `✧ ${txt('Adicionar', 'Add')}`}
                                 </StardustButton>
                             </div>
                         </form>

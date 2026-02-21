@@ -1,7 +1,9 @@
 import { useTodos } from '@/hooks/useTodos'
 import { CheckCircle2, Clock, AlertCircle } from 'lucide-react'
+import { useLocaleText } from '@/i18n/useLocaleText'
 
 export function TodoWidget() {
+    const { txt, isEnglish } = useLocaleText()
     const { data: todos, isLoading } = useTodos()
 
     if (isLoading) {
@@ -19,12 +21,12 @@ export function TodoWidget() {
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                     <span className="text-2xl font-bold text-[var(--color-text-primary)]">{pendingTodos.length}</span>
-                    <span className="text-sm text-[var(--color-text-muted)]">pendentes</span>
+                    <span className="text-sm text-[var(--color-text-muted)]">{txt('pendentes', 'pending')}</span>
                 </div>
                 {highPriority.length > 0 && (
                     <div className="flex items-center gap-1 text-xs text-[var(--color-warning)] bg-[var(--color-warning)]/10 px-2 py-1 rounded-lg border border-[var(--color-warning)]/15 font-medium">
                         <AlertCircle size={12} />
-                        {highPriority.length} Alta
+                        {highPriority.length} {txt('Alta', 'High')}
                     </div>
                 )}
             </div>
@@ -35,7 +37,7 @@ export function TodoWidget() {
                         <div className="w-10 h-10 rounded-xl bg-[var(--color-success)]/10 flex items-center justify-center mb-2">
                             <CheckCircle2 size={18} className="text-[var(--color-success)]" />
                         </div>
-                        Tudo feito!
+                        {txt('Tudo feito!', 'All done!')}
                     </div>
                 ) : (
                     nextTasks.map(todo => (
@@ -51,7 +53,7 @@ export function TodoWidget() {
                                 {todo.due_date && (
                                     <p className="text-[10px] text-[var(--color-text-muted)] flex items-center gap-1 mt-0.5">
                                         <Clock size={10} />
-                                        {new Date(todo.due_date).toLocaleDateString('pt-PT')}
+                                        {new Date(todo.due_date).toLocaleDateString(isEnglish ? 'en-US' : 'pt-PT')}
                                     </p>
                                 )}
                             </div>

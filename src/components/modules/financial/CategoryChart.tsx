@@ -2,6 +2,8 @@ import { Doughnut } from 'react-chartjs-2'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
 import type { CategoryBreakdown } from '@/services/financialService'
 import { formatCurrency } from '@/utils/format'
+import { useLocaleText } from '@/i18n/useLocaleText'
+import { localizeFinancialCategory } from '@/i18n/financialCategoryLabel'
 
 ChartJS.register(ArcElement, Tooltip, Legend)
 
@@ -17,26 +19,27 @@ interface Props {
 }
 
 export function CategoryChart({ breakdown, isLoading, onCategoryClick }: Props) {
+    const { txt, isEnglish } = useLocaleText()
     if (isLoading) {
         return (
-            <div className="bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-2xl p-6 flex items-center justify-center h-[320px]">
-                <div className="w-40 h-40 rounded-full bg-[var(--color-bg-tertiary)] animate-pulse" />
+            <div className="flex items-center justify-center h-[320px]">
+                <div className="w-40 h-40 rounded-full bg-white/5 animate-pulse" />
             </div>
         )
     }
 
     if (!breakdown || breakdown.length === 0) {
         return (
-            <div className="bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-2xl p-6 flex items-center justify-center h-[320px]">
-                <p className="text-sm text-[var(--color-text-muted)]">
-                    Sem despesas este mes
+            <div className="flex items-center justify-center h-[320px]">
+                <p className="text-sm font-medium text-[var(--color-text-muted)] tracking-widest uppercase">
+                    {txt('Sem despesas este mes', 'No expenses this month')}
                 </p>
             </div>
         )
     }
 
     const data = {
-        labels: breakdown.map((b) => b.category),
+        labels: breakdown.map((b) => localizeFinancialCategory(b.category, isEnglish)),
         datasets: [
             {
                 data: breakdown.map((b) => b.total),
@@ -77,9 +80,9 @@ export function CategoryChart({ breakdown, isLoading, onCategoryClick }: Props) 
     }
 
     return (
-        <div className="bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-2xl p-6">
-            <h3 className="text-sm font-semibold mb-4 text-[var(--color-text-primary)]">
-                Despesas por Categoria
+        <div className="py-2">
+            <h3 className="text-lg font-bold tracking-tight mb-8 text-white drop-shadow-sm">
+                {txt('Despesas por Categoria', 'Expenses by Category')}
             </h3>
 
             <div className="h-[220px] mb-4">
@@ -97,7 +100,7 @@ export function CategoryChart({ breakdown, isLoading, onCategoryClick }: Props) 
                             className="w-2.5 h-2.5 rounded-sm shrink-0"
                             style={{ background: PALETTE[i % PALETTE.length] }}
                         />
-                        {b.category} ({b.percentage}%)
+                        {localizeFinancialCategory(b.category, isEnglish)} ({b.percentage}%)
                     </button>
                 ))}
             </div>

@@ -5,9 +5,17 @@ import { useAuth } from '@/components/core/AuthProvider'
 import { copilotService, type CopilotMessage, type PendingConfirmation } from '@/services/copilotService'
 import { speechService, type SpeechState } from '@/services/speechService'
 import { ttsService } from '@/services/ttsService'
+import { useLocaleText } from '@/i18n/useLocaleText'
+import { useCopilotAvatarUrl, useCopilotName } from '@/hooks/useUserSettings'
+import { DEFAULT_COPILOT_AVATAR_URL } from '@/services/userSettingsService'
 
 export function BuggyWidget() {
+    const { txt } = useLocaleText()
     const { user } = useAuth()
+    const copilotNameQuery = useCopilotName()
+    const copilotAvatarQuery = useCopilotAvatarUrl()
+    const copilotName = copilotNameQuery.data ?? 'Buggy'
+    const copilotAvatarUrl = copilotAvatarQuery.data ?? DEFAULT_COPILOT_AVATAR_URL
     const [isOpen, setIsOpen] = useState(false)
     const [input, setInput] = useState('')
     const [messages, setMessages] = useState<CopilotMessage[]>([])
@@ -50,7 +58,7 @@ export function BuggyWidget() {
         if (!pending || !user) return
         setPending(null)
         if (!confirmed) {
-            setDisplayMessages(prev => [...prev, { role: 'assistant', content: 'Acao cancelada.' }])
+            setDisplayMessages(prev => [...prev, { role: 'assistant', content: txt('Acao cancelada.', 'Action canceled.') }])
             return
         }
         setIsLoading(true)
@@ -128,7 +136,7 @@ export function BuggyWidget() {
                 {isOpen ? (
                     <X size={20} className="text-white" />
                 ) : (
-                    <img src="/buggy-mascot.png" alt="Buggy" className="w-10 h-10 object-contain object-bottom" />
+                    <img src={copilotAvatarUrl} alt={copilotName} className="w-10 h-10 object-contain object-bottom" onError={(e) => { e.currentTarget.src = DEFAULT_COPILOT_AVATAR_URL }} />
                 )}
             </motion.button>
 
@@ -147,17 +155,18 @@ export function BuggyWidget() {
                         {/* Header */}
                         <div className="relative h-20 overflow-hidden flex-shrink-0 bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-secondary)]">
                             <img
-                                src="/buggy-mascot.png"
+                                src={copilotAvatarUrl}
                                 alt=""
                                 className="absolute right-2 bottom-0 h-20 object-contain opacity-20 pointer-events-none"
+                                onError={(e) => { e.currentTarget.src = DEFAULT_COPILOT_AVATAR_URL }}
                             />
                             <div className="relative z-10 p-4 flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                                    <img src="/buggy-mascot.png" alt="Buggy" className="w-7 h-7 object-contain" />
+                                    <img src={copilotAvatarUrl} alt={copilotName} className="w-7 h-7 object-contain" onError={(e) => { e.currentTarget.src = DEFAULT_COPILOT_AVATAR_URL }} />
                                 </div>
                                 <div>
-                                    <h3 className="text-white font-bold text-base">Buggy</h3>
-                                    <p className="text-white/60 text-[11px]">Copilot do Feed Center</p>
+                                    <h3 className="text-white font-bold text-base">{copilotName}</h3>
+                                    <p className="text-white/60 text-[11px]">{txt('Copilot do Feed Center', 'Feed Center Copilot')}</p>
                                 </div>
                             </div>
                         </div>
@@ -166,10 +175,10 @@ export function BuggyWidget() {
                         <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar min-h-[200px] max-h-[calc(70vh-180px)]">
                             {displayMessages.length === 0 && !isLoading && (
                                 <div className="text-center py-8">
-                                    <p className="text-sm text-[var(--color-text-secondary)]">Ola!</p>
-                                    <p className="text-xs text-[var(--color-text-muted)] mt-1">Experimenta:</p>
+                                    <p className="text-sm text-[var(--color-text-secondary)]">{txt('Ola!', 'Hello!')}</p>
+                                    <p className="text-xs text-[var(--color-text-muted)] mt-1">{txt('Experimenta:', 'Try:')}</p>
                                     <div className="mt-3 space-y-1.5">
-                                        {['Qual e o meu saldo?', 'Cria um todo: comprar leite', 'Quantos tokens tenho?'].map(s => (
+                                        {[txt('Qual e o meu saldo?', 'What is my balance?'), txt('Cria um todo: comprar leite', 'Create a todo: buy milk'), txt('Quantos tokens tenho?', 'How many tokens do I have?')].map(s => (
                                             <button
                                                 key={s}
                                                 onClick={() => { setInput(s); inputRef.current?.focus() }}
@@ -202,7 +211,7 @@ export function BuggyWidget() {
                                         {msg.role === 'assistant' && ttsService.isAvailable() && (
                                             <button
                                                 onClick={() => handleSpeak(msg.content, i)}
-                                                title={speakingIndex === i ? 'Parar' : 'Ouvir resposta'}
+                                                title={speakingIndex === i ? txt('Parar', 'Stop') : txt('Ouvir resposta', 'Listen to reply')}
                                                 className={`absolute -bottom-3 right-1 opacity-0 group-hover:opacity-100 transition-all duration-150
                                                     w-6 h-6 rounded-full flex items-center justify-center cursor-pointer
                                                     ${speakingIndex === i
@@ -226,7 +235,7 @@ export function BuggyWidget() {
                                     <div className="px-3.5 py-2.5 rounded-2xl rounded-bl-md bg-[var(--color-bg-tertiary)] border border-[var(--color-border)]">
                                         <div className="flex items-center gap-2 text-xs text-[var(--color-text-muted)]">
                                             <Loader2 size={12} className="animate-spin" />
-                                            A processar...
+                                            {txt('A processar...', 'Processing...')}
                                         </div>
                                     </div>
                                 </div>
@@ -234,20 +243,20 @@ export function BuggyWidget() {
 
                             {pending && (
                                 <div className="p-3 rounded-xl bg-[var(--color-warning)]/10 border border-[var(--color-warning)]/20">
-                                    <p className="text-xs font-bold text-[var(--color-warning)] mb-2">Confirmacao necessaria</p>
+                                    <p className="text-xs font-bold text-[var(--color-warning)] mb-2">{txt('Confirmacao necessaria', 'Confirmation required')}</p>
                                     <p className="text-xs text-[var(--color-text-muted)] mb-3">{pending.description}</p>
                                     <div className="flex gap-2">
                                         <button
                                             onClick={() => handleConfirm(true)}
                                             className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-full bg-[var(--color-success)]/15 text-[var(--color-success)] hover:bg-[var(--color-success)]/25 transition-colors cursor-pointer"
                                         >
-                                            <Check size={12} /> Confirmar
+                                            <Check size={12} /> {txt('Confirmar', 'Confirm')}
                                         </button>
                                         <button
                                             onClick={() => handleConfirm(false)}
                                             className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-full bg-[var(--color-danger)]/15 text-[var(--color-danger)] hover:bg-[var(--color-danger)]/25 transition-colors cursor-pointer"
                                         >
-                                            <XCircle size={12} /> Cancelar
+                                            <XCircle size={12} /> {txt('Cancelar', 'Cancel')}
                                         </button>
                                     </div>
                                 </div>
@@ -270,7 +279,7 @@ export function BuggyWidget() {
                                                 animate={{ scale: [1, 1.3, 1], opacity: [1, 0.6, 1] }}
                                                 transition={{ repeat: Infinity, duration: 1 }}
                                             />
-                                            <span className="text-xs text-[var(--color-danger)] font-medium">A gravar...</span>
+                                            <span className="text-xs text-[var(--color-danger)] font-medium">{txt('A gravar...', 'Recording...')}</span>
                                             <div className="flex-1 h-1.5 bg-[var(--color-bg-tertiary)] rounded-full overflow-hidden">
                                                 <motion.div
                                                     className="h-full bg-[var(--color-danger)] rounded-full"
@@ -286,7 +295,7 @@ export function BuggyWidget() {
                             {isTranscribing && (
                                 <div className="flex items-center gap-2 mb-2 px-3 py-2 rounded-xl bg-[var(--color-warning)]/10 border border-[var(--color-warning)]/20">
                                     <Loader2 size={12} className="animate-spin text-[var(--color-warning)]" />
-                                    <span className="text-xs text-[var(--color-warning)]">A transcrever...</span>
+                                    <span className="text-xs text-[var(--color-warning)]">{txt('A transcrever...', 'Transcribing...')}</span>
                                 </div>
                             )}
 
@@ -299,7 +308,7 @@ export function BuggyWidget() {
                                             ? 'bg-[var(--color-danger)] animate-pulse text-white'
                                             : 'bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-accent)]/10 text-[var(--color-text-muted)]'
                                     }`}
-                                    title={isRecording ? 'Parar gravacao' : 'Gravar voz'}
+                                    title={isRecording ? txt('Parar gravacao', 'Stop recording') : txt('Gravar voz', 'Record voice')}
                                 >
                                     {isRecording ? <MicOff size={14} /> : <Mic size={14} />}
                                 </button>
@@ -310,7 +319,7 @@ export function BuggyWidget() {
                                     value={input}
                                     onChange={e => setInput(e.target.value)}
                                     onKeyDown={handleKeyDown}
-                                    placeholder={isRecording ? 'A ouvir...' : 'Fala com o Buggy...'}
+                                    placeholder={isRecording ? txt('A ouvir...', 'Listening...') : txt(`Fala com o ${copilotName}...`, `Talk to ${copilotName}...`)}
                                     disabled={isLoading || isRecording}
                                     className="flex-1 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] rounded-xl px-4 py-2.5 text-sm outline-none
                                         focus:border-[var(--color-accent)]/50 focus:ring-2 focus:ring-[var(--color-accent)]/10 transition-all
@@ -326,7 +335,7 @@ export function BuggyWidget() {
                                 </button>
                             </div>
                             {!copilotService.isAvailable() && (
-                                <p className="text-[10px] text-[var(--color-danger)] opacity-60 mt-1.5 text-center">API key nao configurada</p>
+                                <p className="text-[10px] text-[var(--color-danger)] opacity-60 mt-1.5 text-center">{txt('API key nao configurada', 'API key not configured')}</p>
                             )}
                         </div>
                     </motion.div>

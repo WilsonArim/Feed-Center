@@ -42,6 +42,24 @@ export function useCategoryBreakdown(month: string) {
     })
 }
 
+export function useMerchantInsights(month: string, enabled: boolean = true) {
+    const userId = useUserId()
+    return useQuery({
+        queryKey: ['financial-merchant-insights', month],
+        queryFn: () => financialService.getMerchantInsights(userId, month),
+        enabled,
+    })
+}
+
+export function useItemInflationInsights(month: string, enabled: boolean = true) {
+    const userId = useUserId()
+    return useQuery({
+        queryKey: ['financial-item-inflation', month],
+        queryFn: () => financialService.getItemInflationInsights(userId, month),
+        enabled,
+    })
+}
+
 export function useAffordabilityScore(month: string) {
     const userId = useUserId()
     return useQuery({
@@ -51,10 +69,32 @@ export function useAffordabilityScore(month: string) {
     })
 }
 
+export function useRecurringCandidates(enabled: boolean = true) {
+    const userId = useUserId()
+    return useQuery({
+        queryKey: ['financial-recurring-candidates', userId],
+        queryFn: () => financialService.getRecurringCandidates(userId),
+        enabled,
+        staleTime: 2 * 60 * 1000,
+    })
+}
+
+export function useAutomationHistory(limit: number = 12, enabled: boolean = true) {
+    const userId = useUserId()
+    return useQuery({
+        queryKey: ['financial-automation-history', userId, limit],
+        queryFn: () => financialService.getAutomationHistory(userId, limit),
+        enabled,
+        staleTime: 60 * 1000,
+    })
+}
+
 const INVALIDATION_KEYS = (month: string) => [
     ['financial-entries', month],
     ['financial-summary', month],
     ['financial-categories', month],
+    ['financial-merchant-insights', month],
+    ['financial-item-inflation', month],
     ['financial-affordability', month],
 ]
 
@@ -94,6 +134,38 @@ export function useDeleteEntry(month: string) {
             for (const key of INVALIDATION_KEYS(month)) {
                 qc.invalidateQueries({ queryKey: key })
             }
+        },
+    })
+}
+
+export function useAutomateRecurringEntry() {
+    const userId = useUserId()
+    const qc = useQueryClient()
+
+    return useMutation({
+        mutationFn: (entryId: string) => financialService.automateRecurringEntry(userId, entryId),
+        onSuccess: () => {
+            qc.invalidateQueries({ queryKey: ['financial-entries'] })
+            qc.invalidateQueries({ queryKey: ['financial-summary'] })
+            qc.invalidateQueries({ queryKey: ['financial-affordability'] })
+            qc.invalidateQueries({ queryKey: ['financial-recurring-candidates'] })
+            qc.invalidateQueries({ queryKey: ['financial-automation-history'] })
+        },
+    })
+}
+
+export function useUndoRecurringAutomation() {
+    const userId = useUserId()
+    const qc = useQueryClient()
+
+    return useMutation({
+        mutationFn: (eventId: string) => financialService.undoRecurringAutomation(userId, eventId),
+        onSuccess: () => {
+            qc.invalidateQueries({ queryKey: ['financial-entries'] })
+            qc.invalidateQueries({ queryKey: ['financial-summary'] })
+            qc.invalidateQueries({ queryKey: ['financial-affordability'] })
+            qc.invalidateQueries({ queryKey: ['financial-recurring-candidates'] })
+            qc.invalidateQueries({ queryKey: ['financial-automation-history'] })
         },
     })
 }
@@ -141,5 +213,3 @@ export function useDeletePocket() {
         },
     })
 }
-
-

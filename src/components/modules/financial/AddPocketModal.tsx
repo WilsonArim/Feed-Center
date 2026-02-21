@@ -4,6 +4,7 @@ import { X, Save, FolderPlus, Palette, Smile } from 'lucide-react'
 import { StardustButton } from '@/components/ui/StardustButton'
 import { useCreatePocket, useUpdatePocket } from '@/hooks/useFinancial'
 import type { FinancialPocket } from '@/types'
+import { useLocaleText } from '@/i18n/useLocaleText'
 
 interface Props {
     isOpen: boolean
@@ -19,6 +20,7 @@ const COLORS = [
 const ICONS = ['folder', 'money', 'house', 'car', 'game', 'plane', 'cart', 'grad', 'med', 'gift']
 
 export function AddPocketModal({ isOpen, onClose, editingPocket }: Props) {
+    const { txt } = useLocaleText()
     const createPocket = useCreatePocket()
     const updatePocket = useUpdatePocket()
 
@@ -96,9 +98,9 @@ export function AddPocketModal({ isOpen, onClose, editingPocket }: Props) {
                         <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--color-border)]">
                             <h2 id="add-pocket-modal-title" className="text-2xl font-semibold flex items-center gap-2 text-[var(--color-text-primary)]">
                                 <FolderPlus size={20} className="text-[var(--color-accent)]" />
-                                {editingPocket ? 'Editar Envelope' : 'Novo Envelope'}
+                                {editingPocket ? txt('Editar Envelope', 'Edit Pocket') : txt('Novo Envelope', 'New Pocket')}
                             </h2>
-                            <button onClick={onClose} className="p-1 hover:bg-[var(--color-bg-tertiary)] rounded-xl transition-colors" aria-label="Fechar">
+                            <button onClick={onClose} className="p-1 hover:bg-[var(--color-bg-tertiary)] rounded-xl transition-colors" aria-label={txt('Fechar', 'Close')}>
                                 <X size={20} className="text-[var(--color-text-muted)]" />
                             </button>
                         </div>
@@ -106,21 +108,21 @@ export function AddPocketModal({ isOpen, onClose, editingPocket }: Props) {
                         <form onSubmit={handleSubmit} className="p-6 md:p-7 flex flex-col gap-6">
                             <div className="flex flex-col gap-1.5">
                                 <label className="text-sm font-medium pl-1 text-[var(--color-text-secondary)]">
-                                    Nome do Envelope *
+                                    {txt('Nome do Envelope *', 'Pocket Name *')}
                                 </label>
                                 <input
                                     type="text"
                                     required
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
-                                    placeholder="Ex: Ferias 2024"
+                                    placeholder={txt('Ex: Ferias 2024', 'Ex: Vacation 2024')}
                                     className="w-full px-4 py-2.5 rounded-xl outline-none transition-all focus:ring-2 focus:ring-[var(--color-accent)]/30 focus:border-[var(--color-accent)]/50 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] text-sm"
                                 />
                             </div>
 
                             <div className="flex flex-col gap-1.5">
                                 <label className="text-sm font-medium pl-1 text-[var(--color-text-secondary)]">
-                                    Limite / Objetivo Mensal (EUR)
+                                    {txt('Limite / Objetivo Mensal (EUR)', 'Monthly Limit / Goal (EUR)')}
                                 </label>
                                 <div className="relative">
                                     <input
@@ -129,7 +131,7 @@ export function AddPocketModal({ isOpen, onClose, editingPocket }: Props) {
                                         min="0"
                                         value={budgetLimit}
                                         onChange={(e) => setBudgetLimit(e.target.value)}
-                                        placeholder="Ex: 500"
+                                        placeholder={txt('Ex: 500', 'Ex: 500')}
                                         className="w-full pl-8 pr-4 py-2.5 rounded-xl outline-none transition-all focus:ring-2 focus:ring-[var(--color-accent)]/30 focus:border-[var(--color-accent)]/50 bg-[var(--color-bg-tertiary)] border border-[var(--color-border)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] text-sm"
                                     />
                                     <span className="absolute left-3 top-3 text-[var(--color-text-muted)] text-sm">EUR</span>
@@ -139,7 +141,7 @@ export function AddPocketModal({ isOpen, onClose, editingPocket }: Props) {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="flex flex-col gap-1.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-tertiary)]/35 p-3">
                                     <label className="text-sm font-medium pl-1 flex items-center gap-1 text-[var(--color-text-secondary)]">
-                                        <Smile size={12} /> Icone
+                                        <Smile size={12} /> {txt('Icone', 'Icon')}
                                     </label>
                                     <div className="grid grid-cols-5 gap-2">
                                         {ICONS.map((ic) => (
@@ -161,7 +163,7 @@ export function AddPocketModal({ isOpen, onClose, editingPocket }: Props) {
 
                                 <div className="flex flex-col gap-1.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-tertiary)]/35 p-3">
                                     <label className="text-sm font-medium pl-1 flex items-center gap-1 text-[var(--color-text-secondary)]">
-                                        <Palette size={12} /> Cor
+                                        <Palette size={12} /> {txt('Cor', 'Color')}
                                     </label>
                                     <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
                                         {COLORS.map((c) => (
@@ -175,7 +177,7 @@ export function AddPocketModal({ isOpen, onClose, editingPocket }: Props) {
                                                         : 'opacity-60 hover:opacity-100'
                                                 }`}
                                                 style={{ background: c }}
-                                                aria-label={`Cor ${c}`}
+                                                aria-label={`${txt('Cor', 'Color')} ${c}`}
                                             />
                                         ))}
                                     </div>
@@ -188,14 +190,14 @@ export function AddPocketModal({ isOpen, onClose, editingPocket }: Props) {
                                     onClick={onClose}
                                     className="px-4 py-2.5 text-sm font-medium rounded-xl hover:bg-[var(--color-bg-tertiary)] transition-colors text-[var(--color-text-muted)]"
                                 >
-                                    Cancelar
+                                    {txt('Cancelar', 'Cancel')}
                                 </button>
                                 <StardustButton
                                     type="submit"
                                     isLoading={createPocket.isPending || updatePocket.isPending}
                                     icon={<Save size={16} />}
                                 >
-                                    {editingPocket ? 'Atualizar' : 'Criar Envelope'}
+                                    {editingPocket ? txt('Atualizar', 'Update') : txt('Criar Envelope', 'Create Pocket')}
                                 </StardustButton>
                             </div>
                         </form>

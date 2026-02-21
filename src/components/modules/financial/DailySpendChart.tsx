@@ -1,12 +1,14 @@
 import { useEntries } from '@/hooks/useFinancial'
 import { formatCurrency } from '@/utils/format'
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
+import { useLocaleText } from '@/i18n/useLocaleText'
 
 interface Props {
     month: string
 }
 
 export function DailySpendChart({ month }: Props) {
+    const { txt } = useLocaleText()
     const { data: entries = [] } = useEntries(month)
 
     const [year, mon] = month.split('-').map(Number)
@@ -30,14 +32,14 @@ export function DailySpendChart({ month }: Props) {
     const avgDaily = data.reduce((a, d) => a + d.amount, 0) / Math.max(today, 1)
 
     return (
-        <div className="rounded-2xl p-5 bg-[var(--color-bg-secondary)] border border-[var(--color-border)]">
-            <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">
-                    Gasto Diario
+        <div className="py-2">
+            <div className="flex items-center justify-between mb-8">
+                <h3 className="text-lg font-bold tracking-tight text-white drop-shadow-sm">
+                    {txt('Gasto Diario', 'Daily Spending')}
                 </h3>
-                <span className="text-[10px] px-2.5 py-1 rounded-lg font-medium
-                    bg-[var(--color-bg-tertiary)] text-[var(--color-text-muted)] border border-[var(--color-border)]">
-                    Media: {formatCurrency(avgDaily)}/dia
+                <span className="text-xs px-3 py-1.5 rounded-full font-medium
+                    bg-white/5 text-white/70">
+                    {txt('Media', 'Avg')}: {formatCurrency(avgDaily)}/{txt('dia', 'day')}
                 </span>
             </div>
             <div className="h-32">
@@ -59,7 +61,7 @@ export function DailySpendChart({ month }: Props) {
                                 color: 'var(--color-text-primary)',
                             }}
                             formatter={(value: number | undefined) => formatCurrency(value ?? 0)}
-                            labelFormatter={(day) => `Dia ${day}`}
+                            labelFormatter={(day) => `${txt('Dia', 'Day')} ${day}`}
                         />
                         <ReferenceLine y={avgDaily} stroke="var(--color-warning)" strokeDasharray="3 3" strokeOpacity={0.5} />
                         <Bar dataKey="amount" radius={[3, 3, 0, 0]} fill="var(--color-danger)" fillOpacity={0.6} />

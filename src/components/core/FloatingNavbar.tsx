@@ -6,6 +6,7 @@ import { useNotifications } from '@/hooks/useNotifications'
 import { UserDropdown } from './UserDropdown'
 import { NotificationPanel } from './NotificationPanel'
 import { useUIStore } from '@/stores/uiStore'
+import { useLocaleText } from '@/i18n/useLocaleText'
 
 function MagneticIcon({ children }: { children: React.ReactNode }) {
     const { ref, state, handleMouseMove, handleMouseLeave } = useMagneticHover()
@@ -25,6 +26,7 @@ function MagneticIcon({ children }: { children: React.ReactNode }) {
 }
 
 export function FloatingNavbar() {
+    const { txt } = useLocaleText()
     const toggleSidebar = useUIStore((s) => s.toggleSidebar)
     const { notifications, hasNotifications } = useNotifications()
     const [notifOpen, setNotifOpen] = useState(false)
@@ -47,7 +49,7 @@ export function FloatingNavbar() {
                     onClick={toggleSidebar}
                     className="md:hidden p-2 rounded-xl cursor-pointer
                         text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
-                    aria-label="Menu"
+                    aria-label={txt('Menu', 'Menu')}
                 >
                     <Menu size={18} />
                 </button>
@@ -61,7 +63,7 @@ export function FloatingNavbar() {
                     )
                 }}
                 className="relative flex items-center cursor-pointer group"
-                aria-label="Pesquisar"
+                aria-label={txt('Pesquisar', 'Search')}
             >
                 <Search size={15} className="absolute left-3 text-[var(--color-text-muted)] pointer-events-none group-hover:text-[var(--color-accent)] transition-colors" />
                 <div
@@ -70,7 +72,7 @@ export function FloatingNavbar() {
                         text-sm text-[var(--color-text-muted)]
                         group-hover:border-[var(--color-accent)]/30 transition-all text-left"
                 >
-                    Pesquisar...
+                    {txt('Pesquisar', 'Search')}...
                 </div>
                 <kbd className="absolute right-2.5 flex items-center gap-0.5 text-[10px] text-[var(--color-text-muted)] font-medium
                     bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-md px-1.5 py-0.5
@@ -86,7 +88,7 @@ export function FloatingNavbar() {
                         onClick={() => setNotifOpen(!notifOpen)}
                         className="relative p-2 rounded-xl cursor-pointer
                             text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] transition-colors"
-                        aria-label="Notificacoes"
+                        aria-label={txt('Notificacoes', 'Notifications')}
                     >
                         <Bell size={18} />
                         {hasNotifications && (
