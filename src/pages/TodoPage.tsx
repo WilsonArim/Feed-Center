@@ -3,7 +3,7 @@ import { Plus, CheckSquare, CircleDollarSign } from 'lucide-react'
 import { KanbanBoard } from '@/components/modules/todo/KanbanBoard'
 import { AddTodoModal } from '@/components/modules/todo/AddTodoModal'
 import { CreateListModal } from '@/components/modules/todo/CreateListModal'
-import { TodoSidebar } from '@/components/modules/todo/TodoSidebar'
+import { TodoSidebar, TodoSidebarToggle } from '@/components/modules/todo/TodoSidebar'
 import { StardustButton } from '@/components/ui/StardustButton'
 import {
     useCreateTodo,
@@ -25,6 +25,7 @@ export function TodoPage() {
     const [isTaskModalOpen, setIsTaskModalOpen] = useState(false)
     const [editingTodo, setEditingTodo] = useState<Todo | null>(null)
     const [activeTab, setActiveTab] = useState<'tasks' | 'finance'>('tasks')
+    const [sidebarOpen, setSidebarOpen] = useState(false)
 
     const { data: lists = [] } = useTodoLists()
     const createTodo = useCreateTodo()
@@ -76,6 +77,8 @@ export function TodoPage() {
                 onSelect={setActiveListId}
                 onCreateList={() => setIsListModalOpen(true)}
                 onDeleteList={handleDeleteList}
+                mobileOpen={sidebarOpen}
+                onMobileToggle={() => setSidebarOpen(o => !o)}
             />
 
             <div className="flex-1 flex flex-col min-w-0 pr-6 pb-24 relative">
@@ -85,7 +88,8 @@ export function TodoPage() {
                         icon={<CheckSquare size={18} />}
                         title={pageTitle}
                         subtitle={pageSubtitle}
-                        actions={(
+                        actions={(<>
+                            <TodoSidebarToggle onClick={() => setSidebarOpen(o => !o)} />
                             <StardustButton
                                 onClick={() => {
                                     setEditingTodo(null)
@@ -95,7 +99,7 @@ export function TodoPage() {
                             >
                                 {txt('Nova Tarefa', 'New Task')}
                             </StardustButton>
-                        )}
+                        </>)}
                     />
 
                     {activeList?.type === 'project' && (

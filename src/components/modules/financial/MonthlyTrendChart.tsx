@@ -1,6 +1,7 @@
 import { useEntries } from '@/hooks/useFinancial'
 import { formatCurrency } from '@/utils/format'
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts'
+import { motion } from 'framer-motion'
 import { useLocaleText } from '@/i18n/useLocaleText'
 
 interface Props {
@@ -29,7 +30,13 @@ export function MonthlyTrendChart({ currentMonth }: Props) {
     })
 
     return (
-        <div className="py-2">
+        <motion.div
+            className="py-2"
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, margin: '-40px' }}
+            transition={{ type: 'spring' as const, damping: 22, stiffness: 180, delay: 0.2 }}
+        >
             <h3 className="text-lg font-bold tracking-tight mb-8 text-white drop-shadow-sm">
                 {txt('Tendencia 6 meses', '6-Month Trend')}
             </h3>
@@ -62,6 +69,6 @@ export function MonthlyTrendChart({ currentMonth }: Props) {
                     </AreaChart>
                 </ResponsiveContainer>
             </div>
-        </div>
+        </motion.div>
     )
 }

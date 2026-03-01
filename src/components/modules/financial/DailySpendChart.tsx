@@ -1,6 +1,7 @@
 import { useEntries } from '@/hooks/useFinancial'
 import { formatCurrency } from '@/utils/format'
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
+import { motion } from 'framer-motion'
 import { useLocaleText } from '@/i18n/useLocaleText'
 
 interface Props {
@@ -32,7 +33,13 @@ export function DailySpendChart({ month }: Props) {
     const avgDaily = data.reduce((a, d) => a + d.amount, 0) / Math.max(today, 1)
 
     return (
-        <div className="py-2">
+        <motion.div
+            className="py-2"
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, margin: '-40px' }}
+            transition={{ type: 'spring' as const, damping: 22, stiffness: 180, delay: 0.2 }}
+        >
             <div className="flex items-center justify-between mb-8">
                 <h3 className="text-lg font-bold tracking-tight text-white drop-shadow-sm">
                     {txt('Gasto Diario', 'Daily Spending')}
@@ -68,6 +75,6 @@ export function DailySpendChart({ month }: Props) {
                     </BarChart>
                 </ResponsiveContainer>
             </div>
-        </div>
+        </motion.div>
     )
 }

@@ -1,5 +1,4 @@
 import { useState, useMemo } from 'react'
-import { motion } from 'framer-motion'
 import { Plus, Droplets, Coins, ArrowDownUp, Loader2 } from 'lucide-react'
 import { useDefiPositions } from '@/hooks/useDefiPositions'
 import { AddPoolModal } from '@/components/modules/defi/AddPoolModal'
@@ -8,7 +7,8 @@ import { AddBorrowLendModal } from '@/components/modules/defi/AddBorrowLendModal
 import { PoolPositionCard } from '@/components/modules/defi/PoolPositionCard'
 import { TokenPositionCard } from '@/components/modules/defi/TokenPositionCard'
 import type { DefiPositionType } from '@/types'
-import { NextActionsStrip, PageHeader, PageSectionHeader, StateCard } from '@/components/core/PagePrimitives'
+import { NextActionsStrip, PageHeader, PageSectionHeader } from '@/components/core/PagePrimitives'
+import { EmptyMomentum } from '@/components/ui/EmptyMomentum'
 import { useLocaleText } from '@/i18n/useLocaleText'
 import { Magnetic } from '@/components/ui/Magnetic'
 
@@ -61,13 +61,8 @@ export function CryptoDeFiPage() {
     }
 
     return (
-        <div className="w-full max-w-[1400px] mx-auto px-4 md:px-8 pt-8 pb-40 flex flex-col gap-6">
-            <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-                className="flex flex-col gap-6"
-            >
+        <div className="w-full max-w-[1400px] mx-auto px-4 md:px-8 pt-8 pb-[var(--dock-clearance)] flex flex-col gap-6">
+            <div className="flex flex-col gap-6">
                 {/* Header */}
                 <PageHeader
                     icon={<Droplets size={18} />}
@@ -175,12 +170,11 @@ export function CryptoDeFiPage() {
 
                 {/* Empty state */}
                 {!positions.isLoading && filtered.length === 0 && (
-                    <StateCard
+                    <EmptyMomentum
+                        icon={<tabConfig.icon size={18} />}
                         title={txt(`Sem posicoes de ${tabConfig.label.toLowerCase()} registadas`, `No ${tabConfig.label.toLowerCase()} positions recorded`)}
                         message={txt('Adiciona a primeira posicao para acompanhar performance e risco desde o inicio.', 'Add your first position to track performance and risk from day one.')}
-                        icon={<tabConfig.icon size={18} />}
-                        actionLabel={txt('Adicionar primeira posicao', 'Add first position')}
-                        onAction={handleOpenModal}
+                        action={{ label: txt('Adicionar primeira posicao', 'Add first position'), onClick: handleOpenModal }}
                     />
                 )}
 
@@ -192,7 +186,7 @@ export function CryptoDeFiPage() {
                         { label: txt('Atualizar tarefas', 'Update tasks'), to: '/todo' },
                     ]}
                 />
-            </motion.div>
+            </div>
 
             <AddPoolModal
                 isOpen={showPoolModal}

@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils'
 import { Loader2 } from 'lucide-react'
 
 type ButtonVariant = 'default' | 'secondary' | 'ghost' | 'danger' | 'outline'
-type ButtonSize = 'sm' | 'md' | 'lg' | 'icon'
+type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'icon'
 
 interface StardustButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode
@@ -35,10 +35,11 @@ const variantStyles: Record<ButtonVariant, string> = {
 }
 
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: 'h-9 px-3.5 text-sm gap-1.5 rounded-lg',
-  md: 'h-10 px-4 text-sm gap-2 rounded-xl',
+  xs: 'h-9 px-3.5 text-sm gap-1.5 rounded-lg',
+  sm: 'h-11 px-4 text-sm gap-1.5 rounded-lg',
+  md: 'h-11 px-4 text-sm gap-2 rounded-xl',
   lg: 'h-12 px-6 text-base gap-2.5 rounded-xl',
-  icon: 'h-10 w-10 rounded-xl p-0',
+  icon: 'h-11 w-11 rounded-xl p-0',
 }
 
 let rippleId = 0

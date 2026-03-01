@@ -11,6 +11,17 @@ import { UserDropdown } from './UserDropdown'
 import { NotificationPanel } from './NotificationPanel'
 import { useNotifications } from '@/hooks/useNotifications'
 import { Magnetic } from '../ui/Magnetic'
+import { useModuleStore, type ModuleId } from '@/stores/moduleStore'
+
+const ALWAYS_VISIBLE = new Set(['start', 'today', 'dashboard', 'settings'])
+
+const NAV_TO_MODULE: Record<string, ModuleId> = {
+    financeiro: 'finance',
+    todo: 'tasks',
+    crypto: 'crypto',
+    links: 'links',
+    news: 'news',
+}
 
 interface NavItem {
     id: string; to: string; icon: LucideIcon; label: string
@@ -83,15 +94,22 @@ function DockItem({ item }: { item: NavItem }) {
 export function FloatingNav() {
     const { notifications, hasNotifications } = useNotifications()
     const [notifOpen, setNotifOpen] = useState(false)
+    const isModuleActive = useModuleStore((s) => s.isActive)
+
+    const visibleItems = navItems.filter((item) => {
+        if (ALWAYS_VISIBLE.has(item.id)) return true
+        const moduleId = NAV_TO_MODULE[item.id]
+        return moduleId ? isModuleActive(moduleId) : true
+    })
 
     return (
         <motion.div
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ type: 'spring', damping: 25, stiffness: 200, delay: 0.2 }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none"
+            className="fixed bottom-0 left-1/2 -translate-x-1/2 z-50 pointer-events-none pb-[max(1.5rem,env(safe-area-inset-bottom))]"
         >
-            <div className="flex items-center gap-2 p-2 bg-[var(--glass-bg)] backdrop-blur-2xl border border-[var(--border-subtle)] rounded-[var(--radius-xl)] shadow-[var(--shadow-lg)] pointer-events-auto">
+            <div className="flex items-center gap-2 max-md:gap-1 p-2 max-md:p-1.5 bg-[var(--glass-bg)] backdrop-blur-2xl max-md:backdrop-blur-3xl border border-[var(--border-subtle)] rounded-[var(--radius-xl)] shadow-[var(--shadow-lg)] pointer-events-auto">
                 <button
                     onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true }))}
                     className="relative flex items-center justify-center w-12 h-12 rounded-sm transition-all duration-300 text-[var(--text-secondary)] hover:bg-[var(--bg-surface-hover)] hover:text-[var(--text-primary)] hover:-translate-y-1 cursor-pointer"
@@ -102,7 +120,7 @@ export function FloatingNav() {
 
                 <div className="w-px h-8 bg-[var(--border-subtle)] mx-1" />
 
-                {navItems.map(item => (
+                {visibleItems.map(item => (
                     <DockItem key={item.id} item={item} />
                 ))}
 

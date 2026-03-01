@@ -2,9 +2,16 @@ import express from 'express'
 import cors from 'cors'
 import { env } from './config.js'
 import { newsRouter } from './routes/newsRoutes.js'
+import { cortexRouterRoutes } from './routes/cortexRoutes.js'
+import authRoutes from './routes/authRoutes.js'
 
 // Import worker to start processing jobs
 import './workers/newsWorker.js'
+import './workers/morningBriefingWorker.js'
+import './workers/proactiveAlertsWorker.js'
+
+// Telegram Sidecar (sovereign bridge)
+import { startTelegramSidecar } from './services/telegramSidecar.js'
 
 const app = express()
 
@@ -51,6 +58,8 @@ app.get('/health', (_req, res) => {
 
 // ── Routes ──
 app.use(newsRouter)
+app.use(cortexRouterRoutes)
+app.use('/api/auth', authRoutes)
 
 // ── Start ──
 app.listen(env.port, () => {
@@ -59,9 +68,13 @@ app.listen(env.port, () => {
 ║  Feed-Center News Server             ║
 ║  Port: ${env.port}                        ║
 ║  Redis: ${env.redisUrl.slice(0, 25)}        ║
-║  Worker: active (concurrency=2)      ║
+║  Cortex: ${env.cortexDataDir.slice(0, 24)}...   ║
+║  Workers: news + briefing + alerts   ║
 ╚══════════════════════════════════════╝
     `)
+
+    // Launch Telegram Sidecar (non-blocking, only if env vars present)
+    void startTelegramSidecar()
 })
 
 export { app }

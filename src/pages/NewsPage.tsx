@@ -1,5 +1,4 @@
 import { useState, useMemo, useCallback } from 'react'
-import { motion } from 'framer-motion'
 import { Newspaper, ChevronLeft, ChevronRight, AlertCircle, BookOpen } from 'lucide-react'
 import { useTopStories, useNewsList, useNewsTopics } from '@/hooks/useNews'
 import { type NewsSortMode, priorityFromScore, getBookmarks, toggleBookmark, getHiddenSources, hideSource } from '@/services/newsService'
@@ -7,7 +6,8 @@ import { TopStoriesCarousel } from '@/components/modules/news/TopStoriesCarousel
 import { NewsCard, NewsCardSkeleton } from '@/components/modules/news/NewsCard'
 import { FiltersBar } from '@/components/modules/news/FiltersBar'
 import { NewsStatsBar } from '@/components/modules/news/NewsStatsBar'
-import { NextActionsStrip, PageHeader, PageSectionHeader, StateCard } from '@/components/core/PagePrimitives'
+import { NextActionsStrip, PageHeader, PageSectionHeader } from '@/components/core/PagePrimitives'
+import { EmptyMomentum } from '@/components/ui/EmptyMomentum'
 import { useLocaleText } from '@/i18n/useLocaleText'
 
 const PAGE_SIZE = 20
@@ -56,13 +56,8 @@ export function NewsPage() {
     const totalPages = newsList?.totalPages || 1
 
     return (
-        <div className="w-full max-w-[1400px] mx-auto px-4 md:px-8 pt-8 pb-40">
-            <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="w-full flex flex-col gap-6"
-            >
+        <div className="w-full max-w-[1400px] mx-auto px-4 md:px-8 pt-8 pb-[var(--dock-clearance)]">
+            <div className="w-full flex flex-col gap-6">
                 {/* Header */}
                 <PageHeader
                     icon={<Newspaper size={18} />}
@@ -123,22 +118,23 @@ export function NewsPage() {
 
                 {/* News sections by priority */}
                 {listError ? (
-                    <StateCard
+                    <EmptyMomentum
+                        variant="error"
+                        icon={<AlertCircle size={18} />}
                         title={txt('Feed temporariamente indisponivel', 'Feed temporarily unavailable')}
                         message={txt('Nao foi possivel carregar noticias agora. Tenta novamente em alguns segundos.', 'Could not load news right now. Try again in a few seconds.')}
-                        icon={<AlertCircle size={18} />}
-                        actionLabel={txt('Recarregar feed', 'Reload feed')}
-                        onAction={() => { void retryList() }}
+                        action={{ label: txt('Recarregar feed', 'Reload feed'), onClick: () => { void retryList() } }}
                     />
                 ) : listLoading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {Array.from({ length: 6 }).map((_, i) => <NewsCardSkeleton key={i} />)}
                     </div>
                 ) : filteredItems.length === 0 ? (
-                    <StateCard
+                    <EmptyMomentum
+                        variant={search ? 'search' : 'default'}
+                        icon={<BookOpen size={18} />}
                         title={search ? txt('Sem resultados para esta pesquisa', 'No results for this search') : txt('Sem noticias neste momento', 'No news right now')}
                         message={search ? txt(`Nao encontramos noticias para "${search}".`, `We could not find news for "${search}".`) : txt('Volta em instantes para novas atualizacoes curadas.', 'Check back shortly for new curated updates.')}
-                        icon={<BookOpen size={18} />}
                     />
                 ) : (
                     <div className="flex flex-col gap-12 mt-6">
@@ -207,7 +203,7 @@ export function NewsPage() {
                         </button>
                     </div>
                 )}
-            </motion.div>
+            </div>
         </div>
     )
 }

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
 import { Plus, Wallet, ScanLine, AlertCircle, ClipboardPlus, ListTodo } from 'lucide-react'
 import { NavLink } from 'react-router'
 import { StardustButton } from '@/components/ui/StardustButton'
@@ -10,11 +10,9 @@ import { AddEntryModal } from '@/components/modules/financial/AddEntryModal'
 import { MonthPicker } from '@/components/modules/financial/MonthPicker'
 import { SmartEntryInput } from '@/components/modules/financial/SmartEntryInput'
 import { PocketsGrid } from '@/components/modules/financial/PocketsGrid'
-import { ScanReceiptModal } from '@/components/modules/financial/ScanReceiptModal'
 import { MonthlyTrendChart } from '@/components/modules/financial/MonthlyTrendChart'
 import { DailySpendChart } from '@/components/modules/financial/DailySpendChart'
 import { Magnetic } from '@/components/ui/Magnetic'
-import { AddTodoModal } from '@/components/modules/todo/AddTodoModal'
 import {
     useEntries,
     useMonthSummary,
@@ -26,16 +24,16 @@ import {
     useUpdateEntry,
     useDeleteEntry,
 } from '@/hooks/useFinancial'
-import { useCreateTodo } from '@/hooks/useTodos'
 import { useAuth } from '@/components/core/AuthProvider'
-import type { FinancialEntry, CreateEntryInput, EntryType } from '@/types'
-import { NextActionsStrip, PageHeader, StateCard } from '@/components/core/PagePrimitives'
+import { CATEGORIES_BY_TYPE, type FinancialEntry, type CreateEntryInput, type EntryType } from '@/types'
+import { NextActionsStrip, PageHeader } from '@/components/core/PagePrimitives'
+import { EmptyMomentum } from '@/components/ui/EmptyMomentum'
 import { useLocaleText } from '@/i18n/useLocaleText'
 import { localizeFinancialCategory } from '@/i18n/financialCategoryLabel'
 import { formatCurrency } from '@/utils/format'
 import { useShowMerchantInsights } from '@/hooks/useUserSettings'
-import { financialService } from '@/services/financialService'
-import type { OCRReceiptItem } from '@/services/ocrService'
+import { ocrService } from '@/services/ocrService'
+import { receiptLearningService } from '@/services/receiptLearningService'
 
 function currentMonth() {
     const d = new Date()
@@ -47,14 +45,14 @@ export function FinanceiroPage() {
     const { user } = useAuth()
     const [month, setMonth] = useState(currentMonth())
     const [modalOpen, setModalOpen] = useState(false)
-    const [scanModalOpen, setScanModalOpen] = useState(false)
     const [editingEntry, setEditingEntry] = useState<FinancialEntry | null>(null)
     const [categoryFilter, setCategoryFilter] = useState<string | undefined>()
-
-    const [todoModalOpen, setTodoModalOpen] = useState(false)
-    const [todoInitialData, setTodoInitialData] = useState<{ title: string; description: string } | undefined>()
     const [undoEntry, setUndoEntry] = useState<FinancialEntry | null>(null)
     const undoTimeoutRef = useRef<number | null>(null)
+    const scanInputRef = useRef<HTMLInputElement>(null)
+    const [isInlineScanning, setIsInlineScanning] = useState(false)
+    const [scanInlineMessage, setScanInlineMessage] = useState<string | null>(null)
+    const [injectedEntries, setInjectedEntries] = useState<FinancialEntry[]>([])
 
     const entries = useEntries(month, categoryFilter ? { category: categoryFilter } : undefined)
     const summary = useMonthSummary(month)
@@ -67,7 +65,13 @@ export function FinanceiroPage() {
     const createEntry = useCreateEntry(month)
     const updateEntry = useUpdateEntry(month)
     const deleteEntry = useDeleteEntry(month)
-    const createTodo = useCreateTodo()
+
+    const entriesData = entries.data ?? []
+
+    const visibleEntries = [
+        ...injectedEntries.filter((entry) => !entriesData.some((existing) => existing.id === entry.id)),
+        ...entriesData,
+    ]
 
     const handleSubmit = async (input: CreateEntryInput) => {
         if (editingEntry) {
@@ -110,65 +114,73 @@ export function FinanceiroPage() {
         }
     }
 
-    const scheduleUndo = (entry: FinancialEntry) => {
-        clearUndoTimer()
-        setUndoEntry(entry)
-        undoTimeoutRef.current = window.setTimeout(() => {
-            setUndoEntry(null)
-            undoTimeoutRef.current = null
-        }, 8000)
+    const triggerScanInput = () => {
+        scanInputRef.current?.click()
     }
 
-    const handleScanConfirm = async (data: { amount: number; merchant: string; nif?: string | null; receiptItems?: OCRReceiptItem[]; date: string; category: string; type: EntryType; isRecurring?: boolean; buggyAlert?: boolean }) => {
-        const created = await createEntry.mutateAsync({
-            type: data.type,
-            amount: data.amount,
-            category: data.category,
-            description: data.merchant,
-            receipt_merchant: data.merchant,
-            receipt_nif: data.nif ?? undefined,
-            date: data.date,
-            is_recurring: data.isRecurring ?? false,
-            buggy_alert: data.buggyAlert ?? false,
-        })
+    const handleScanFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0]
+        if (!file) return
+        void processScannedReceipt(file)
+        event.currentTarget.value = ''
+    }
 
-        if (user && data.receiptItems && data.receiptItems.length > 0) {
-            await financialService.replaceReceiptItems(user.id, created.id, {
-                purchasedAt: data.date,
-                merchant: data.merchant,
-                nif: data.nif ?? null,
-                items: data.receiptItems,
-            })
-            if (showMerchantInsights) {
-                void merchantInsights.refetch()
-                void itemInflationInsights.refetch()
-            }
+    const processScannedReceipt = async (file: File) => {
+        if (!file.type.startsWith('image/')) {
+            setScanInlineMessage(txt('Formato não suportado. Usa imagem (PNG/JPG/WebP).', 'Unsupported format. Use image (PNG/JPG/WebP).'))
+            return
         }
 
-        scheduleUndo(created)
-    }
+        setIsInlineScanning(true)
+        setScanInlineMessage(null)
 
-    const handleAddToTodo = (data: { amount: number; merchant: string; nif?: string | null; date: string; category: string; type: EntryType }) => {
-        const categoryLabel = localizeFinancialCategory(data.category, isEnglish)
-        const typeLabel = data.type === 'income'
-            ? txt('Receita', 'Income')
-            : data.type === 'bill'
-                ? txt('Despesa Fixa', 'Bill')
-                : txt('Despesa', 'Expense')
-        setTodoInitialData({
-            title: `${data.merchant} - ${data.amount}`,
-            description: `${txt('Movimento pendente.', 'Pending transaction.')}\n${txt('Tipo', 'Type')}: ${typeLabel}\n${txt('Data', 'Date')}: ${data.date}\n${txt('Categoria', 'Category')}: ${categoryLabel}\nNIF: ${data.nif ?? '-'}\n${txt('Valor Original', 'Original amount')}: ${data.amount}`
-        })
-        setTodoModalOpen(true)
-    }
+        try {
+            const result = await ocrService.scanReceipt(file)
+            const merchant = (result.merchant ?? '').trim()
+            const amount = result.total?.amount ?? null
 
-    const handleTodoSubmit = async (data: any) => {
-        if (!user) return
-        await createTodo.mutateAsync({
-            ...data,
-            user_id: user.id
-        })
-        setTodoModalOpen(false)
+            if (!amount || amount <= 0 || !merchant) {
+                setScanInlineMessage(txt(
+                    'OCR não conseguiu extrair dados suficientes. Tenta novamente ou regista manualmente.',
+                    'OCR could not extract enough data. Try again or register manually.'
+                ))
+                return
+            }
+
+            const learnedRule = user && merchant
+                ? receiptLearningService.findRule(user.id, merchant)
+                : null
+            const suggestedType = learnedRule?.type ?? result.suggestion?.type ?? 'expense'
+            const categoriesForType = CATEGORIES_BY_TYPE[suggestedType]
+            const suggestedCategory = learnedRule?.category ?? result.suggestion?.category ?? null
+            const finalCategory = suggestedCategory && categoriesForType.includes(suggestedCategory)
+                ? suggestedCategory
+                : (categoriesForType[0] ?? 'Outros')
+            const today = new Date().toISOString().split('T')[0] ?? ''
+
+            await createEntry.mutateAsync({
+                type: suggestedType,
+                amount,
+                category: finalCategory,
+                description: merchant,
+                receipt_merchant: merchant,
+                receipt_nif: (result.nif ?? '').trim() || undefined,
+                date: today,
+            })
+
+            if (user?.id && merchant.length >= 2) {
+                receiptLearningService.saveRule(user.id, merchant, suggestedType, finalCategory)
+            }
+
+            setScanInlineMessage(txt('Movimento registado com sucesso.', 'Transaction registered successfully.'))
+        } catch (error) {
+            setScanInlineMessage(error instanceof Error
+                ? error.message
+                : txt('Erro ao analisar o recibo. Tenta novamente.', 'Error analyzing receipt. Try again.')
+            )
+        } finally {
+            setIsInlineScanning(false)
+        }
     }
 
     const handleUndoLastScan = async () => {
@@ -179,11 +191,19 @@ export function FinanceiroPage() {
     }
 
     useEffect(() => {
-        return () => clearUndoTimer()
+        if (injectedEntries.length === 0) return
+        const existingIds = new Set(entriesData.map((entry) => entry.id))
+        setInjectedEntries((prev) => prev.filter((entry) => !existingIds.has(entry.id)))
+    }, [entriesData, injectedEntries.length])
+
+    useEffect(() => {
+        return () => {
+            clearUndoTimer()
+        }
     }, [])
 
     return (
-        <div className="w-full max-w-[1400px] mx-auto px-4 md:px-8 pt-8 pb-40 space-y-8">
+        <div className="w-full max-w-[1400px] mx-auto px-4 md:px-8 pt-8 pb-[var(--dock-clearance)] space-y-8">
             {/* Header */}
             <PageHeader
                 icon={<Wallet size={18} />}
@@ -196,9 +216,10 @@ export function FinanceiroPage() {
                             size="sm"
                             variant="ghost"
                             icon={<ScanLine size={16} />}
-                            onClick={() => setScanModalOpen(true)}
+                            onClick={triggerScanInput}
+                            disabled={isInlineScanning}
                         >
-                            Scan
+                            {isInlineScanning ? txt('A processar...', 'Processing...') : 'Scan'}
                         </StardustButton>
                         <StardustButton
                             size="sm"
@@ -210,12 +231,20 @@ export function FinanceiroPage() {
                     </>
                 )}
             />
+            <input
+                ref={scanInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleScanFileSelect}
+            />
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <Magnetic strength={0.1}>
                     <button
                         type="button"
-                        onClick={() => setScanModalOpen(true)}
+                        onClick={triggerScanInput}
+                        disabled={isInlineScanning}
                         className="group relative text-left py-6 px-4 hover:z-20 cursor-pointer w-full"
                     >
                         <div className="absolute inset-0 bg-gradient-to-br from-white/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl" />
@@ -347,12 +376,13 @@ export function FinanceiroPage() {
                                 </div>
                             ) : merchantInsights.isError ? (
                                 <div className="p-4">
-                                    <StateCard
+                                    <EmptyMomentum
+                                        variant="error"
+                                        icon={<AlertCircle size={18} />}
                                         title={txt('Falha ao carregar histórico por loja', 'Failed to load store history')}
                                         message={txt('Não foi possível calcular estes insights agora.', 'Could not calculate these insights right now.')}
-                                        icon={<AlertCircle size={18} />}
-                                        actionLabel={txt('Tentar novamente', 'Try again')}
-                                        onAction={() => { void merchantInsights.refetch() }}
+                                        action={{ label: txt('Tentar novamente', 'Try again'), onClick: () => { void merchantInsights.refetch() } }}
+                                        compact
                                     />
                                 </div>
                             ) : (merchantInsights.data?.length ?? 0) === 0 ? (
@@ -425,12 +455,13 @@ export function FinanceiroPage() {
                                 </div>
                             ) : itemInflationInsights.isError ? (
                                 <div className="p-4">
-                                    <StateCard
+                                    <EmptyMomentum
+                                        variant="error"
+                                        icon={<AlertCircle size={18} />}
                                         title={txt('Falha ao carregar inflação por item', 'Failed to load item inflation')}
                                         message={txt('Não foi possível calcular inflação por item agora.', 'Could not calculate item inflation right now.')}
-                                        icon={<AlertCircle size={18} />}
-                                        actionLabel={txt('Tentar novamente', 'Try again')}
-                                        onAction={() => { void itemInflationInsights.refetch() }}
+                                        action={{ label: txt('Tentar novamente', 'Try again'), onClick: () => { void itemInflationInsights.refetch() } }}
+                                        compact
                                     />
                                 </div>
                             ) : (itemInflationInsights.data?.length ?? 0) === 0 ? (
@@ -498,7 +529,7 @@ export function FinanceiroPage() {
                     />
                 </div>
 
-                <div className="group/ledger relative mt-4">
+                <div className="group/ledger relative">
                     {/* List header - Typography First */}
                     <div className="flex items-center justify-between mb-8">
                         <div className="flex items-center gap-3">
@@ -529,60 +560,52 @@ export function FinanceiroPage() {
                         </div>
                     ) : entries.isError ? (
                         <div className="p-4">
-                            <StateCard
+                            <EmptyMomentum
+                                variant="error"
+                                icon={<AlertCircle size={18} />}
                                 title={txt('Falha ao carregar movimentos', 'Failed to load transactions')}
                                 message={txt('Nao foi possivel ler os registos financeiros agora.', 'Could not read financial records right now.')}
-                                icon={<AlertCircle size={18} />}
-                                actionLabel={txt('Tentar novamente', 'Try again')}
-                                onAction={() => { void entries.refetch() }}
+                                action={{ label: txt('Tentar novamente', 'Try again'), onClick: () => { void entries.refetch() } }}
                             />
                         </div>
-                    ) : entries.data && entries.data.length > 0 ? (
+                    ) : visibleEntries.length > 0 ? (
                         <div className="py-1">
-                            {/* group-hover/ledger:opacity-30 blurs items that ARE NOT hovered, creating the Spotlight */}
-                            <div className="[&>*:not(:hover)]:group-hover/ledger:opacity-20 [&>*:not(:hover)]:group-hover/ledger:blur-[8px] [&>*:not(:hover)]:group-hover/ledger:brightness-50 transition-all duration-500">
-                                <AnimatePresence mode="popLayout">
-                                    {entries.data.map((entry) => (
-                                        <EntryRow
-                                            key={entry.id}
-                                            entry={entry}
-                                            onEdit={handleEdit}
-                                            onDelete={handleDelete}
-                                        />
-                                    ))}
-                                </AnimatePresence>
-                            </div>
+                            <LayoutGroup id="financeiro-ledger-handoff">
+                                {/* group-hover/ledger:opacity-30 blurs items that ARE NOT hovered, creating the Spotlight */}
+                                <div className="[&>*:not(:hover)]:group-hover/ledger:opacity-20 [&>*:not(:hover)]:group-hover/ledger:blur-[8px] [&>*:not(:hover)]:group-hover/ledger:brightness-50 transition-all duration-500">
+                                    <AnimatePresence mode="popLayout">
+                                        {scanInlineMessage && (
+                                            <motion.p
+                                                key="scan-inline-message"
+                                                layout
+                                                initial={{ opacity: 0, y: -4 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: -4 }}
+                                                className="mb-2 text-xs text-[var(--danger)]"
+                                            >
+                                                {scanInlineMessage}
+                                            </motion.p>
+                                        )}
+
+                                        {visibleEntries.map((entry) => (
+                                            <EntryRow
+                                                key={entry.id}
+                                                entry={entry}
+                                                onEdit={handleEdit}
+                                                onDelete={handleDelete}
+                                            />
+                                        ))}
+                                    </AnimatePresence>
+                                </div>
+                            </LayoutGroup>
                         </div>
                     ) : (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="flex flex-col items-center justify-center py-16 gap-4"
-                        >
-                            <div className="w-16 h-16 rounded-2xl bg-[var(--color-bg-tertiary)] flex items-center justify-center">
-                                <Wallet size={28} className="text-[var(--color-text-muted)]" />
-                            </div>
-                            <p className="text-sm text-[var(--color-text-muted)]">
-                                {txt('Sem movimentos este mes', 'No transactions this month')}
-                            </p>
-                            <div className="flex gap-2">
-                                <StardustButton
-                                    size="sm"
-                                    icon={<Plus size={16} />}
-                                    onClick={() => { setEditingEntry(null); setModalOpen(true) }}
-                                >
-                                    {txt('Adicionar', 'Add')}
-                                </StardustButton>
-                                <StardustButton
-                                    size="sm"
-                                    variant="ghost"
-                                    icon={<ScanLine size={16} />}
-                                    onClick={() => setScanModalOpen(true)}
-                                >
-                                    Scan
-                                </StardustButton>
-                            </div>
-                        </motion.div>
+                        <EmptyMomentum
+                            icon={<Wallet size={24} />}
+                            title={txt('Sem movimentos este mes', 'No transactions this month')}
+                            message={txt('Regista a primeira despesa para activar o teu cockpit financeiro.', 'Log your first expense to activate your financial cockpit.')}
+                            action={{ label: txt('Registar', 'Add'), onClick: () => { setEditingEntry(null); setModalOpen(true) } }}
+                        />
                     )}
                 </div>
             </div>
@@ -613,20 +636,6 @@ export function FinanceiroPage() {
                 editingEntry={editingEntry}
             />
 
-            <ScanReceiptModal
-                open={scanModalOpen}
-                onClose={() => setScanModalOpen(false)}
-                onConfirm={handleScanConfirm}
-                onAddToTodo={handleAddToTodo}
-            />
-
-            <AddTodoModal
-                isOpen={todoModalOpen}
-                onClose={() => setTodoModalOpen(false)}
-                onSubmit={handleTodoSubmit}
-                isLoading={createTodo.isPending}
-                initialData={todoInitialData}
-            />
         </div>
     )
 }

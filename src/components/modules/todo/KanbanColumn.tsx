@@ -44,13 +44,17 @@ export function KanbanColumn({ id, title, todos, onEditTask }: KanbanColumnProps
             {/* Droppable Area */}
             <div
                 ref={setNodeRef}
-                className={`flex-1 flex flex-col gap-4 p-3 overflow-y-auto transition-all duration-300 rounded-2xl ${isOver ? 'bg-white/5 ring-1 ring-[var(--accent)]/30 ring-inset shadow-[inset_0_0_30px_rgba(255,255,255,0.02)]' : ''
+                className={`flex-1 flex flex-col gap-4 p-3 overflow-y-auto transition-all duration-300 rounded-2xl border border-white/5 bg-gradient-to-b from-white/[0.02] to-transparent ${isOver ? 'bg-white/5 ring-1 ring-[var(--accent)]/30 ring-inset shadow-[inset_0_0_30px_rgba(255,255,255,0.02)]' : ''
                     }`}
             >
                 <div className="[&>*:not(:hover)]:group-hover/column:opacity-30 [&>*:not(:hover)]:group-hover/column:blur-[4px] [&>*:not(:hover)]:group-hover/column:scale-[0.98] transition-all duration-500 pb-20">
                     <SortableContext id={id} items={todos.map(t => t.id)} strategy={verticalListSortingStrategy}>
                         {todos.map(todo => (
-                            <TaskCard key={todo.id} todo={todo} onEdit={onEditTask} />
+                            <TaskCard
+                                key={todo.id}
+                                todo={todo}
+                                onEdit={onEditTask}
+                            />
                         ))}
                     </SortableContext>
                 </div>

@@ -1,5 +1,6 @@
-import { motion } from 'framer-motion'
+import { useState, useCallback } from 'react'
 import { NavLink } from 'react-router'
+import { motion } from 'framer-motion'
 import {
     BookOpen,
     Wallet,
@@ -13,224 +14,209 @@ import {
     Target,
     CircleDollarSign,
     Rocket,
+    CheckCircle2,
+    Circle,
     type LucideIcon,
 } from 'lucide-react'
 import { NextActionsStrip, PageHeader, PageSectionHeader } from '@/components/core/PagePrimitives'
 import { useLocaleText } from '@/i18n/useLocaleText'
 
-interface GuideCard {
+/* ── Completion tracking ── */
+const STORAGE_KEY = 'fc-guide-completed'
+
+function getCompleted(): Set<string> {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY)
+        return raw ? new Set(JSON.parse(raw) as string[]) : new Set()
+    } catch {
+        return new Set()
+    }
+}
+
+function persistCompleted(ids: Set<string>) {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify([...ids]))
+    } catch { /* noop */ }
+}
+
+/* ── Data ── */
+type Phase = 'day1' | 'week1' | 'power'
+
+interface GuideItem {
+    id: string
     icon: LucideIcon
+    phase: Phase
     titlePt: string
     titleEn: string
-    tipPt: string
-    tipEn: string
+    descPt: string
+    descEn: string
     ctaPt: string
     ctaEn: string
     to: string
 }
 
-interface PathCard {
-    icon: LucideIcon
-    titlePt: string
-    titleEn: string
-    bodyPt: string
-    bodyEn: string
-    resultPt: string
-    resultEn: string
-    ctaPt: string
-    ctaEn: string
-    to: string
+const PHASE_META: Record<Phase, { labelPt: string; labelEn: string }> = {
+    day1: { labelPt: 'Primeiro dia', labelEn: 'First day' },
+    week1: { labelPt: 'Primeira semana', labelEn: 'First week' },
+    power: { labelPt: 'Poder total', labelEn: 'Full power' },
 }
 
-const quickSteps = [
+const GUIDE_ITEMS: GuideItem[] = [
+    // Day 1
     {
-        titlePt: '1. Define o teu foco',
-        titleEn: '1. Set your focus',
-        bodyPt: 'Abre Tarefas, cria 3 prioridades do dia e escolhe 1 tarefa critica.',
-        bodyEn: 'Open Tasks, create 3 priorities for today, and choose 1 critical task.',
-    },
-    {
-        titlePt: '2. Regista caixa em 60 segundos',
-        titleEn: '2. Log cash in 60 seconds',
-        bodyPt: 'No Financeiro, usa Registo Rapido para adicionar entradas sem friccao.',
-        bodyEn: 'In Finance, use Quick Entry to add transactions with minimal friction.',
-    },
-    {
-        titlePt: '3. Fecha o ciclo',
-        titleEn: '3. Close the loop',
-        bodyPt: 'Liga noticias, links e cripto a tarefas para transformar input em execucao.',
-        bodyEn: 'Link news, links, and crypto to tasks to turn input into execution.',
-    },
-]
-
-const recommendedPaths: PathCard[] = [
-    {
+        id: 'explore-dashboard',
         icon: Target,
-        titlePt: 'Percurso 1: Claridade diária',
-        titleEn: 'Path 1: Daily clarity',
-        bodyPt: 'Começa no Dashboard para perceber em 30 segundos o que entrou, saiu e exige ação.',
-        bodyEn: 'Start in Dashboard to understand in 30 seconds what came in, out, and needs action.',
-        resultPt: 'Resultado: foco imediato sem sobrecarga.',
-        resultEn: 'Result: instant focus without overload.',
+        phase: 'day1',
+        titlePt: 'Explorar o Dashboard',
+        titleEn: 'Explore the Dashboard',
+        descPt: 'Abre o dashboard e descobre o teu resumo diário em 30 segundos.',
+        descEn: 'Open the dashboard and discover your daily summary in 30 seconds.',
         ctaPt: 'Abrir dashboard',
         ctaEn: 'Open dashboard',
         to: '/dashboard',
     },
     {
-        icon: CircleDollarSign,
-        titlePt: 'Percurso 2: Dominar caixa',
-        titleEn: 'Path 2: Master cash flow',
-        bodyPt: 'Vai para Financeiro, digitaliza talão e fecha o loop: captura → classifica → confirma.',
-        bodyEn: 'Go to Finance, scan a receipt, and close the loop: capture → classify → confirm.',
-        resultPt: 'Resultado: visão real de gastos e inflação por loja/item.',
-        resultEn: 'Result: real spend visibility and store/item inflation signals.',
-        ctaPt: 'Abrir financeiro',
-        ctaEn: 'Open finance',
-        to: '/financeiro',
-    },
-    {
-        icon: Rocket,
-        titlePt: 'Percurso 3: Execução agressiva',
-        titleEn: 'Path 3: Aggressive execution',
-        bodyPt: 'Abre Tarefas e transforma rapidamente insights em ações com prioridade.',
-        bodyEn: 'Open Tasks and quickly turn insights into prioritized actions.',
-        resultPt: 'Resultado: menos backlog, mais entrega.',
-        resultEn: 'Result: less backlog, more delivery.',
-        ctaPt: 'Abrir tarefas',
-        ctaEn: 'Open tasks',
-        to: '/todo',
-    },
-]
-
-const guideCards: GuideCard[] = [
-    {
+        id: 'first-expense',
         icon: Wallet,
-        titlePt: 'Financeiro',
-        titleEn: 'Finance',
-        tipPt: 'Usa o scan de recibo para captar loja + NIF. Ativa nas Definições a vista de histórico por loja e variação de preço.',
-        tipEn: 'Use receipt scan to capture store + VAT/NIF. Enable store history and price variation view in Settings.',
+        phase: 'day1',
+        titlePt: 'Registar primeira despesa',
+        titleEn: 'Log your first expense',
+        descPt: 'Usa o registo rápido ou digitaliza um talão para começar.',
+        descEn: 'Use quick entry or scan a receipt to get started.',
         ctaPt: 'Abrir financeiro',
         ctaEn: 'Open finance',
         to: '/financeiro',
     },
     {
+        id: 'create-task',
         icon: CheckSquare,
-        titlePt: 'Tarefas',
-        titleEn: 'Tasks',
-        tipPt: 'Move no kanban por prioridade e mantem o backlog curto.',
-        tipEn: 'Move cards on kanban by priority and keep backlog short.',
+        phase: 'day1',
+        titlePt: 'Criar 3 tarefas prioritárias',
+        titleEn: 'Create 3 priority tasks',
+        descPt: 'Define as prioridades do dia no kanban.',
+        descEn: 'Set your priorities for today on the kanban board.',
         ctaPt: 'Abrir tarefas',
         ctaEn: 'Open tasks',
         to: '/todo',
     },
+    // Week 1
     {
+        id: 'save-links',
         icon: Link2,
-        titlePt: 'Links',
-        titleEn: 'Links',
-        tipPt: 'Guarda fontes com tags para recuperar contexto sem perder tempo.',
-        tipEn: 'Save sources with tags to recover context fast.',
+        phase: 'week1',
+        titlePt: 'Guardar fontes úteis',
+        titleEn: 'Save useful sources',
+        descPt: 'Guarda artigos e links com tags para recuperar contexto.',
+        descEn: 'Save articles and links with tags to recover context fast.',
         ctaPt: 'Abrir links',
         ctaEn: 'Open links',
         to: '/links',
     },
     {
+        id: 'setup-news',
         icon: Newspaper,
-        titlePt: 'Noticias',
-        titleEn: 'News',
-        tipPt: 'Filtra temas e transforma sinais importantes em tarefas.',
-        tipEn: 'Filter topics and convert relevant signals into tasks.',
-        ctaPt: 'Abrir noticias',
+        phase: 'week1',
+        titlePt: 'Configurar feed de notícias',
+        titleEn: 'Set up news feed',
+        descPt: 'Filtra tópicos e transforma sinais importantes em tarefas.',
+        descEn: 'Filter topics and convert relevant signals into tasks.',
+        ctaPt: 'Abrir notícias',
         ctaEn: 'Open news',
         to: '/news',
     },
     {
+        id: 'track-crypto',
         icon: Bitcoin,
-        titlePt: 'Cripto',
-        titleEn: 'Crypto',
-        tipPt: 'Regista transacoes e acompanha exposicao entre spot e DeFi.',
-        tipEn: 'Track transactions and exposure across spot and DeFi.',
-        ctaPt: 'Abrir cripto',
+        phase: 'week1',
+        titlePt: 'Registar portfolio crypto',
+        titleEn: 'Track crypto portfolio',
+        descPt: 'Adiciona wallets e acompanha exposição entre spot e DeFi.',
+        descEn: 'Add wallets and track exposure across spot and DeFi.',
+        ctaPt: 'Abrir crypto',
         ctaEn: 'Open crypto',
         to: '/crypto',
     },
+    // Power
     {
+        id: 'master-cashflow',
+        icon: CircleDollarSign,
+        phase: 'power',
+        titlePt: 'Dominar cash flow mensal',
+        titleEn: 'Master monthly cash flow',
+        descPt: 'Analisa tendências, inflação por item e padrões recorrentes.',
+        descEn: 'Analyze trends, item-level inflation, and recurring patterns.',
+        ctaPt: 'Abrir financeiro',
+        ctaEn: 'Open finance',
+        to: '/financeiro',
+    },
+    {
+        id: 'aggressive-execution',
+        icon: Rocket,
+        phase: 'power',
+        titlePt: 'Execução agressiva',
+        titleEn: 'Aggressive execution',
+        descPt: 'Transforma insights de news e links em tarefas com prioridade.',
+        descEn: 'Turn news and link insights into prioritized tasks.',
+        ctaPt: 'Abrir tarefas',
+        ctaEn: 'Open tasks',
+        to: '/todo',
+    },
+    {
+        id: 'personalize-settings',
         icon: Settings2,
-        titlePt: 'Definicoes',
-        titleEn: 'Settings',
-        tipPt: 'Escolhe idioma, tema e a pagina inicial ideal para ti.',
-        tipEn: 'Choose language, theme, and your ideal start page.',
-        ctaPt: 'Abrir definicoes',
+        phase: 'power',
+        titlePt: 'Personalizar experiência',
+        titleEn: 'Personalize experience',
+        descPt: 'Define idioma, tema, página inicial e nome do copiloto.',
+        descEn: 'Set language, theme, start page, and copilot name.',
+        ctaPt: 'Abrir definições',
         ctaEn: 'Open settings',
         to: '/settings',
     },
 ]
 
-const productPrinciples = [
-    {
-        titlePt: 'Loop nuclear em 10s',
-        titleEn: 'Nuclear loop in 10s',
-        bodyPt: 'Capturar → entender → agir sem passos extra.',
-        bodyEn: 'Capture → understand → act without extra steps.',
-    },
-    {
-        titlePt: 'Input sem friccao',
-        titleEn: 'Frictionless input',
-        bodyPt: 'Texto natural, voz, OCR, screenshot, paste e drag-and-drop.',
-        bodyEn: 'Natural language, voice, OCR, screenshot, paste, and drag-and-drop.',
-    },
-    {
-        titlePt: 'Memoria acumulativa real',
-        titleEn: 'Real cumulative memory',
-        bodyPt: 'Quando corriges uma classificacao, o sistema aprende para o futuro.',
-        bodyEn: 'When you correct a classification, the system learns it for future entries.',
-    },
-    {
-        titlePt: 'Confianca absoluta',
-        titleEn: 'Absolute trust',
-        bodyPt: 'Origem da decisao, score de confianca e undo imediato.',
-        bodyEn: 'Decision origin, confidence score, and instant undo.',
-    },
-    {
-        titlePt: 'Acao proativa',
-        titleEn: 'Proactive action',
-        bodyPt: 'O sistema sugere automacao e proximos passos relevantes.',
-        bodyEn: 'The system suggests automation and relevant next actions.',
-    },
-    {
-        titlePt: 'Personalizacao util',
-        titleEn: 'Useful personalization',
-        bodyPt: 'Pagina inicial configuravel e nome do copiloto adaptado ao utilizador.',
-        bodyEn: 'Configurable start page and personalized copilot name.',
-    },
-    {
-        titlePt: 'Ritual diario',
-        titleEn: 'Daily ritual',
-        bodyPt: 'Responder diariamente: entrou, saiu e o que exige acao agora.',
-        bodyEn: 'Daily answer: what came in, what went out, and what needs action now.',
-    },
-    {
-        titlePt: 'Copiloto com identidade',
-        titleEn: 'Copilot identity',
-        bodyPt: 'Define nome e imagem do copiloto para uma interação mais natural.',
-        bodyEn: 'Set copilot name and avatar for a more natural interaction.',
-    },
-]
+/* ── Stagger animation variants ── */
+const containerVariants = {
+    hidden: {},
+    show: { transition: { staggerChildren: 0.06 } },
+}
 
+const itemVariants = {
+    hidden: { opacity: 0, y: 12 },
+    show: { opacity: 1, y: 0, transition: { type: 'spring' as const, damping: 22, stiffness: 200 } },
+}
+
+/* ── Page ── */
 export function StartGuidePage() {
     const { txt } = useLocaleText()
+    const [completed, setCompleted] = useState<Set<string>>(() => getCompleted())
+
+    const toggleCompleted = useCallback((id: string) => {
+        setCompleted((prev) => {
+            const next = new Set(prev)
+            if (next.has(id)) next.delete(id)
+            else next.add(id)
+            persistCompleted(next)
+            return next
+        })
+    }, [])
+
+    const totalDone = completed.size
+    const totalItems = GUIDE_ITEMS.length
+    const progressPct = Math.round((totalDone / totalItems) * 100)
+
+    const phases: Phase[] = ['day1', 'week1', 'power']
 
     return (
-        <div className="w-full flex flex-col gap-8 pb-12">
-            <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-                className="space-y-8"
-            >
+        <div className="w-full max-w-[1400px] mx-auto px-4 md:px-8 pt-8 pb-[var(--dock-clearance)]">
+            <div className="w-full flex flex-col gap-8">
                 <PageHeader
                     icon={<BookOpen size={18} />}
-                    title={txt('Guia e Ajuda', 'Guide & Help')}
-                    subtitle={txt('Aprende o fluxo ideal para transformar o Feed Center em vantagem diaria.', 'Learn the ideal flow to turn Feed Center into daily advantage.')}
+                    title={txt('Guia Interativo', 'Interactive Guide')}
+                    subtitle={txt(
+                        'Descobre o Feed Center ao teu ritmo. Marca cada passo quando completares.',
+                        'Discover Feed Center at your own pace. Check off each step when done.'
+                    )}
                     actions={(
                         <NavLink
                             to="/dashboard"
@@ -242,96 +228,76 @@ export function StartGuidePage() {
                     )}
                 />
 
-                <PageSectionHeader
-                    title={txt('Primeiros 5 minutos', 'First 5 minutes')}
-                    subtitle={txt('Segue esta sequencia para perceber o produto rapidamente.', 'Follow this sequence to understand the product quickly.')}
-                />
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {quickSteps.map((step) => (
-                        <div
-                            key={step.titlePt}
-                            className="rounded-2xl p-5 bg-[var(--bg-card)] border border-[var(--border-subtle)]"
-                        >
-                            <p className="text-sm font-semibold text-[var(--text-primary)]">
-                                {txt(step.titlePt, step.titleEn)}
-                            </p>
-                            <p className="text-xs mt-2 leading-relaxed text-[var(--text-secondary)]">
-                                {txt(step.bodyPt, step.bodyEn)}
-                            </p>
-                        </div>
-                    ))}
+                {/* Progress overview */}
+                <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-5 flex items-center gap-5">
+                    <div className="relative w-14 h-14 shrink-0">
+                        <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
+                            <circle cx="18" cy="18" r="16" fill="none" stroke="var(--bg-inset)" strokeWidth="3" />
+                            <motion.circle
+                                cx="18" cy="18" r="16" fill="none"
+                                stroke="var(--accent)" strokeWidth="3" strokeLinecap="round"
+                                strokeDasharray={100.5}
+                                initial={{ strokeDashoffset: 100.5 }}
+                                animate={{ strokeDashoffset: 100.5 - (progressPct / 100) * 100.5 }}
+                                transition={{ duration: 0.6, ease: 'easeOut' }}
+                            />
+                        </svg>
+                        <span className="absolute inset-0 flex items-center justify-center text-xs font-black text-white tabular-nums">
+                            {progressPct}%
+                        </span>
+                    </div>
+                    <div>
+                        <p className="text-sm font-bold text-[var(--text-primary)]">
+                            {totalDone} / {totalItems} {txt('passos completos', 'steps completed')}
+                        </p>
+                        <p className="text-xs text-[var(--text-tertiary)] mt-0.5">
+                            {progressPct === 100
+                                ? txt('Parabéns! Dominaste o Feed Center.', 'Congrats! You\'ve mastered Feed Center.')
+                                : txt('Continua a explorar ao teu ritmo.', 'Keep exploring at your own pace.')}
+                        </p>
+                    </div>
                 </div>
 
-                <PageSectionHeader
-                    title={txt('Escolhe o teu percurso', 'Choose your path')}
-                    subtitle={txt('Cada utilizador pensa diferente. Escolhe o caminho que te dá valor já.', 'Every user thinks differently. Pick the path that gives you value now.')}
-                />
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                    {recommendedPaths.map((path) => (
-                        <div
-                            key={path.to}
-                            className="rounded-2xl p-5 bg-[var(--bg-card)] border border-[var(--border-subtle)] flex flex-col gap-3"
-                        >
-                            <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-[var(--accent)]/12 text-[var(--accent)]">
-                                <path.icon size={16} />
-                            </div>
-                            <p className="text-sm font-semibold text-[var(--text-primary)]">
-                                {txt(path.titlePt, path.titleEn)}
-                            </p>
-                            <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
-                                {txt(path.bodyPt, path.bodyEn)}
-                            </p>
-                            <p className="text-xs text-[var(--text-tertiary)]">
-                                {txt(path.resultPt, path.resultEn)}
-                            </p>
-                            <NavLink
-                                to={path.to}
-                                className="inline-flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border border-[var(--border-default)] hover:border-[var(--accent)]/35 hover:text-[var(--accent)] transition-colors w-fit mt-auto"
+                {/* Phase sections */}
+                {phases.map((phase) => {
+                    const items = GUIDE_ITEMS.filter((g) => g.phase === phase)
+                    const phaseDone = items.filter((g) => completed.has(g.id)).length
+                    const meta = PHASE_META[phase]
+                    return (
+                        <div key={phase} className="space-y-4">
+                            <PageSectionHeader
+                                title={txt(meta.labelPt, meta.labelEn)}
+                                subtitle={`${phaseDone}/${items.length} ${txt('completos', 'completed')}`}
+                            />
+
+                            <motion.div
+                                variants={containerVariants}
+                                initial="hidden"
+                                whileInView="show"
+                                viewport={{ once: true, margin: '-40px' }}
+                                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
                             >
-                                {txt(path.ctaPt, path.ctaEn)}
-                                <ArrowRight size={12} />
-                            </NavLink>
+                                {items.map((item) => (
+                                    <DiscoveryCard
+                                        key={item.id}
+                                        item={item}
+                                        isDone={completed.has(item.id)}
+                                        onToggle={toggleCompleted}
+                                    />
+                                ))}
+                            </motion.div>
                         </div>
-                    ))}
-                </div>
+                    )
+                })}
 
-                <PageSectionHeader
-                    title={txt('Como usar cada modulo', 'How to use each module')}
-                    subtitle={txt('Resumo tatico para nao desperdicar funcionalidades.', 'Tactical summary so you do not waste capabilities.')}
-                />
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {guideCards.map((card) => (
-                        <div
-                            key={card.to}
-                            className="rounded-2xl p-5 bg-[var(--bg-card)] border border-[var(--border-subtle)] flex flex-col gap-4"
-                        >
-                            <div className="flex items-center gap-2 text-[var(--accent)]">
-                                <card.icon size={16} />
-                                <h3 className="text-sm font-semibold text-[var(--text-primary)]">
-                                    {txt(card.titlePt, card.titleEn)}
-                                </h3>
-                            </div>
-                            <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
-                                {txt(card.tipPt, card.tipEn)}
-                            </p>
-                            <NavLink
-                                to={card.to}
-                                className="inline-flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border border-[var(--border-default)] hover:border-[var(--accent)]/35 hover:text-[var(--accent)] transition-colors w-fit"
-                            >
-                                {txt(card.ctaPt, card.ctaEn)}
-                                <ArrowRight size={12} />
-                            </NavLink>
-                        </div>
-                    ))}
-                </div>
-
-                <div className="rounded-2xl p-5 bg-[var(--bg-card)] border border-[var(--border-subtle)]">
+                {/* Shortcuts */}
+                <div className="py-4 border-t border-white/5">
                     <p className="text-sm font-semibold text-[var(--text-primary)]">
-                        {txt('Atalhos uteis', 'Useful shortcuts')}
+                        {txt('Atalhos úteis', 'Useful shortcuts')}
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2 text-xs text-[var(--text-secondary)]">
                         <span className="px-2.5 py-1 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-subtle)]">
-                            {txt('Abrir input rapido', 'Open quick input')}: <kbd className="text-[var(--text-primary)]">Cmd/Ctrl + K</kbd>
+                            {txt('Abrir input rápido', 'Open quick input')}: <kbd className="text-[var(--text-primary)]">Cmd/Ctrl + K</kbd>
                         </span>
                         <span className="px-2.5 py-1 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-subtle)]">
                             {txt('Fechar modal', 'Close modal')}: <kbd className="text-[var(--text-primary)]">Esc</kbd>
@@ -339,47 +305,76 @@ export function StartGuidePage() {
                     </div>
                 </div>
 
-                <PageSectionHeader
-                    title={txt('Principios de Produto', 'Product Principles')}
-                    subtitle={txt('Os 8 pilares que guiam a experiencia do Feed Center.', 'The 8 pillars that guide the Feed Center experience.')}
-                />
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
-                    {productPrinciples.map((principle) => (
-                        <div
-                            key={principle.titlePt}
-                            className="rounded-2xl p-4 bg-[var(--bg-card)] border border-[var(--border-subtle)]"
-                        >
-                            <p className="text-sm font-semibold text-[var(--text-primary)]">
-                                {txt(principle.titlePt, principle.titleEn)}
-                            </p>
-                            <p className="text-xs mt-2 leading-relaxed text-[var(--text-secondary)]">
-                                {txt(principle.bodyPt, principle.bodyEn)}
-                            </p>
-                        </div>
-                    ))}
-                </div>
-
-                <div className="rounded-2xl p-4 bg-[var(--bg-card)] border border-[var(--border-subtle)]">
-                    <p className="text-sm font-semibold text-[var(--text-primary)]">
-                        {txt('NIF e histórico por loja', 'NIF and store history')}
-                    </p>
-                    <p className="text-xs mt-2 leading-relaxed text-[var(--text-secondary)]">
-                        {txt(
-                            'Quando digitalizas talões, o Feed Center guarda NIF, comerciante e linhas de item com quantidade. O sistema normaliza SKU para comparar preço unitário entre meses e gerar sinal de inflação real por item. Em Definições podes escolher mostrar ou ocultar estes insights.',
-                            'When you scan receipts, Feed Center stores VAT/NIF, merchant, and item lines with quantity. The system normalizes SKUs to compare unit prices across months and generate real item-level inflation signals. In Settings you can show or hide these insights.',
-                        )}
-                    </p>
-                </div>
-
                 <NextActionsStrip
-                    title={txt('Quando quiseres, define a tua pagina inicial em Definicoes > Pagina Inicial.', 'Whenever you want, set your start page in Settings > Home Page.')}
+                    title={txt('Quando quiseres, define a tua página inicial em Definições > Página Inicial.', 'Whenever you want, set your start page in Settings > Home Page.')}
                     actions={[
-                        { label: txt('Abrir pagina Hoje', 'Open Today page'), to: '/today' },
-                        { label: txt('Configurar pagina inicial', 'Configure start page'), to: '/settings' },
+                        { label: txt('Abrir página Hoje', 'Open Today page'), to: '/today' },
+                        { label: txt('Configurar página inicial', 'Configure start page'), to: '/settings' },
                         { label: txt('Ir para tarefas', 'Go to tasks'), to: '/todo' },
                     ]}
                 />
-            </motion.div>
+            </div>
         </div>
+    )
+}
+
+/* ── Discovery Card ── */
+function DiscoveryCard({ item, isDone, onToggle }: {
+    item: GuideItem
+    isDone: boolean
+    onToggle: (id: string) => void
+}) {
+    const { txt } = useLocaleText()
+    const Icon = item.icon
+
+    return (
+        <motion.div
+            variants={itemVariants}
+            whileHover={{ y: -4, boxShadow: '0 16px 40px rgba(0,0,0,0.25)' }}
+            className={`group relative flex flex-col gap-4 p-5 rounded-2xl border transition-all cursor-default
+                ${isDone
+                    ? 'border-[var(--success)]/25 bg-[var(--success)]/5'
+                    : 'border-white/5 bg-white/[0.02] hover:border-[var(--accent)]/25'
+                }`}
+        >
+            <div className="flex items-center justify-between">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center
+                    ${isDone
+                        ? 'bg-[var(--success)]/15 text-[var(--success)]'
+                        : 'bg-[var(--accent)]/12 text-[var(--accent)]'
+                    }`}>
+                    <Icon size={18} />
+                </div>
+                <button
+                    onClick={() => onToggle(item.id)}
+                    className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors cursor-pointer"
+                    aria-label={isDone ? txt('Desmarcar', 'Unmark') : txt('Marcar como feito', 'Mark as done')}
+                >
+                    {isDone
+                        ? <CheckCircle2 size={20} className="text-[var(--success)]" />
+                        : <Circle size={20} className="text-[var(--text-tertiary)] group-hover:text-[var(--accent)]" />
+                    }
+                </button>
+            </div>
+
+            <div>
+                <h3 className={`text-sm font-bold ${isDone ? 'text-[var(--text-secondary)] line-through' : 'text-[var(--text-primary)]'}`}>
+                    {txt(item.titlePt, item.titleEn)}
+                </h3>
+                <p className="text-xs text-[var(--text-tertiary)] mt-1.5 leading-relaxed">
+                    {txt(item.descPt, item.descEn)}
+                </p>
+            </div>
+
+            <NavLink
+                to={item.to}
+                className="inline-flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg
+                    border border-[var(--border-default)] hover:border-[var(--accent)]/35 hover:text-[var(--accent)]
+                    transition-colors w-fit mt-auto"
+            >
+                {txt(item.ctaPt, item.ctaEn)}
+                <ArrowRight size={12} />
+            </NavLink>
+        </motion.div>
     )
 }

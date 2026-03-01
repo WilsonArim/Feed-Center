@@ -4,9 +4,9 @@ import { useLocaleText } from '@/i18n/useLocaleText'
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const { txt } = useLocaleText()
-    const { user, loading } = useAuth()
+    const { user, phase } = useAuth()
 
-    if (loading) {
+    if (phase === 'loading') {
         return (
             <div className="flex items-center justify-center min-h-dvh">
                 <div

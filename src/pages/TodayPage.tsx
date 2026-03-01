@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { motion } from 'framer-motion'
 import { NavLink } from 'react-router'
 import {
     Sunrise,
@@ -14,7 +13,10 @@ import {
 import { useAutomateRecurringEntry, useAutomationHistory, useEntries, useRecurringCandidates, useUndoRecurringAutomation } from '@/hooks/useFinancial'
 import { useCreateTodo, useTodos } from '@/hooks/useTodos'
 import { useTopStories } from '@/hooks/useNews'
-import { PageHeader, PageSectionHeader, NextActionsStrip, StateCard } from '@/components/core/PagePrimitives'
+import { useMorningBriefing } from '@/hooks/useMorningBriefing'
+import { useProactiveAlerts } from '@/hooks/useProactiveAlerts'
+import { PageHeader, PageSectionHeader, NextActionsStrip } from '@/components/core/PagePrimitives'
+import { EmptyMomentum } from '@/components/ui/EmptyMomentum'
 import { useLocaleText } from '@/i18n/useLocaleText'
 import { formatCurrency } from '@/utils/format'
 import { localizeFinancialCategory } from '@/i18n/financialCategoryLabel'
@@ -56,6 +58,8 @@ export function TodayPage() {
     const newsQuery = useTopStories(4)
     const recurringCandidatesQuery = useRecurringCandidates()
     const automationHistoryQuery = useAutomationHistory(10)
+    const briefingQuery = useMorningBriefing()
+    const proactiveAlertsQuery = useProactiveAlerts()
     const createTodo = useCreateTodo()
     const automateRecurring = useAutomateRecurringEntry()
     const undoRecurring = useUndoRecurringAutomation()
@@ -200,12 +204,7 @@ export function TodayPage() {
     }
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className="w-full max-w-[1400px] mx-auto px-4 md:px-8 pt-8 pb-40 space-y-8"
-        >
+        <div className="w-full max-w-[1400px] mx-auto px-4 md:px-8 pt-8 pb-[var(--dock-clearance)] space-y-8">
             <PageHeader
                 icon={<Sunrise size={18} />}
                 title={txt('Hoje', 'Today')}
@@ -233,6 +232,29 @@ export function TodayPage() {
                 )}
             />
 
+            {briefingQuery.data && (
+                <div className="rounded-3xl border border-[var(--accent)]/25 bg-[var(--accent)]/8 px-5 py-4 mb-6 shadow-[0_10px_30px_rgba(0,0,0,0.15)]">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                            <p className="text-[10px] uppercase tracking-[0.2em] text-[var(--text-tertiary)]">
+                                {txt('Briefing automático', 'Automatic briefing')} • {briefingQuery.data.briefingDate}
+                            </p>
+                            <p className="text-sm font-semibold text-[var(--text-primary)] mt-1">
+                                {briefingQuery.data.topPriorities[0]?.title ?? txt('Sem prioridades críticas', 'No critical priorities')}
+                            </p>
+                            <p className="text-xs text-[var(--text-secondary)] mt-1">
+                                {briefingQuery.data.topPriorities[0]?.description ?? txt('Sistema estável para hoje.', 'System stable for today.')}
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-4 text-xs text-[var(--text-secondary)]">
+                            <span>{txt('Atrasos', 'Overdue')}: <strong className="text-white">{briefingQuery.data.overdueTasks}</strong></span>
+                            <span>{txt('Handshakes', 'Handshakes')}: <strong className="text-white">{briefingQuery.data.pendingHandshakes}</strong></span>
+                            <span>{txt('Alertas', 'Alerts')}: <strong className="text-white">{proactiveAlertsQuery.data?.length ?? 0}</strong></span>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8 pt-4 pb-8 border-b border-white/5">
                 <div className="flex flex-col gap-1 transition-all group">
                     <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-[var(--color-text-muted)] opacity-70 group-hover:opacity-100 transition-opacity drop-shadow-sm">{txt('Entrou hoje', 'In today')}</p>
@@ -255,10 +277,11 @@ export function TodayPage() {
 
             <div className="space-y-4 mb-12">
                 {recommendations.length === 0 ? (
-                    <StateCard
+                    <EmptyMomentum
+                        icon={<CheckCircle2 size={18} />}
                         title={txt('Tudo sob controlo', 'Everything under control')}
                         message={txt('Nao existem alertas criticos por agora. Mantem o ritmo e fecha pendencias pequenas.', 'No critical alerts right now. Keep momentum and close small pending items.')}
-                        icon={<CheckCircle2 size={18} />}
+                        compact
                     />
                 ) : (
                     recommendations.map((item) => (
@@ -317,10 +340,11 @@ export function TodayPage() {
                         ))}
                     </div>
                 ) : (recurringCandidatesQuery.data?.length ?? 0) === 0 ? (
-                    <StateCard
+                    <EmptyMomentum
+                        icon={<Repeat size={18} />}
                         title={txt('Sem automações críticas por agora', 'No critical automations right now')}
                         message={txt('Quando existir padrão recorrente claro, vais ver a sugestão aqui.', 'When a clear recurring pattern appears, you will see the suggestion here.')}
-                        icon={<Repeat size={18} />}
+                        compact
                     />
                 ) : (
                     recurringCandidatesQuery.data?.map((candidate) => {
@@ -388,10 +412,11 @@ export function TodayPage() {
                         ))}
                     </div>
                 ) : (automationHistoryQuery.data?.length ?? 0) === 0 ? (
-                    <StateCard
+                    <EmptyMomentum
+                        icon={<History size={18} />}
                         title={txt('Sem histórico ainda', 'No history yet')}
                         message={txt('As automações e reversões vão aparecer aqui.', 'Automations and reversals will appear here.')}
-                        icon={<History size={18} />}
+                        compact
                     />
                 ) : (
                     automationHistoryQuery.data?.map((event) => {
@@ -399,7 +424,9 @@ export function TodayPage() {
                         const undoStatus = undoState[event.id] ?? 'idle'
                         const actionLabel = event.action === 'automate_recurring'
                             ? txt('Automação recorrente', 'Recurring automation')
-                            : txt('Reversão de automação', 'Automation undo')
+                            : event.action === 'undo_automate_recurring'
+                                ? txt('Reversão de automação', 'Automation undo')
+                                : txt('Handshake OCR', 'OCR handshake')
                         return (
                             <div
                                 key={event.id}
@@ -471,8 +498,13 @@ export function TodayPage() {
                             ))}
                         </div>
                     ) : entriesToday.length === 0 ? (
-                        <div className="px-5 py-7 text-sm text-[var(--text-secondary)]">
-                            {txt('Ainda sem movimentos hoje.', 'No transactions yet today.')}
+                        <div className="px-5 py-5 text-center">
+                            <p className="text-sm font-heading font-bold text-[var(--text-secondary)]">
+                                {txt('Ainda sem movimentos hoje', 'No transactions yet today')}
+                            </p>
+                            <p className="text-xs text-[var(--text-tertiary)] mt-1">
+                                {txt('Regista a primeira despesa do dia.', 'Record your first expense of the day.')}
+                            </p>
                         </div>
                     ) : (
                         <div className="divide-y divide-[var(--border-subtle)]">
@@ -521,7 +553,7 @@ export function TodayPage() {
                                     ))}
                                 </div>
                             ) : highPriority.length === 0 ? (
-                                <p className="text-sm text-[var(--text-secondary)]">{txt('Sem tarefas criticas abertas.', 'No critical tasks open.')}</p>
+                                <p className="text-sm text-[var(--text-secondary)] font-heading font-bold">{txt('Sem tarefas criticas abertas.', 'No critical tasks open.')}</p>
                             ) : (
                                 <div className="space-y-2">
                                     {highPriority.slice(0, 4).map((todo) => (
@@ -547,7 +579,7 @@ export function TodayPage() {
                                     ))}
                                 </div>
                             ) : (newsQuery.data?.length ?? 0) === 0 ? (
-                                <p className="text-sm text-[var(--text-secondary)]">{txt('Sem noticias novas agora.', 'No fresh news right now.')}</p>
+                                <p className="text-sm text-[var(--text-secondary)] font-heading font-bold">{txt('Sem noticias novas agora.', 'No fresh news right now.')}</p>
                             ) : (
                                 <div className="space-y-2">
                                     {newsQuery.data?.slice(0, 2).map((item) => (
@@ -577,6 +609,6 @@ export function TodayPage() {
                     { label: txt('Ver noticias', 'View news'), to: '/news' },
                 ]}
             />
-        </motion.div>
+        </div>
     )
 }

@@ -41,7 +41,10 @@ export function KanbanBoard({ listId, onEditTask }: KanbanBoardProps) {
         })
     )
 
-    const validTodos = useMemo(() => Array.isArray(todos) ? todos : [], [todos])
+    const validTodos = useMemo(() => {
+        if (!Array.isArray(todos)) return []
+        return todos
+    }, [todos])
     const columnsConfig = useMemo(() => ([
         { id: 'todo' as const, title: txt('Por Fazer', 'To Do') },
         { id: 'in_progress' as const, title: txt('Em Progresso', 'In Progress') },

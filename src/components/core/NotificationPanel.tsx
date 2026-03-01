@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { AlertTriangle, Clock, BellOff } from 'lucide-react'
 import type { Notification } from '@/hooks/useNotifications'
 import { useLocaleText } from '@/i18n/useLocaleText'
+import { EmptyMomentum } from '@/components/ui/EmptyMomentum'
 
 interface NotificationPanelProps {
     open: boolean
@@ -34,11 +35,12 @@ export function NotificationPanel({ open, onClose, notifications }: Notification
 
                         <div className="max-h-72 overflow-y-auto">
                             {notifications.length === 0 ? (
-                                <div className="empty-state py-10">
-                                    <BellOff className="empty-state-icon" />
-                                    <p className="empty-state-title">{txt('Sem notificacoes', 'No notifications')}</p>
-                                    <p className="empty-state-desc">{txt('Tudo em dia!', 'All caught up!')}</p>
-                                </div>
+                                <EmptyMomentum
+                                    icon={<BellOff size={20} />}
+                                    title={txt('Tudo em dia!', 'All caught up!')}
+                                    message={txt('Sem notificacoes pendentes de momento.', 'No pending notifications right now.')}
+                                    compact
+                                />
                             ) : (
                                 <div className="py-1">
                                     {notifications.map(n => (

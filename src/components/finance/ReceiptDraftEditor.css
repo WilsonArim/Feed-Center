@@ -1,0 +1,269 @@
+/* ============================================================
+   ReceiptDraftEditor — Human-in-the-Loop Validation UI
+   Obsidian Command Design System
+   ============================================================ */
+
+/* Overlay — full-screen backdrop */
+.rde-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal, 60);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-overlay);
+    backdrop-filter: blur(var(--glass-blur, 24px));
+    animation: rde-fade-in 0.2s ease-out;
+}
+
+/* Panel — the main card */
+.rde-panel {
+    width: 100%;
+    max-width: 460px;
+    margin: 1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-default);
+    border-radius: 4px;
+    box-shadow: var(--shadow-xl);
+    animation: rde-slide-up 0.25s ease-out;
+    overflow: hidden;
+}
+
+/* Header */
+.rde-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.rde-header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+}
+
+.rde-title {
+    font-family: var(--font-heading, 'Orbitron', sans-serif);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-primary);
+}
+
+.rde-lane-badge {
+    font-size: 0.6875rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 2px;
+    background: var(--accent-muted);
+    color: var(--accent);
+    font-weight: 600;
+    letter-spacing: 0.03em;
+}
+
+/* Confidence Badge */
+.rde-confidence-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    padding: 0.25rem 0.625rem;
+    border-radius: 2px;
+    letter-spacing: 0.02em;
+}
+
+.rde-confidence-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* Low Confidence Warning */
+.rde-warning {
+    padding: 0.625rem 1.25rem;
+    background: var(--danger-soft);
+    color: var(--danger);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    border-bottom: 1px solid rgba(239, 68, 68, 0.15);
+}
+
+/* Form */
+.rde-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+    padding: 1.25rem;
+}
+
+.rde-row {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.rde-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.rde-field-grow {
+    flex: 1;
+}
+
+.rde-field-sm {
+    width: 100px;
+    flex-shrink: 0;
+}
+
+.rde-label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-tertiary);
+}
+
+.rde-input {
+    width: 100%;
+    padding: 0.5rem 0.625rem;
+    background: var(--bg-input);
+    border: 1px solid var(--border-default);
+    border-radius: 2px;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    min-height: 2.25rem;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.rde-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: var(--bg-input-focus);
+}
+
+.rde-input::placeholder {
+    color: var(--text-tertiary);
+}
+
+.rde-input-amount {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.rde-select {
+    appearance: none;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='rgba(255,255,255,0.35)' d='M3 5l3 3 3-3'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.5rem center;
+    padding-right: 1.5rem;
+}
+
+/* Error */
+.rde-error {
+    margin: 0 1.25rem;
+    padding: 0.5rem 0.625rem;
+    background: var(--danger-soft);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 2px;
+    font-size: 0.8125rem;
+    color: var(--danger);
+}
+
+/* Actions */
+.rde-actions {
+    display: flex;
+    gap: 0.625rem;
+    padding: 1rem 1.25rem;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.rde-btn {
+    flex: 1;
+    padding: 0.625rem 1rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    border-radius: 2px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.rde-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.rde-btn-discard {
+    background: transparent;
+    border-color: var(--border-default);
+    color: var(--text-secondary);
+}
+
+.rde-btn-discard:hover:not(:disabled) {
+    border-color: var(--border-hover);
+    color: var(--text-primary);
+}
+
+.rde-btn-confirm {
+    background: var(--accent);
+    color: var(--accent-text);
+    border-color: var(--accent);
+}
+
+.rde-btn-confirm:hover:not(:disabled) {
+    background: var(--accent-hover);
+    box-shadow: var(--shadow-accent);
+}
+
+/* Animations */
+@keyframes rde-fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes rde-slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .rde-panel {
+        margin: 0.5rem;
+        max-width: none;
+    }
+
+    .rde-row {
+        flex-direction: column;
+    }
+
+    .rde-field-sm {
+        width: 100%;
+    }
+
+    .rde-header {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: flex-start;
+    }
+}

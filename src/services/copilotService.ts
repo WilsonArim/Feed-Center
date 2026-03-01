@@ -7,8 +7,8 @@
  *
  * Permission Tiers:
  *   🟢 Read   — automatic
- *   🟡 Create — automatic
- *   🔴 Delete/Modify — requires user confirmation
+ *   🟡 Create — bloqueado (Cortex + Handshake)
+ *   🔴 Delete/Modify — bloqueado (Cortex + Handshake)
  */
 
 import { todoService } from '@/services/todoService'
@@ -69,6 +69,24 @@ const TOOL_TIERS: Record<string, ToolTier> = {
     analyze_hash: 'read',
 }
 
+const READ_ONLY_TOOL_NAMES = new Set(
+    Object.entries(TOOL_TIERS)
+        .filter(([, tier]) => tier === 'read')
+        .map(([name]) => name)
+)
+
+function isWriteTier(tier: ToolTier | undefined): boolean {
+    return tier === 'create' || tier === 'destructive'
+}
+
+function buildWriteBlockedResult(toolName: string): string {
+    return [
+        'Operação bloqueada: o Copilot está em modo leitura.',
+        `Tool: ${toolName}.`,
+        'Para gravar dados, usa o fluxo Cortex com Draft Node e Handshake visual de 1 clique.',
+    ].join(' ')
+}
+
 const TOOLS = [
     // ─── Todos ───
     { type: 'function' as const, function: { name: 'get_todos', description: 'Listar todos/tarefas do utilizador. Pode filtrar por lista.', parameters: { type: 'object', properties: { list_id: { type: 'string', description: 'ID da lista (null = inbox)' } } } } },
@@ -104,21 +122,23 @@ const TOOLS = [
     { type: 'function' as const, function: { name: 'analyze_hash', description: 'Analisar um hash de transação blockchain (formato, chain, etc).', parameters: { type: 'object', properties: { hash: { type: 'string' }, chain: { type: 'string' } }, required: ['hash'] } } },
 ]
 
+const TOOLS_READ_ONLY = TOOLS.filter((tool) => READ_ONLY_TOOL_NAMES.has(tool.function.name))
+
 // ─── System Prompt ───
 
 const SYSTEM_PROMPT = `Tu és o Buggy 🐛, o copilot do Feed Center — uma app pessoal de produtividade e finanças.
 
 CAPACIDADES:
-- 📋 Todos: criar, listar, editar, apagar tarefas e listas
-- 💰 Financeiro: ver saldo, entradas, categorias, pockets, adicionar despesas/receitas
-- 🪙 Crypto: ver portfolio, transações, registar compras/vendas, analisar hashes
-- 🔗 Links: guardar, pesquisar, listar links e tags
+- 📋 Todos: listar tarefas e listas
+- 💰 Financeiro: consultar saldo, entradas, categorias e pockets
+- 🪙 Crypto: consultar portfolio, transações e analisar hashes
+- 🔗 Links: pesquisar/listar links e tags
 
 REGRAS:
 1. Responde SEMPRE em Português (PT)
 2. Sê conciso e direto — máximo 2-3 frases por resposta
-3. Para operações de LEITURA (🟢) e CRIAÇÃO (🟡): executa imediatamente
-4. Para EDITAR ou APAGAR (🔴): informa o que vais fazer e pede confirmação
+3. Executa apenas operações de LEITURA (🟢)
+4. Para CRIAR, EDITAR ou APAGAR: explica que a ação deve passar pelo fluxo Cortex com Handshake visual
 5. Nunca inventes dados — usa APENAS os tools disponíveis
 6. Se não tens informação suficiente para executar um tool, pergunta
 7. Usa emojis relevantes mas sem exagero
@@ -390,7 +410,7 @@ export const copilotService = {
                 body: JSON.stringify({
                     model: MODEL,
                     messages: currentMessages,
-                    tools: TOOLS,
+                    tools: TOOLS_READ_ONLY,
                     temperature: 0.4,
                     max_tokens: 800,
                 }),
@@ -443,33 +463,16 @@ export const copilotService = {
                 const fnArgs = JSON.parse(toolCall.function.arguments || '{}')
                 const tier = TOOL_TIERS[fnName]
 
-                // 🔴 Destructive: pause and ask for confirmation
-                if (tier === 'destructive') {
-                    const descriptions: Record<string, string> = {
-                        delete_todo: `Apagar todo (id: ${fnArgs.id})`,
-                        update_todo: `Editar todo (id: ${fnArgs.id})`,
-                        delete_entry: `Apagar entrada financeira (id: ${fnArgs.id})`,
-                        update_entry: `Editar entrada financeira (id: ${fnArgs.id})`,
-                        delete_transaction: `Apagar transação cripto (id: ${fnArgs.id})`,
-                        delete_link: `Apagar link (id: ${fnArgs.id})`,
-                    }
-
-                    return {
-                        reply: `⚠️ **Ação destrutiva:** ${descriptions[fnName] ?? fnName}\n\nConfirmas?`,
-                        updatedMessages: [
-                            ...messages,
-                            { role: 'assistant', content: assistantMsg.content ?? '', tool_calls: assistantMsg.tool_calls },
-                        ],
-                        pendingConfirmation: {
-                            toolName: fnName,
-                            args: fnArgs,
-                            description: descriptions[fnName] ?? fnName,
-                            toolCallId: toolCall.id,
-                        },
-                    }
+                if (isWriteTier(tier)) {
+                    currentMessages.push({
+                        role: 'tool',
+                        tool_call_id: toolCall.id,
+                        content: buildWriteBlockedResult(fnName),
+                    })
+                    continue
                 }
 
-                // 🟢🟡 Read/Create: execute immediately
+                // 🟢 Read: execute immediately
                 const result = await executeTool(fnName, fnArgs, userId)
                 currentMessages.push({
                     role: 'tool',
@@ -494,6 +497,17 @@ export const copilotService = {
         confirmation: PendingConfirmation,
         userId: string,
     ): Promise<{ reply: string; updatedMessages: CopilotMessage[] }> {
+        if (isWriteTier(TOOL_TIERS[confirmation.toolName])) {
+            const blocked = buildWriteBlockedResult(confirmation.toolName)
+            return {
+                reply: blocked,
+                updatedMessages: [
+                    ...messages,
+                    { role: 'assistant', content: blocked },
+                ],
+            }
+        }
+
         const result = await executeTool(confirmation.toolName, confirmation.args, userId)
 
         // Add tool result and get final response

@@ -98,18 +98,27 @@ export function TaskCard({ todo, onEdit, isOverlay }: TaskCardProps) {
             </div>
 
             {/* Content */}
-            <h4 className="text-base font-bold text-white mb-2 line-clamp-2 leading-snug drop-shadow-md group-hover:text-[var(--accent)] transition-colors duration-300">
+            <motion.h4
+                layoutId={undefined}
+                className="text-base font-bold text-white mb-2 line-clamp-2 leading-snug drop-shadow-md group-hover:text-[var(--accent)] transition-colors duration-300"
+            >
                 {todo.title}
-            </h4>
+            </motion.h4>
 
             {/* Footer: Due Date */}
-            {todo.due_date && (
-                <div className="flex items-center gap-2 mt-4 pt-3 border-t border-white/5">
+            {(todo.due_date || todo.description) && (
+                <motion.div
+                    layoutId={undefined}
+                    className="flex items-center gap-2 mt-4 pt-3 border-t border-white/5"
+                >
                     <Clock size={12} className="text-[var(--accent)]" />
-                    <span className="text-[11px] text-[var(--color-text-secondary)] font-semibold tracking-wider uppercase">
-                        {new Date(todo.due_date).toLocaleDateString(isEnglish ? 'en-US' : 'pt-PT')}
+                    <span className="text-[11px] text-[var(--color-text-secondary)] font-semibold tracking-wider uppercase truncate">
+                        {todo.due_date
+                            ? new Date(todo.due_date).toLocaleDateString(isEnglish ? 'en-US' : 'pt-PT')
+                            : (todo.description ?? txt('Sem prazo', 'No due date'))
+                        }
                     </span>
-                </div>
+                </motion.div>
             )}
         </motion.div>
     )

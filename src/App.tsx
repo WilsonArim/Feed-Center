@@ -7,6 +7,7 @@ import { AuthProvider } from '@/components/core/AuthProvider'
 import { ProtectedRoute } from '@/components/core/ProtectedRoute'
 import { isSupabaseConfigured, supabaseConfigError } from '@/lib/supabase'
 import { AppLayout } from '@/components/core/AppLayout'
+import { CognitiveSpotlightProvider } from '@/components/ambient/CognitiveSpotlightProvider'
 
 const LoginPage = lazy(async () => ({ default: (await import('@/pages/LoginPage')).LoginPage }))
 const RegisterPage = lazy(async () => ({ default: (await import('@/pages/RegisterPage')).RegisterPage }))
@@ -66,7 +67,9 @@ export default function App() {
                             <Route
                                 element={
                                     <ProtectedRoute>
-                                        <AppLayout />
+                                        <CognitiveSpotlightProvider>
+                                            <AppLayout />
+                                        </CognitiveSpotlightProvider>
                                     </ProtectedRoute>
                                 }
                             >

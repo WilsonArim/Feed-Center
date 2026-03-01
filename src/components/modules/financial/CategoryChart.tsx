@@ -1,5 +1,6 @@
 import { Doughnut } from 'react-chartjs-2'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
+import { motion } from 'framer-motion'
 import type { CategoryBreakdown } from '@/services/financialService'
 import { formatCurrency } from '@/utils/format'
 import { useLocaleText } from '@/i18n/useLocaleText'
@@ -8,8 +9,15 @@ import { localizeFinancialCategory } from '@/i18n/financialCategoryLabel'
 ChartJS.register(ArcElement, Tooltip, Legend)
 
 const PALETTE = [
-    '#3b82f6', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6',
-    '#ec4899', '#06b6d4', '#f97316', '#14b8a6', '#6366f1',
+    '#FF5500', // Premium Signal Orange
+    '#FF7733',
+    '#FF9966',
+    '#FFBB99',
+    '#DD4A00',
+    '#52525B', // Obsidian/Zinc 600
+    '#71717A', // Zinc 500
+    '#A1A1AA', // Zinc 400
+    '#3F3F46', // Zinc 700
 ]
 
 interface Props {
@@ -80,8 +88,13 @@ export function CategoryChart({ breakdown, isLoading, onCategoryClick }: Props) 
     }
 
     return (
-        <div className="py-2">
-            <h3 className="text-lg font-bold tracking-tight mb-8 text-white drop-shadow-sm">
+        <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, margin: '-40px' }}
+            transition={{ type: 'spring' as const, damping: 22, stiffness: 180, delay: 0.2 }}
+        >
+            <h3 className="text-2xl font-black tracking-tight mb-8 text-white drop-shadow-md">
                 {txt('Despesas por Categoria', 'Expenses by Category')}
             </h3>
 
@@ -104,6 +117,6 @@ export function CategoryChart({ breakdown, isLoading, onCategoryClick }: Props) 
                     </button>
                 ))}
             </div>
-        </div>
+        </motion.div>
     )
 }

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { AlertCircle, ArrowRight, RefreshCw } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { NavLink } from 'react-router'
 
 interface PageHeaderProps {
@@ -57,38 +57,6 @@ export function PageSectionHeader({ title, subtitle, action }: SectionHeaderProp
     )
 }
 
-interface StateCardProps {
-    title: string
-    message: string
-    icon?: ReactNode
-    actionLabel?: string
-    onAction?: () => void
-}
-
-export function StateCard({ title, message, icon, actionLabel, onAction }: StateCardProps) {
-    return (
-        <div className="flex flex-col items-center justify-center text-center py-16 px-4 gap-4 rounded-3xl bg-white/[0.02] border border-transparent shadow-[inset_0_0_40px_rgba(255,255,255,0.02)]">
-            <div className="w-14 h-14 rounded-full flex items-center justify-center bg-white/5 text-[var(--color-text-muted)] shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
-                {icon || <AlertCircle size={24} strokeWidth={1.5} />}
-            </div>
-
-            <div>
-                <p className="text-lg md:text-xl font-black tracking-tight text-white drop-shadow-md">{title}</p>
-                <p className="text-sm text-[var(--color-text-muted)] mt-2 tracking-wide max-w-sm mx-auto">{message}</p>
-            </div>
-
-            {actionLabel && onAction && (
-                <button
-                    onClick={onAction}
-                    className="inline-flex items-center gap-2 px-6 py-3 mt-3 rounded-full text-sm font-bold bg-white/10 hover:bg-white/20 text-white shadow-[0_4px_15px_rgba(0,0,0,0.2)] transition-all cursor-pointer"
-                >
-                    <RefreshCw size={14} strokeWidth={2.5} />
-                    {actionLabel}
-                </button>
-            )}
-        </div>
-    )
-}
 
 interface NextAction {
     label: string

@@ -61,9 +61,15 @@ interface Props {
     entry: FinancialEntry
     onEdit: (entry: FinancialEntry) => void
     onDelete: (id: string) => void
+    layoutIds?: {
+        shell?: string
+        title?: string
+        meta?: string
+        amount?: string
+    }
 }
 
-export function EntryRow({ entry, onEdit, onDelete }: Props) {
+export function EntryRow({ entry, onEdit, onDelete, layoutIds }: Props) {
     const { txt, isEnglish } = useLocaleText()
     const [menuOpen, setMenuOpen] = useState(false)
     const ref = useRef<HTMLDivElement>(null)
@@ -84,6 +90,7 @@ export function EntryRow({ entry, onEdit, onDelete }: Props) {
     return (
         <motion.div
             layout
+            layoutId={layoutIds?.shell}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
@@ -99,10 +106,16 @@ export function EntryRow({ entry, onEdit, onDelete }: Props) {
 
             {/* Entry Details */}
             <div className="flex-1 min-w-0 flex flex-col justify-center">
-                <p className="text-base font-bold truncate text-[var(--color-text-primary)] group-hover:text-white transition-colors duration-300">
+                <motion.p
+                    layoutId={layoutIds?.title}
+                    className="text-base font-bold truncate text-[var(--color-text-primary)] group-hover:text-white transition-colors duration-300"
+                >
                     {entry.description || categoryLabel}
-                </p>
-                <div className="flex items-center gap-2 mt-0.5 opacity-60 group-hover:opacity-100 transition-opacity duration-300">
+                </motion.p>
+                <motion.div
+                    layoutId={layoutIds?.meta}
+                    className="flex items-center gap-2 mt-0.5 opacity-60 group-hover:opacity-100 transition-opacity duration-300"
+                >
                     <span className="text-xs font-medium uppercase tracking-wider text-[var(--color-text-secondary)]">
                         {dateLabel(entry.date, locale)}
                     </span>
@@ -116,17 +129,18 @@ export function EntryRow({ entry, onEdit, onDelete }: Props) {
                             <RotateCw size={12} className="text-[var(--color-accent)] drop-shadow-[0_0_5px_var(--color-accent)]" />
                         </>
                     )}
-                </div>
+                </motion.div>
             </div>
 
             {/* Massive Amount */}
             <div className="flex flex-col items-end shrink-0 mr-4">
-                <span
+                <motion.span
+                    layoutId={layoutIds?.amount}
                     className="text-2xl md:text-3xl font-black tabular-nums tracking-tighter drop-shadow-md"
                     style={{ color: isIncome ? 'var(--color-success)' : 'var(--color-text-primary)' }}
                 >
                     {isIncome ? '+' : '-'}{formatCurrency(entry.amount)}
-                </span>
+                </motion.span>
             </div>
 
             {/* Magnetic Actions Menu */}

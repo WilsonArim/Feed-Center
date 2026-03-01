@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion'
 import { Construction } from 'lucide-react'
 import { useLocaleText } from '@/i18n/useLocaleText'
 
@@ -6,12 +5,7 @@ export function StubPage({ title }: { title: string }) {
     const { txt } = useLocaleText()
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="pb-12"
-        >
+        <div className="pb-12">
             <h1 className="text-3xl font-bold tracking-tight mb-2 text-[var(--color-text-primary)] font-sans">
                 {title}
             </h1>
@@ -24,6 +18,6 @@ export function StubPage({ title }: { title: string }) {
                     {txt('Em breve', 'Coming soon')}
                 </span>
             </div>
-        </motion.div>
+        </div>
     )
 }

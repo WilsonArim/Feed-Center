@@ -56,7 +56,32 @@ export interface RecurringCandidate {
     latestDate: string
 }
 
-export type FinancialAutomationAction = 'automate_recurring' | 'undo_automate_recurring'
+export type FinancialAutomationAction = 'automate_recurring' | 'undo_automate_recurring' | 'ocr_handshake'
+
+export interface LogOcrHandshakeEventInput {
+    entryId: string
+    entryLabel: string
+    reason: string | null
+    ocrConfidence: number
+    suggestionConfidence: number | null
+    confidenceGate: number
+    requiresEdit: boolean
+    editedFields: string[]
+    ocrEngine: 'vision' | 'local'
+    triggerSource?: string
+    previousType?: string | null
+    previousIsRecurring?: boolean | null
+    previousPeriodicity?: string | null
+    previousRecurringDay?: number | null
+    previousBuggyAlert?: boolean | null
+    previousBuggyAlertDays?: number | null
+    newType?: string | null
+    newIsRecurring?: boolean | null
+    newPeriodicity?: string | null
+    newRecurringDay?: number | null
+    newBuggyAlert?: boolean | null
+    newBuggyAlertDays?: number | null
+}
 
 export interface FinancialAutomationHistoryItem {
     id: string
@@ -767,6 +792,41 @@ export const financialService = {
         }
 
         return updatedEntry as FinancialEntry
+    },
+
+    async logOcrHandshakeEvent(userId: string, input: LogOcrHandshakeEventInput): Promise<void> {
+        const { error } = await supabase
+            .from('financial_automation_events')
+            .insert({
+                user_id: userId,
+                entry_id: input.entryId,
+                action: 'ocr_handshake',
+                trigger_source: input.triggerSource ?? 'financeiro-inline-ocr',
+                reason: input.reason,
+                entry_label: input.entryLabel,
+                ocr_confidence: input.ocrConfidence,
+                suggestion_confidence: input.suggestionConfidence,
+                confidence_gate: input.confidenceGate,
+                requires_edit: input.requiresEdit,
+                edited_fields: input.editedFields,
+                ocr_engine: input.ocrEngine,
+                previous_type: input.previousType ?? null,
+                previous_is_recurring: input.previousIsRecurring ?? null,
+                previous_periodicity: input.previousPeriodicity ?? null,
+                previous_recurring_day: input.previousRecurringDay ?? null,
+                previous_buggy_alert: input.previousBuggyAlert ?? null,
+                previous_buggy_alert_days: input.previousBuggyAlertDays ?? null,
+                new_type: input.newType ?? null,
+                new_is_recurring: input.newIsRecurring ?? null,
+                new_periodicity: input.newPeriodicity ?? null,
+                new_recurring_day: input.newRecurringDay ?? null,
+                new_buggy_alert: input.newBuggyAlert ?? null,
+                new_buggy_alert_days: input.newBuggyAlertDays ?? null,
+            })
+
+        if (error) {
+            console.warn('Failed to log OCR handshake event.', error.message)
+        }
     },
 
     async getAutomationHistory(userId: string, limit: number = 12): Promise<FinancialAutomationHistoryItem[]> {

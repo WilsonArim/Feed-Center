@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
     Plus, TrendingUp, TrendingDown, ChevronDown, ChevronUp,
@@ -8,11 +8,14 @@ import { StardustButton } from '@/components/ui/StardustButton'
 import { AddWalletModal } from '@/components/modules/crypto/AddWalletModal'
 import { AddTransactionModal } from '@/components/modules/crypto/AddTransactionModal'
 import { useWeb3 } from '@/hooks/useWeb3'
-import type { UnifiedAsset, CryptoTransaction } from '@/types'
+import type { UnifiedAsset, CryptoTransaction, TransactionType } from '@/types'
 import { formatCurrency } from '@/utils/format'
 import { PortfolioDonut } from '@/components/modules/crypto/PortfolioDonut'
-import { NextActionsStrip, PageHeader, PageSectionHeader, StateCard } from '@/components/core/PagePrimitives'
+import { NextActionsStrip, PageHeader, PageSectionHeader } from '@/components/core/PagePrimitives'
+import { EmptyMomentum } from '@/components/ui/EmptyMomentum'
 import { useLocaleText } from '@/i18n/useLocaleText'
+import { CORTEX_CRYPTO_REFLEX_EVENT, cortexBridgeService, type CortexCryptoReflexDetail } from '@/services/cortexBridgeService'
+import { ProactiveAction } from '@/components/ambient/ProactiveAction'
 
 const fmtPct = (v: number) => `${v > 0 ? '+' : ''}${v.toFixed(2)}%`
 const fmtDate = (d: string, locale: string) => new Date(d).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' })
@@ -25,6 +28,127 @@ const TX_TYPE_COLORS: Record<string, string> = {
     transfer_in: 'text-cyan-400',
 }
 
+interface CryptoCortexReflexDraft {
+    rawSignalId: string
+    rawSignalText: string
+    type: TransactionType
+    symbol: string | null
+    name: string
+    quantity: number
+    pricePerUnit: number | null
+    layoutIds: {
+        shell: string
+        title: string
+        meta: string
+        cta: string
+        label: string
+        handshake: string
+    }
+}
+
+const SYMBOL_NAME_MAP: Record<string, string> = {
+    BTC: 'Bitcoin',
+    ETH: 'Ethereum',
+    SOL: 'Solana',
+    USDT: 'Tether',
+    USDC: 'USD Coin',
+    BNB: 'BNB',
+    XRP: 'XRP',
+    DOGE: 'Dogecoin',
+    ADA: 'Cardano',
+    MATIC: 'Polygon',
+    AVAX: 'Avalanche',
+    DOT: 'Polkadot',
+    LINK: 'Chainlink',
+}
+
+const NAME_TO_SYMBOL_MAP: Record<string, string> = {
+    bitcoin: 'BTC',
+    ethereum: 'ETH',
+    solana: 'SOL',
+    tether: 'USDT',
+    cardano: 'ADA',
+    dogecoin: 'DOGE',
+    avalanche: 'AVAX',
+    polkadot: 'DOT',
+    chainlink: 'LINK',
+    polygon: 'MATIC',
+}
+
+const SYMBOL_PATTERN = /\b(BTC|ETH|SOL|USDT|USDC|BNB|XRP|DOGE|ADA|MATIC|AVAX|DOT|LINK)\b/i
+
+function normalizeCryptoSignalText(value: string): string {
+    return value
+        .replace(/\s+/g, ' ')
+        .trim()
+}
+
+function parseLooseNumber(value: string): number | null {
+    const parsed = Number(value.replace(',', '.'))
+    if (!Number.isFinite(parsed) || parsed <= 0) return null
+    return parsed
+}
+
+function inferCryptoType(signalText: string): TransactionType {
+    const normalized = signalText.toLowerCase()
+    if (/\b(vender|venda|sell)\b/.test(normalized)) return 'sell'
+    if (/\b(swap|troca|trocar)\b/.test(normalized)) return 'swap'
+    if (/\b(airdrop)\b/.test(normalized)) return 'airdrop'
+    if (/\b(transferir|transferencia|depositar|entrada)\b/.test(normalized)) return 'transfer_in'
+    return 'buy'
+}
+
+function inferCryptoSymbol(signalText: string): string | null {
+    const symbolHit = signalText.match(SYMBOL_PATTERN)?.[1]
+    if (symbolHit) return symbolHit.toUpperCase()
+
+    const normalized = signalText.toLowerCase()
+    for (const [tokenName, symbol] of Object.entries(NAME_TO_SYMBOL_MAP)) {
+        if (normalized.includes(tokenName)) return symbol
+    }
+    return null
+}
+
+function inferCryptoQuantity(signalText: string, symbol: string | null): number {
+    if (symbol) {
+        const before = signalText.match(new RegExp(`(\\d+(?:[.,]\\d+)?)\\s*${symbol}\\b`, 'i'))?.[1]
+        if (before) {
+            const parsed = parseLooseNumber(before)
+            if (parsed !== null) return parsed
+        }
+
+        const after = signalText.match(new RegExp(`${symbol}\\s*(\\d+(?:[.,]\\d+)?)\\b`, 'i'))?.[1]
+        if (after) {
+            const parsed = parseLooseNumber(after)
+            if (parsed !== null) return parsed
+        }
+    }
+
+    const generic = signalText.match(/\b(\d+(?:[.,]\d+)?)\b/)?.[1]
+    const parsedGeneric = generic ? parseLooseNumber(generic) : null
+    return parsedGeneric ?? 1
+}
+
+function inferCryptoPrice(signalText: string): number | null {
+    const raw = signalText.match(/(?:\b(?:a|por)\b|@)\s*(\d+(?:[.,]\d+)?)/i)?.[1]
+    return raw ? parseLooseNumber(raw) : null
+}
+
+function inferCryptoName(symbol: string | null): string {
+    if (!symbol) return 'Crypto'
+    return SYMBOL_NAME_MAP[symbol] ?? symbol
+}
+
+function getTodayIsoDate(): string {
+    return new Date().toISOString().split('T')[0] ?? ''
+}
+
+function formatCryptoReflexTitle(draft: CryptoCortexReflexDraft): string {
+    if (!draft.symbol) return 'Ação cripto por confirmar'
+    const qty = draft.quantity.toLocaleString('pt-PT', { maximumFractionDigits: 8 })
+    return `${draft.type.toUpperCase()} ${qty} ${draft.symbol}`
+}
+
 export function CryptoPage() {
     const { txt } = useLocaleText()
     const {
@@ -35,6 +159,122 @@ export function CryptoPage() {
     const [isAddWalletOpen, setAddWalletOpen] = useState(false)
     const [isAddTxOpen, setAddTxOpen] = useState(false)
     const [expandedSymbol, setExpandedSymbol] = useState<string | null>(null)
+    const [pendingCryptoReflex, setPendingCryptoReflex] = useState<CryptoCortexReflexDraft | null>(null)
+    const [isApprovingPendingCryptoReflex, setIsApprovingPendingCryptoReflex] = useState(false)
+    const [approvedPendingCryptoReflexId, setApprovedPendingCryptoReflexId] = useState<string | null>(null)
+    const cryptoReflexTimeoutRef = useRef<number | null>(null)
+    const handledCryptoReflexIdsRef = useRef<Set<string>>(new Set())
+
+    const clearCryptoReflexTimer = () => {
+        if (cryptoReflexTimeoutRef.current !== null) {
+            window.clearTimeout(cryptoReflexTimeoutRef.current)
+            cryptoReflexTimeoutRef.current = null
+        }
+    }
+
+    const queueCortexCryptoReflex = useCallback((detail: CortexCryptoReflexDetail) => {
+        if (!detail?.rawSignalId) return
+        if (handledCryptoReflexIdsRef.current.has(detail.rawSignalId)) return
+
+        handledCryptoReflexIdsRef.current.add(detail.rawSignalId)
+        clearCryptoReflexTimer()
+
+        const moduleDraft = detail.moduleDraft
+        const rawSignalText = normalizeCryptoSignalText(detail.signalText)
+        const symbol = moduleDraft?.symbol?.toUpperCase() || inferCryptoSymbol(rawSignalText)
+        const rawSignalId = detail.rawSignalId
+        const quantity = moduleDraft?.amount ?? inferCryptoQuantity(rawSignalText, symbol)
+        const action = moduleDraft?.action ?? inferCryptoType(rawSignalText)
+        const type: TransactionType = action === 'hold'
+            ? 'buy'
+            : action
+        setApprovedPendingCryptoReflexId(null)
+        setPendingCryptoReflex({
+            rawSignalId,
+            rawSignalText,
+            type,
+            symbol,
+            name: inferCryptoName(symbol),
+            quantity,
+            pricePerUnit: moduleDraft?.pricePerUnit ?? inferCryptoPrice(rawSignalText),
+            layoutIds: {
+                shell: `crypto-cortex-shell-${rawSignalId}`,
+                title: `crypto-cortex-title-${rawSignalId}`,
+                meta: `crypto-cortex-meta-${rawSignalId}`,
+                cta: `crypto-cortex-cta-${rawSignalId}`,
+                label: `crypto-cortex-label-${rawSignalId}`,
+                handshake: `crypto-cortex-handshake-${rawSignalId}`,
+            },
+        })
+    }, [])
+
+    const handleApprovePendingCryptoReflex = useCallback(async () => {
+        if (!pendingCryptoReflex || isApprovingPendingCryptoReflex) return
+
+        const wallet = wallets.data?.[0]
+        if (!wallet) {
+            console.warn('[CryptoPage] Missing wallet for Cortex crypto reflex. Prompting wallet creation.')
+            setAddWalletOpen(true)
+            return
+        }
+
+        if (!pendingCryptoReflex.symbol) {
+            console.warn('[CryptoPage] Missing symbol for Cortex crypto reflex. Opening manual transaction modal.')
+            setAddTxOpen(true)
+            return
+        }
+
+        setIsApprovingPendingCryptoReflex(true)
+        try {
+            await addTransaction.mutateAsync({
+                wallet_id: wallet.id,
+                type: pendingCryptoReflex.type,
+                symbol: pendingCryptoReflex.symbol,
+                name: pendingCryptoReflex.name,
+                quantity: pendingCryptoReflex.quantity,
+                price_per_unit: pendingCryptoReflex.pricePerUnit ?? undefined,
+                executed_at: getTodayIsoDate(),
+                source: 'manual',
+                notes: pendingCryptoReflex.rawSignalText,
+            })
+
+            setApprovedPendingCryptoReflexId(pendingCryptoReflex.rawSignalId)
+            clearCryptoReflexTimer()
+            cryptoReflexTimeoutRef.current = window.setTimeout(() => {
+                setPendingCryptoReflex(null)
+                setApprovedPendingCryptoReflexId(null)
+                cryptoReflexTimeoutRef.current = null
+            }, 1400)
+        } catch (error) {
+            handledCryptoReflexIdsRef.current.delete(pendingCryptoReflex.rawSignalId)
+            console.error('[CryptoPage] Failed to persist Cortex crypto reflex', error)
+        } finally {
+            setIsApprovingPendingCryptoReflex(false)
+        }
+    }, [addTransaction, isApprovingPendingCryptoReflex, pendingCryptoReflex, wallets.data])
+
+    useEffect(() => {
+        const handleCortexCryptoReflex = (event: Event) => {
+            const customEvent = event as CustomEvent<CortexCryptoReflexDetail>
+            queueCortexCryptoReflex(customEvent.detail)
+        }
+
+        window.addEventListener(CORTEX_CRYPTO_REFLEX_EVENT, handleCortexCryptoReflex as EventListener)
+        cortexBridgeService.announceModuleReady('CryptoModule')
+
+        const staged = cortexBridgeService.consumeStagedModuleReflexes('CryptoModule')
+        for (const reflex of staged) {
+            queueCortexCryptoReflex(reflex as CortexCryptoReflexDetail)
+        }
+
+        return () => {
+            window.removeEventListener(CORTEX_CRYPTO_REFLEX_EVENT, handleCortexCryptoReflex as EventListener)
+        }
+    }, [queueCortexCryptoReflex])
+
+    useEffect(() => {
+        return () => clearCryptoReflexTimer()
+    }, [])
 
     const totalBalance = portfolio.reduce((sum, a) => sum + a.value, 0)
     const totalUnrealized = portfolio.reduce((sum, a) => sum + a.unrealized_pnl, 0)
@@ -42,7 +282,7 @@ export function CryptoPage() {
     const hasWallets = (wallets.data?.length ?? 0) > 0
 
     return (
-        <div className="w-full max-w-[1400px] mx-auto px-4 md:px-8 pt-8 pb-40 flex flex-col gap-8">
+        <div className="w-full max-w-[1400px] mx-auto px-4 md:px-8 pt-8 pb-[var(--dock-clearance)] flex flex-col gap-8">
 
             {/* Header */}
             <PageHeader
@@ -61,6 +301,63 @@ export function CryptoPage() {
                     </>
                 )}
             />
+
+            <AnimatePresence mode="popLayout">
+                {pendingCryptoReflex && (
+                    <motion.div
+                        key={`crypto-cortex-reflex-${pendingCryptoReflex.rawSignalId}`}
+                        layout
+                    >
+                        <ProactiveAction
+                            id={`crypto-cortex-${pendingCryptoReflex.rawSignalId}`}
+                            state={approvedPendingCryptoReflexId === pendingCryptoReflex.rawSignalId ? 'structured' : 'raw'}
+                            rawLabel={txt('Reflexo tático de Cripto', 'Crypto tactical reflex')}
+                            rawText={pendingCryptoReflex.rawSignalText}
+                            rawContext={pendingCryptoReflex.symbol
+                                ? txt(
+                                    'Buggy estruturou uma transação cripto. Confirma para persistir no ledger.',
+                                    'Buggy structured a crypto transaction. Confirm to persist in the ledger.'
+                                )
+                                : txt(
+                                    'Sinal capturado sem símbolo claro. Confirma para abrir criação manual.',
+                                    'Signal captured without a clear symbol. Confirm to open manual creation.'
+                                )}
+                            structuredLabel={txt('Transação registada', 'Transaction recorded')}
+                            structuredText={formatCryptoReflexTitle(pendingCryptoReflex)}
+                            structuredContext={pendingCryptoReflex.symbol
+                                ? txt(
+                                    'Handshake concluído. Movimento cripto persistido com sucesso.',
+                                    'Handshake complete. Crypto move persisted successfully.'
+                                )
+                                : txt(
+                                    'Sem símbolo validado. Continua no modal de transação para completar.',
+                                    'No validated symbol. Continue in transaction modal to complete.'
+                                )}
+                            accentColor="#F9B115"
+                            confirmLabel={txt('Confirmar', 'Confirm')}
+                            completeLabel={txt('Executado', 'Executed')}
+                            isApproving={isApprovingPendingCryptoReflex}
+                            onApprove={() => { void handleApprovePendingCryptoReflex() }}
+                            layoutIds={{
+                                shell: pendingCryptoReflex.layoutIds.shell,
+                                label: pendingCryptoReflex.layoutIds.label,
+                                title: pendingCryptoReflex.layoutIds.title,
+                                context: pendingCryptoReflex.layoutIds.meta,
+                                cta: pendingCryptoReflex.layoutIds.cta,
+                                handshake: pendingCryptoReflex.layoutIds.handshake,
+                            }}
+                            handshakeRawText={txt(
+                                'Sem Handshake não há escrita no ledger cripto.',
+                                'No Handshake, no write in crypto ledger.'
+                            )}
+                            handshakeStructuredText={txt(
+                                'Handshake confirmado. Ledger cripto atualizado.',
+                                'Handshake confirmed. Crypto ledger updated.'
+                            )}
+                        />
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Stats Row */}
             <PageSectionHeader
@@ -120,12 +417,15 @@ export function CryptoPage() {
 
                 {portfolio.length === 0 && !isLoadingPortfolio ? (
                     <div className="py-12">
-                        <StateCard
+                        <EmptyMomentum
+                            icon={<Bitcoin size={24} />}
                             title={hasWallets ? txt('Nenhuma transacao registada', 'No transactions recorded') : txt('Adiciona uma carteira para comecar', 'Add a wallet to get started')}
                             message={hasWallets
                                 ? txt('Depois de registares transacoes, os holdings aparecem aqui.', 'After you record transactions, holdings will appear here.')
                                 : txt('Liga uma carteira read-only para ativar o teu ledger cripto.', 'Connect a read-only wallet to activate your crypto ledger.')}
-                            icon={<Bitcoin size={24} />}
+                            action={hasWallets
+                                ? { label: txt('Nova Transacao', 'New Transaction'), onClick: () => setAddTxOpen(true) }
+                                : { label: txt('Ligar carteira', 'Connect wallet'), onClick: () => setAddWalletOpen(true) }}
                         />
                     </div>
                 ) : (

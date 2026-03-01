@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { motion } from 'framer-motion'
 import { useAuth } from '@/components/core/AuthProvider'
 import { useTranslation } from 'react-i18next'
-import { Globe, User, LogOut, Check, Palette, Moon, Sun, Monitor, House, Bot, Sparkles, Eye } from 'lucide-react'
+import { Globe, User, LogOut, Check, Palette, Moon, Sun, Monitor, House, Bot, Sparkles, Eye, Layers, CreditCard, Smartphone, PanelLeft } from 'lucide-react'
 import { NextActionsStrip, PageHeader } from '@/components/core/PagePrimitives'
 import { StardustButton } from '@/components/ui/StardustButton'
 import { useThemeStore } from '@/stores/themeStore'
@@ -22,6 +21,9 @@ import {
     DEFAULT_HOME_PAGE,
     type HomePageOption,
 } from '@/services/userSettingsService'
+import { useModuleStore, ALL_MODULES, MODULE_META, type ModuleId } from '@/stores/moduleStore'
+import { getBuggyPosition, setBuggyPosition, type BuggyPosition } from '@/components/spatial/SpatialCommandCenter'
+import { WalletManager } from '@/components/finance/WalletManager'
 
 type AppLanguage = 'pt' | 'en'
 type ThemeMode = 'dark' | 'light' | 'system'
@@ -80,6 +82,7 @@ export function SettingsPage() {
     const [draftCopilotName, setDraftCopilotName] = useState(appliedCopilotName)
     const [draftCopilotAvatar, setDraftCopilotAvatar] = useState(appliedCopilotAvatar)
     const [draftShowMerchantInsights, setDraftShowMerchantInsights] = useState(appliedShowMerchantInsights)
+    const [draftBuggyPos, setDraftBuggyPos] = useState<BuggyPosition>(getBuggyPosition)
     const [savedFeedback, setSavedFeedback] = useState(false)
 
     useEffect(() => {
@@ -165,12 +168,7 @@ export function SettingsPage() {
     }, [savedFeedback, hasChanges, t])
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="w-full max-w-2xl flex flex-col gap-8 pb-12"
-        >
+        <div className="w-full max-w-2xl flex flex-col gap-8 pb-12">
             <PageHeader
                 icon={<User size={18} />}
                 title={t('settings.title')}
@@ -180,7 +178,7 @@ export function SettingsPage() {
 
             {/* Profile Section */}
             <Section title={t('settings.profile')} icon={<User size={18} />}>
-                <div className="flex items-center gap-4 p-4 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)]">
+                <div className="flex items-center gap-4 py-4 border-b border-white/5">
                     <div className="w-12 h-12 rounded-full bg-[var(--color-accent)] flex items-center justify-center text-[var(--color-bg-primary)] font-bold text-lg">
                         {user?.email?.charAt(0).toUpperCase()}
                     </div>
@@ -197,7 +195,7 @@ export function SettingsPage() {
 
             {/* Theme Section */}
             <Section title={t('settings.appearance')} icon={<Palette size={18} />}>
-                <div className="p-4 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)]">
+                <div className="py-4 border-b border-white/5">
                     <p className="text-sm font-medium text-[var(--color-text-primary)]">{t('settings.theme')}</p>
                     <p className="text-xs text-[var(--color-text-muted)] mt-0.5">{t('settings.theme_help')}</p>
 
@@ -209,11 +207,10 @@ export function SettingsPage() {
                                 <button
                                     key={opt.value}
                                     onClick={() => setDraftTheme(opt.value)}
-                                    className={`flex items-center justify-center gap-2 px-3 py-3 rounded-xl border transition-all cursor-pointer ${
-                                        isActive
-                                            ? 'bg-[var(--color-accent)]/10 border-[var(--color-accent)]/30 text-[var(--color-accent)]'
-                                            : 'bg-[var(--color-surface)] border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:border-[var(--color-accent)]/20'
-                                    }`}
+                                    className={`flex items-center justify-center gap-2 px-3 py-3 rounded-xl border transition-all cursor-pointer ${isActive
+                                        ? 'bg-[var(--color-accent)]/10 border-[var(--color-accent)]/30 text-[var(--color-accent)]'
+                                        : 'bg-[var(--color-surface)] border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:border-[var(--color-accent)]/20'
+                                        }`}
                                 >
                                     <Icon size={15} />
                                     <span className="text-sm font-medium">{t(opt.labelKey)}</span>
@@ -226,7 +223,7 @@ export function SettingsPage() {
 
             {/* Copilot Section */}
             <Section title={appliedLanguage === 'en' ? 'Copilot' : 'Copiloto'} icon={<Bot size={18} />}>
-                <div className="p-4 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)]">
+                <div className="py-4 border-b border-white/5">
                     <p className="text-sm font-medium text-[var(--color-text-primary)]">
                         {appliedLanguage === 'en' ? 'Copilot name' : 'Nome do copiloto'}
                     </p>
@@ -241,10 +238,10 @@ export function SettingsPage() {
                         value={draftCopilotName}
                         onChange={(e) => setDraftCopilotName(e.target.value)}
                         placeholder={DEFAULT_COPILOT_NAME}
-                        className="mt-3 w-full px-4 py-2.5 rounded-[var(--radius-md)] text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border)] outline-none focus:border-[var(--color-accent)]"
+                        className="mt-3 w-full px-4 py-2.5 text-sm bg-transparent border-b border-white/10 outline-none focus:border-[var(--color-accent)] transition-colors"
                     />
                 </div>
-                <div className="mt-3 p-4 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)]">
+                <div className="mt-2 py-4 border-b border-white/5">
                     <p className="text-sm font-medium text-[var(--color-text-primary)]">
                         {appliedLanguage === 'en' ? 'Copilot image (Free)' : 'Imagem do copiloto (Free)'}
                     </p>
@@ -257,7 +254,7 @@ export function SettingsPage() {
                         <img
                             src={draftCopilotAvatar || DEFAULT_COPILOT_AVATAR_URL}
                             alt="Copilot avatar preview"
-                            className="w-12 h-12 rounded-xl object-cover bg-[var(--color-bg-secondary)] border border-[var(--color-border)]"
+                            className="w-12 h-12 rounded-full object-cover bg-transparent border border-white/10"
                             onError={(e) => { e.currentTarget.src = DEFAULT_COPILOT_AVATAR_URL }}
                         />
                         <input
@@ -265,7 +262,7 @@ export function SettingsPage() {
                             value={draftCopilotAvatar}
                             onChange={(e) => setDraftCopilotAvatar(e.target.value)}
                             placeholder={DEFAULT_COPILOT_AVATAR_URL}
-                            className="flex-1 px-4 py-2.5 rounded-[var(--radius-md)] text-sm bg-[var(--color-bg-secondary)] border border-[var(--color-border)] outline-none focus:border-[var(--color-accent)]"
+                            className="flex-1 px-4 py-2.5 text-sm bg-transparent border-b border-white/10 outline-none focus:border-[var(--color-accent)] transition-colors"
                         />
                     </div>
                     <div className="mt-2 flex gap-2">
@@ -278,6 +275,43 @@ export function SettingsPage() {
                         </button>
                     </div>
                 </div>
+
+                {/* Buggy Position */}
+                <div className="mt-2 py-4 border-b border-white/5">
+                    <p className="text-sm font-medium text-[var(--color-text-primary)]">
+                        {appliedLanguage === 'en' ? 'Buggy position (mobile)' : 'Posição do Buggy (mobile)'}
+                    </p>
+                    <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
+                        {appliedLanguage === 'en'
+                            ? 'Choose how Buggy appears on small screens.'
+                            : 'Escolhe como o Buggy aparece em ecrãs pequenos.'}
+                    </p>
+                    <div className="mt-3 flex gap-2">
+                        {([
+                            { value: 'adaptive' as const, icon: <Smartphone size={14} />, label: appliedLanguage === 'en' ? 'Adaptive' : 'Adaptável' },
+                            { value: 'sidebar' as const, icon: <PanelLeft size={14} />, label: appliedLanguage === 'en' ? 'Force sidebar' : 'Forçar barra lateral' },
+                        ]).map((opt) => (
+                            <button
+                                key={opt.value}
+                                type="button"
+                                onClick={() => {
+                                    setDraftBuggyPos(opt.value)
+                                    setBuggyPosition(opt.value)
+                                    window.dispatchEvent(new Event('buggy-position-changed'))
+                                }}
+                                className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-medium cursor-pointer transition-all ${
+                                    draftBuggyPos === opt.value
+                                        ? 'border-[var(--color-accent)] text-[var(--color-accent)] bg-[var(--color-accent)]/5'
+                                        : 'border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-[var(--color-accent)]/40'
+                                }`}
+                            >
+                                {opt.icon}
+                                {opt.label}
+                                {draftBuggyPos === opt.value && <Check size={12} />}
+                            </button>
+                        ))}
+                    </div>
+                </div>
             </Section>
 
             {/* Language Section */}
@@ -287,11 +321,10 @@ export function SettingsPage() {
                         <button
                             key={opt.value}
                             onClick={() => setDraftLanguage(opt.value)}
-                            className={`relative flex items-center gap-3 p-4 rounded-xl border transition-all cursor-pointer ${
-                                draftLanguage === opt.value
-                                    ? 'bg-[var(--color-accent)]/10 border-[var(--color-accent)]/30 text-[var(--color-accent)]'
-                                    : 'bg-[var(--color-surface)] border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:border-[var(--color-accent)]/20'
-                            }`}
+                            className={`relative flex items-center gap-3 p-4 rounded-xl border transition-all cursor-pointer ${draftLanguage === opt.value
+                                ? 'bg-[var(--color-accent)]/10 border-[var(--color-accent)]/30 text-[var(--color-accent)]'
+                                : 'bg-[var(--color-surface)] border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:border-[var(--color-accent)]/20'
+                                }`}
                         >
                             <span className="text-sm font-bold bg-[var(--color-bg-tertiary)] px-2 py-1 rounded-lg">{opt.flag}</span>
                             <span className="text-sm font-medium">{opt.label}</span>
@@ -307,7 +340,7 @@ export function SettingsPage() {
 
             {/* Home Page Section */}
             <Section title={t('settings.home_page')} icon={<House size={18} />}>
-                <div className="p-4 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)]">
+                <div className="py-4 border-b border-white/5">
                     <p className="text-sm font-medium text-[var(--color-text-primary)]">{t('settings.home_page')}</p>
                     <p className="text-xs text-[var(--color-text-muted)] mt-0.5">{t('settings.home_page_help')}</p>
 
@@ -316,11 +349,10 @@ export function SettingsPage() {
                             <button
                                 key={opt.value}
                                 onClick={() => setDraftHomePage(opt.value)}
-                                className={`relative flex items-center justify-between gap-2 p-3 rounded-xl border text-sm transition-all cursor-pointer ${
-                                    draftHomePage === opt.value
-                                        ? 'bg-[var(--color-accent)]/10 border-[var(--color-accent)]/30 text-[var(--color-accent)]'
-                                        : 'bg-[var(--color-surface)] border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:border-[var(--color-accent)]/20'
-                                }`}
+                                className={`relative flex items-center justify-between gap-2 p-3 rounded-xl border text-sm transition-all cursor-pointer ${draftHomePage === opt.value
+                                    ? 'bg-[var(--color-accent)]/10 border-[var(--color-accent)]/30 text-[var(--color-accent)]'
+                                    : 'bg-[var(--color-surface)] border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:border-[var(--color-accent)]/20'
+                                    }`}
                             >
                                 <span className="font-medium">{t(opt.labelKey)}</span>
                                 <span className="text-xs opacity-70">{opt.value}</span>
@@ -336,7 +368,7 @@ export function SettingsPage() {
             </Section>
 
             <Section title={appliedLanguage === 'en' ? 'Merchant intelligence' : 'Inteligência por comerciante'} icon={<Eye size={18} />}>
-                <div className="p-4 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)]">
+                <div className="py-4 border-b border-white/5">
                     <div className="flex items-start justify-between gap-4">
                         <div>
                             <p className="text-sm font-medium text-[var(--color-text-primary)]">
@@ -353,11 +385,10 @@ export function SettingsPage() {
                         <button
                             type="button"
                             onClick={() => setDraftShowMerchantInsights((v) => !v)}
-                            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-medium transition-colors cursor-pointer ${
-                                draftShowMerchantInsights
-                                    ? 'bg-[var(--color-accent)]/15 text-[var(--color-accent)] border-[var(--color-accent)]/35'
-                                    : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] border-[var(--color-border)]'
-                            }`}
+                            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-medium transition-colors cursor-pointer ${draftShowMerchantInsights
+                                ? 'bg-[var(--color-accent)]/15 text-[var(--color-accent)] border-[var(--color-accent)]/35'
+                                : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] border-[var(--color-border)]'
+                                }`}
                         >
                             <Sparkles size={12} />
                             {draftShowMerchantInsights
@@ -368,9 +399,64 @@ export function SettingsPage() {
                 </div>
             </Section>
 
+            {/* Active Modules Section */}
+            <Section title={appliedLanguage === 'en' ? 'Active modules' : 'Módulos ativos'} icon={<Layers size={18} />}>
+                <div className="py-4 border-b border-white/5">
+                    <p className="text-xs text-[var(--color-text-muted)] mb-4">
+                        {appliedLanguage === 'en'
+                            ? 'Toggle modules to show or hide them from the navigation bar.'
+                            : 'Ativa ou desativa módulos para os mostrar ou esconder da barra de navegação.'}
+                    </p>
+                    <div className="space-y-2">
+                        {ALL_MODULES.map((id: ModuleId) => {
+                            const meta = MODULE_META[id]
+                            const active = useModuleStore.getState().isActive(id)
+                            return (
+                                <button
+                                    key={id}
+                                    onClick={() => useModuleStore.getState().toggleModule(id)}
+                                    className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left cursor-pointer ${active
+                                            ? 'border-[var(--color-accent)]/30 bg-[var(--color-accent)]/8'
+                                            : 'border-[var(--color-border)] bg-[var(--color-surface)] opacity-60'
+                                        }`}
+                                >
+                                    <span className="text-lg">{meta.icon}</span>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="text-sm font-medium text-[var(--color-text-primary)]">
+                                            {appliedLanguage === 'en' ? meta.labelEn : meta.labelPt}
+                                        </div>
+                                        <div className="text-xs text-[var(--color-text-muted)] truncate">
+                                            {appliedLanguage === 'en' ? meta.descEn : meta.descPt}
+                                        </div>
+                                    </div>
+                                    <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center ${active
+                                            ? 'border-[var(--color-accent)] bg-[var(--color-accent)]'
+                                            : 'border-[var(--color-border)]'
+                                        }`}>
+                                        {active && <Check size={12} className="text-white" />}
+                                    </div>
+                                </button>
+                            )
+                        })}
+                    </div>
+                </div>
+            </Section>
+
+            {/* Wallets Section */}
+            <Section title={appliedLanguage === 'en' ? 'Wallets' : 'Carteiras'} icon={<CreditCard size={18} />}>
+                <div className="py-4 border-b border-white/5">
+                    <p className="text-xs text-[var(--color-text-muted)] mb-4">
+                        {appliedLanguage === 'en'
+                            ? 'Manage funding sources. Buggy will auto-detect wallets from voice commands (e.g., "paid with Revolut").'
+                            : 'Gere fontes de pagamento. O Buggy auto-detecta carteiras de comandos de voz (ex: "paguei com Revolut").'}
+                    </p>
+                    <WalletManager />
+                </div>
+            </Section>
+
             {/* Apply/Default Section */}
             <Section title={t('settings.actions_title')} icon={<Check size={18} />}>
-                <div className="p-4 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)]">
+                <div className="py-4 border-b border-white/5">
                     <p className={`text-sm ${savedFeedback ? 'text-[var(--color-success)]' : 'text-[var(--color-text-secondary)]'}`}>
                         {settingsStateText}
                     </p>
@@ -424,7 +510,7 @@ export function SettingsPage() {
                     { label: t('settings.next_links'), to: '/links' },
                 ]}
             />
-        </motion.div>
+        </div>
     )
 }
 

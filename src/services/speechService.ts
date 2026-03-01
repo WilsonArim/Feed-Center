@@ -4,14 +4,14 @@
  * Architecture:
  *   1. MediaRecorder captures audio (browser picks best codec)
  *   2. Blob is wrapped in a File with correct extension
- *   3. Sent to Whisper via FormData with 'pt' language hint
+ *   3. Sent to backend proxy at /api/cortex/transcribe (avoids CORS)
  *
- * The key fix: Whisper needs the File to have a recognized extension (.webm, .mp4, .ogg).
+ * Codec detection:
  * Some browsers set mimeType with codecs suffix (audio/webm;codecs=opus) which can
  * confuse the API. We strip it and ensure a clean filename.
  */
 
-const WHISPER_API = 'https://api.openai.com/v1/audio/transcriptions'
+const TRANSCRIBE_PROXY = '/api/cortex/transcribe'
 
 export interface SpeechState {
     status: 'idle' | 'recording' | 'transcribing' | 'error'
@@ -20,12 +20,15 @@ export interface SpeechState {
 }
 
 type StatusCallback = (state: SpeechState) => void
+type TranscriptCallback = (text: string) => void
 
 class SpeechService {
     private mediaRecorder: MediaRecorder | null = null
     private stream: MediaStream | null = null
+    private ownsStream = true
     private chunks: Blob[] = []
     private onStatus: StatusCallback | null = null
+    private onTranscript: TranscriptCallback | null = null
     private recordedMimeType = ''
     private silenceTimer: ReturnType<typeof setTimeout> | null = null
     private maxTimer: ReturnType<typeof setTimeout> | null = null
@@ -33,25 +36,40 @@ class SpeechService {
     private analyser: AnalyserNode | null = null
     private animFrame: number | null = null
 
-    isAvailable(): boolean {
-        return !!(
-            import.meta.env.VITE_OPENAI_API_KEY &&
-            navigator.mediaDevices?.getUserMedia
-        )
+    /** Can the browser capture audio at all? (Independent of API key) */
+    isMicAvailable(): boolean {
+        return !!navigator.mediaDevices?.getUserMedia
     }
 
-    async startRecording(onStatus: StatusCallback): Promise<void> {
+    /** Can we record AND transcribe via Whisper? (Requires API key or proxy) */
+    isTranscriptionAvailable(): boolean {
+        return this.isMicAvailable() && !!(import.meta.env.VITE_OPENAI_API_KEY || TRANSCRIBE_PROXY)
+    }
+
+    /** @deprecated Use isMicAvailable() or isTranscriptionAvailable() */
+    isAvailable(): boolean {
+        return this.isMicAvailable()
+    }
+
+    async startRecording(
+        onStatus: StatusCallback,
+        onTranscript?: TranscriptCallback,
+        existingStream?: MediaStream,
+    ): Promise<void> {
         this.onStatus = onStatus
+        this.onTranscript = onTranscript ?? null
 
         try {
-            // Request mic — let system pick the available mic
-            this.stream = await navigator.mediaDevices.getUserMedia({
+            // Reuse existing stream (from useAudioStream) or request a new one
+            this.stream = existingStream ?? await navigator.mediaDevices.getUserMedia({
                 audio: {
                     echoCancellation: true,
                     noiseSuppression: true,
                     autoGainControl: true,
                 },
             })
+            // If reusing an external stream, don't stop its tracks on cleanup
+            this.ownsStream = !existingStream
 
             // Pick best supported mime type
             const candidates = [
@@ -96,6 +114,7 @@ class SpeechService {
         } catch (err) {
             const msg = err instanceof Error ? err.message : 'Erro ao aceder ao microfone'
             this.emit({ status: 'error', level: 0, error: msg })
+            this.onTranscript = null
             this.cleanup()
         }
     }
@@ -118,6 +137,7 @@ class SpeechService {
 
                 if (allChunks.length === 0) {
                     this.emit({ status: 'idle', level: 0 })
+                    this.onTranscript = null
                     resolve(null)
                     return
                 }
@@ -128,12 +148,17 @@ class SpeechService {
 
                 if (blob.size < 1000) {
                     this.emit({ status: 'idle', level: 0 })
+                    this.onTranscript = null
                     resolve(null)
                     return
                 }
 
                 const text = await this.transcribe(blob, baseMime)
                 this.emit({ status: 'idle', level: 0 })
+                if (text) {
+                    this.onTranscript?.(text)
+                }
+                this.onTranscript = null
                 resolve(text)
             }
 
@@ -146,14 +171,12 @@ class SpeechService {
             this.mediaRecorder.onstop = null
             this.mediaRecorder.stop()
         }
+        this.onTranscript = null
         this.cleanup()
         this.emit({ status: 'idle', level: 0 })
     }
 
     private async transcribe(blob: Blob, mime: string): Promise<string | null> {
-        const key = import.meta.env.VITE_OPENAI_API_KEY
-        if (!key) return null
-
         // Map mime → extension that Whisper recognizes
         const extMap: Record<string, string> = {
             'audio/webm': 'webm',
@@ -171,22 +194,18 @@ class SpeechService {
 
         const form = new FormData()
         form.append('file', file)
-        form.append('model', 'whisper-1')
         form.append('language', 'pt')
-        form.append('response_format', 'text')
-        form.append('temperature', '0')
         form.append('prompt', 'Feed Center, Buggy, crypto, Bitcoin, Solana, Ethereum, todo, financeiro, pocket, saldo')
 
         try {
-            const res = await fetch(WHISPER_API, {
+            const res = await fetch(TRANSCRIBE_PROXY, {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${key}` },
                 body: form,
             })
 
             if (!res.ok) {
                 const errBody = await res.text()
-                console.error('Whisper error:', res.status, errBody)
+                console.error('Whisper proxy error:', res.status, errBody)
                 this.emit({ status: 'error', level: 0, error: `Whisper (${res.status}): ${errBody.slice(0, 100)}` })
                 return null
             }
@@ -224,12 +243,13 @@ class SpeechService {
         if (this.animFrame) cancelAnimationFrame(this.animFrame)
         if (this.silenceTimer) clearTimeout(this.silenceTimer)
         if (this.maxTimer) clearTimeout(this.maxTimer)
-        if (this.stream) this.stream.getTracks().forEach(t => t.stop())
+        if (this.stream && this.ownsStream) this.stream.getTracks().forEach(t => t.stop())
         if (this.audioContext?.state !== 'closed') {
             this.audioContext?.close().catch(() => { })
         }
         this.mediaRecorder = null
         this.stream = null
+        this.ownsStream = true
         this.chunks = []
         this.audioContext = null
         this.analyser = null
